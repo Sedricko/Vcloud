@@ -478,6 +478,13 @@ public class BActivityThread extends IBActivityThread.Stub {
             AppInstrumentation.get().callApplicationOnCreate(application);
             onAfterApplicationOnCreate(packageName, processName, application);
 
+            // Vcloud: alguns jogos (ex.: DYSMANTLE) trocam o Instrumentation no Application.onCreate;
+            // sem isto as telas deles não passam pelo AppInstrumentation (orientação deitada nunca era aplicada).
+            Instrumentation atual = BRActivityThread.get(VcloudCore.mainThread()).mInstrumentation();
+            if (!(atual instanceof AppInstrumentation)) {
+                Slog.w(TAG, "O app trocou o Instrumentation por " + (atual == null ? "null" : atual.getClass().getName()) + "; recolocando o do Vcloud");
+            }
+            HookManager.get().checkEnv(AppInstrumentation.class);
             HookManager.get().checkEnv(HCallbackProxy.class);
         } catch (Exception e) {
             Slog.e(TAG, "Critical error in handleBindApplication", e);
