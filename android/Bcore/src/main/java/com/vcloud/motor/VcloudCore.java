@@ -2062,7 +2062,8 @@ public class VcloudCore extends ClientConfiguration {
         File file = new File(getReportDir(), "relatorio-" + stamp + ".txt");
         try (java.io.FileOutputStream fos = new java.io.FileOutputStream(file)) {
             String header = "Relatório Vcloud\nMotivo: " + caption + "\nProcesso: " + getProcessName(getContext())
-                    + "\n\n" + getDeviceInfoString() + "\n\n--- LOGCAT ---\n";
+                    + "\n\n--- DIAGNÓSTICO (resumo dos apps de dentro) ---\n" + com.vcloud.motor.utils.Diagnostico.ler()
+                    + "\n" + getDeviceInfoString() + "\n\n--- LOGCAT ---\n";
             fos.write(header.getBytes("UTF-8"));
             java.lang.Process process = Runtime.getRuntime().exec(new String[]{"logcat", "-d", "-v", "threadtime"});
             try (java.io.InputStream in = process.getInputStream()) {

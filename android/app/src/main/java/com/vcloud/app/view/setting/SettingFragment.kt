@@ -28,6 +28,10 @@ class SettingFragment : PreferenceFragmentCompat() {
 
         initSendLogs()
         initSobrepor()
+        findPreference<Preference>("diagnostico")?.setOnPreferenceClickListener {
+            startActivity(android.content.Intent(requireContext(), DiagnosticoActivity::class.java))
+            true
+        }
     }
 
     override fun onResume() {

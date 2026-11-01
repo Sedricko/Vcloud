@@ -27,6 +27,7 @@ import com.vcloud.motor.core.system.pm.BPackageManagerService;
 import com.vcloud.motor.core.system.user.BUserHandle;
 import com.vcloud.motor.entity.AppConfig;
 import com.vcloud.motor.proxy.ProxyManifest;
+import com.vcloud.motor.utils.Diagnostico;
 import com.vcloud.motor.utils.FileUtils;
 import com.vcloud.motor.utils.Slog;
 import com.vcloud.motor.utils.compat.ApplicationThreadCompat;
@@ -48,8 +49,10 @@ public class BProcessManagerService implements ISystemService {
 
     public ProcessRecord startProcessLocked(String packageName, String processName, int userId, int bpid, int callingPid) {
         ApplicationInfo info = BPackageManagerService.get().getApplicationInfo(packageName, 0, userId);
-        if (info == null)
+        if (info == null) {
+            Diagnostico.naoAbriu(packageName, "pacote não está instalado no Vcloud");
             return null;
+        }
         ProcessRecord app;
         int buid = BUserHandle.getUid(userId, BPackageManagerService.get().getAppId(packageName));
         synchronized (mProcessLock) {
@@ -72,8 +75,10 @@ public class BProcessManagerService implements ISystemService {
                 Slog.d(TAG, "init bUid = " + buid + ", bPid = " + bpid);
             }
             if (bpid == -1) {
+                Diagnostico.naoAbriu(packageName, "sem processo livre (limite de apps abertos ao mesmo tempo)");
                 throw new RuntimeException("No processes available");
             }
+            Diagnostico.abrindo(packageName, processName);
             app = new ProcessRecord(info, processName);
             app.uid = Process.myUid();
             app.bpid = bpid;
@@ -89,6 +94,7 @@ public class BProcessManagerService implements ISystemService {
             }
             if (!initAppProcessL(app)) {
                 
+                Diagnostico.naoAbriu(packageName, "o motor não conseguiu iniciar o processo (" + processName + ")");
                 bProcess.remove(processName);
                 mPidsSelfLocked.remove(app);
                 app = null;
@@ -187,9 +193,11 @@ public class BProcessManagerService implements ISystemService {
             e.printStackTrace();
         }
         app.initLock.open();
+        Diagnostico.abriu(app.getPackageName(), app.processName, app.pid);
     }
 
     public void onProcessDie(ProcessRecord record) {
+        Diagnostico.morreu(record.getPackageName(), record.processName, record.pid);
         synchronized (mProcessLock) {
             record.kill();
             Map<String, ProcessRecord> process = mProcessMap.get(record.buid);
