@@ -32,17 +32,8 @@ public class ProxyService extends Service {
                 && intent != null
                 && intent.getBooleanExtra(EXTRA_REQUIRE_FOREGROUND, false)) {
             try {
-                showNotification(true);
+                showNotification();
             } catch (RuntimeException e) {
-                // Vcloud: o Android exige startForeground depois de startForegroundService, senão derruba o app
-                // (ForegroundServiceDidNotStartInTimeException, visto no Tinker). Tenta de novo sem o tipo e encerra.
-                android.util.Log.w("ProxyService", "startForeground com tipo falhou: " + e);
-                try {
-                    showNotification(false);
-                    stopForeground(STOP_FOREGROUND_REMOVE);
-                } catch (RuntimeException e2) {
-                    android.util.Log.w("ProxyService", "startForeground sem tipo também falhou: " + e2);
-                }
                 stopSelf(startId);
                 return START_NOT_STICKY;
             }
@@ -81,7 +72,7 @@ public class ProxyService extends Service {
         return false;
     }
 
-    private void showNotification(boolean comTipo) {
+    private void showNotification() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationManager manager = getSystemService(NotificationManager.class);
             if (manager != null) {
@@ -104,7 +95,7 @@ public class ProxyService extends Service {
                 .setPriority(NotificationCompat.PRIORITY_LOW);
 
         int notificationId = 0x42420000 | (getClass().getName().hashCode() & 0xFFFF);
-        if (comTipo && Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             startForeground(notificationId, builder.build(),
                     ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE);
         } else {

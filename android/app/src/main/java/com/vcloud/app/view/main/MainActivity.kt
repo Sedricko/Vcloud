@@ -37,7 +37,6 @@ class MainActivity : LoadingActivity() {
 
     companion object {
         private const val TAG = "MainActivity"
-        private const val NOTIFICATION_PERMISSION_REQUEST_CODE = 1003
         private const val STORAGE_PERMISSION_REQUEST_CODE = 1001
         private const val VPN_PERMISSION_REQUEST_CODE = 1002
 
@@ -110,33 +109,6 @@ class MainActivity : LoadingActivity() {
         } catch (e: Exception) {
             Log.e(TAG, "Error checking storage permission: ${e.message}")
         }
-        // Vcloud: os pedidos esperam a tela inicial aparecer (antes deixavam a tela preta)
-        window.decorView.postDelayed({ pedirNotificacoes() }, 800)
-        window.decorView.postDelayed({ pedirSemRestricaoDeBateria() }, 2500)
-    }
-
-    /** Vcloud: pede uma vez para tirar o Vcloud da otimização de bateria (senão o Android fecha os jogos de dentro). */
-    private fun pedirSemRestricaoDeBateria() {
-        try {
-            val pm = getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
-            if (pm.isIgnoringBatteryOptimizations(packageName)) return
-            val prefs = getSharedPreferences("vcloud", Context.MODE_PRIVATE)
-            if (prefs.getBoolean("bateria_pedida", false)) return
-            prefs.edit { putBoolean("bateria_pedida", true) }
-            startActivity(Intent(android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
-                    .setData(Uri.parse("package:$packageName")))
-        } catch (e: Exception) {
-            Log.e(TAG, "Não consegui pedir a liberação da bateria: ${e.message}")
-        }
-    }
-
-    /** Vcloud: Android 13+ só mostra notificações (as dos apps de dentro e a do motor) se o usuário permitir. */
-    private fun pedirNotificacoes() {
-        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.TIRAMISU) return
-        if (androidx.core.content.ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS)
-                == android.content.pm.PackageManager.PERMISSION_GRANTED) return
-        androidx.core.app.ActivityCompat.requestPermissions(
-                this, arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), NOTIFICATION_PERMISSION_REQUEST_CODE)
     }
 
     private fun requestLegacyStoragePermission() {
@@ -279,7 +251,6 @@ class MainActivity : LoadingActivity() {
         viewBinding.tileDeviceModel.text = android.os.Build.MODEL
         viewBinding.tileDeviceAndroid.text = "Android ${android.os.Build.VERSION.RELEASE}"
     }
-
 
     private fun initToolbarSubTitle() {
         try {

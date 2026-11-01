@@ -12,12 +12,6 @@
                 android:summary="@string/jump_gms"/>
 
         <SwitchPreferenceCompat
-                app:key="mostrar_play_store"
-                app:defaultValue="false"
-                app:title="Mostrar a Play Store na tela inicial"
-                app:summary="Desligado: a Play Store funciona escondida, só para os jogos" />
-
-        <SwitchPreferenceCompat
                 app:key="daemon_enable"
                 app:title="@string/daemon_enable" />
 
