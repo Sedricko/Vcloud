@@ -1,6 +1,5 @@
 package com.vcloud.motor.core;
 
-
 import android.os.Process;
 import android.util.Log;
 
@@ -18,7 +17,6 @@ import com.vcloud.motor.utils.compat.DexFileCompat;
 
 import com.vcloud.motor.core.system.JarManager;
 import com.vcloud.motor.utils.Slog;
-
 
 public class NativeCore {
     public static final String TAG = "NativeCore";
@@ -40,7 +38,6 @@ public class NativeCore {
     
     public static native boolean disableResourceLoading();
 
-
     @Keep
     public static int getCallingUid(int origCallingUid) {
         try {
@@ -57,14 +54,11 @@ public class NativeCore {
                 if (appPackageName != null && appPackageName.equals("com.google.android.gms")){
                     
                 }
-                
-                
-                
+
                 if (appPackageName != null && appPackageName.equals("com.google.android.webview")){
                     return Process.myUid();
                 }
-                
-                
+
                 try {
                     int callingBUid = VcloudCore.getCallingBUid();
                     if (callingBUid > 0 && callingBUid < Process.LAST_APPLICATION_UID) {
@@ -73,15 +67,13 @@ public class NativeCore {
                 } catch (Exception e) {
                     Log.w(TAG, "Error getting calling BUid: " + e.getMessage());
                 }
-                
-                
+
                 try {
                     StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
                     for (StackTraceElement element : stackTrace) {
                         String className = element.getClassName();
                         String methodName = element.getMethodName();
-                        
-                        
+
                         if ((className.contains("Settings") || className.contains("FeatureFlag")) &&
                             (methodName.contains("getString") || methodName.contains("getInt") || 
                              methodName.contains("getLong") || methodName.contains("getFloat"))) {
@@ -94,8 +86,7 @@ public class NativeCore {
                 } catch (Exception e) {
                     Log.w(TAG, "Error analyzing stack trace for UID resolution: " + e.getMessage());
                 }
-                
-                
+
                 return VcloudCore.getHostUid();
             }
             return origCallingUid;
@@ -144,57 +135,9 @@ public class NativeCore {
         }
         return new long[]{};
     }
-    
-    
-    private static long[] createFallbackEmptyDex() {
-        try {
-            Slog.d(TAG, "Creating fallback empty DEX");
-            
-            
-            
-            byte[] emptyDexBytes = createMinimalDexBytes();
-            
-            
-            File tempDexFile = File.createTempFile("fallback_empty", ".dex");
-            tempDexFile.deleteOnExit();
-            
-            try (FileOutputStream fos = new FileOutputStream(tempDexFile)) {
-                if (!tempDexFile.setReadOnly()) {
-                    throw new IOException("Unable to make fallback DEX read-only");
-                }
-                fos.write(emptyDexBytes);
-            }
-            
-            
-            DexFile dexFile = new DexFile(tempDexFile);
-            List<Long> cookies = DexFileCompat.getCookies(dexFile);
-            
-            if (cookies != null && !cookies.isEmpty()) {
-                long[] longs = new long[cookies.size()];
-                for (int i = 0; i < cookies.size(); i++) {
-                    longs[i] = cookies.get(i);
-                }
-                
-                Slog.d(TAG, "Successfully created fallback empty DEX with " + cookies.size() + " cookies");
-                return longs;
-            }
-            
-        } catch (Exception e) {
-            Slog.e(TAG, "Error creating fallback empty DEX: " + e.getMessage());
-        }
-        
-        
-        Slog.w(TAG, "Returning empty DEX array as last resort");
-        return new long[]{};
-    }
-    
-    
+
     private static byte[] createMinimalDexBytes() {
-        
-        
-        
-        
-        
+
         byte[] dexHeader = {
             'd', 'e', 'x', '\n',  
             0x30, 0x33, 0x35, 0x00,  

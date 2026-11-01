@@ -190,8 +190,20 @@ public final class Diagnostico {
         return seg < 15;
     }
 
-    // Toast simples (sem permissão de notificação): vale enquanto algum app do Vcloud está na tela.
+    private static final Map<String, Long> ULTIMO_AVISO = new ConcurrentHashMap<>();
+
+    // Play Store e Play Services de dentro caem sozinhos o tempo todo: já têm o freio e o histórico, sem aviso na tela.
+    private static boolean infraGoogle(String pacote) {
+        return pacote.startsWith("com.google.android.") || pacote.equals("com.android.vending");
+    }
+
+    // Toast simples (sem permissão de notificação): vale enquanto algum app do Vcloud está na tela. No máximo 1 por minuto por app.
     private static void avisar(String pacote) {
+        if (infraGoogle(pacote)) return;
+        long agora = System.currentTimeMillis();
+        Long antes = ULTIMO_AVISO.get(pacote);
+        if (antes != null && agora - antes < 60_000) return;
+        ULTIMO_AVISO.put(pacote, agora);
         new Handler(Looper.getMainLooper()).post(() -> {
             try {
                 Toast.makeText(VcloudCore.getContext(),

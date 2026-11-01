@@ -29,7 +29,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
 import black.android.app.BRActivityThread;
 import black.android.os.BRUserHandle;
 import me.weishu.reflection.Reflection;
@@ -71,8 +70,6 @@ import com.vcloud.motor.utils.NativeCrashPrevention;
 import com.vcloud.motor.utils.CrashMonitor;
 import com.vcloud.motor.utils.StoragePermissionHelper;
 
-
-
 @SuppressLint({"StaticFieldLeak", "NewApi"})
 @SuppressWarnings({"unchecked", "deprecation"})
 public class VcloudCore extends ClientConfiguration {
@@ -81,7 +78,6 @@ public class VcloudCore extends ClientConfiguration {
     private static final VcloudCore sVcloudCore = new VcloudCore();
     private static Context sContext;
 
-    
     static {
         try {
             
@@ -118,12 +114,10 @@ public class VcloudCore extends ClientConfiguration {
     private boolean mServicesInitialized = false;
     private long mLastServiceInitAttempt = 0;
     private static final long SERVICE_INIT_TIMEOUT_MS = 10000; 
-    
-    
+
     private final List<Runnable> mServiceAvailableCallbacks = new ArrayList<>();
     private final Object mServiceCallbackLock = new Object();
 
-    
     private int mCurrentAppUid = -1;
     private String mCurrentAppPackage = null;
     private boolean mIsSandboxedEnvironment = false;
@@ -164,12 +158,10 @@ public class VcloudCore extends ClientConfiguration {
         mExceptionHandler = exceptionHandler;
     }
 
-    
     public void setCurrentAppUid(int uid, String packageName) {
         mCurrentAppUid = uid;
         mCurrentAppPackage = packageName;
-        
-        
+
         if (uid != mHostUid && uid > Process.FIRST_APPLICATION_UID && uid < Process.LAST_APPLICATION_UID) {
             mIsSandboxedEnvironment = true;
             Slog.d("VcloudCore", "Detected sandboxed environment for " + packageName + " with UID: " + uid);
@@ -188,26 +180,22 @@ public class VcloudCore extends ClientConfiguration {
         return mIsSandboxedEnvironment;
     }
 
-    
     public int resolveUidForOperation(int originalUid, String operation) {
         try {
             
             if (originalUid > 0 && originalUid < Process.FIRST_APPLICATION_UID) {
                 return originalUid;
             }
-            
-            
+
             if (originalUid > Process.LAST_APPLICATION_UID) {
                 return originalUid;
             }
 
-            
             if (mIsSandboxedEnvironment && mCurrentAppUid > 0) {
                 Slog.d("VcloudCore", "Resolving UID for " + operation + ": " + originalUid + " -> " + mCurrentAppUid);
                 return mCurrentAppUid;
             }
 
-            
             return originalUid;
         } catch (Exception e) {
             Slog.e("VcloudCore", "Error resolving UID for " + operation + ": " + e.getMessage());
@@ -225,8 +213,7 @@ public class VcloudCore extends ClientConfiguration {
             if (isMainProcess() && !isBlackProcessRunning()) {
                 Slog.w(TAG, "Black process not running, starting it and using fallback services...");
                 startBlackProcess();
-                
-                
+
                 String[] serviceNames = {
                     ServiceManager.ACTIVITY_MANAGER,
                     ServiceManager.PACKAGE_MANAGER,
@@ -256,8 +243,7 @@ public class VcloudCore extends ClientConfiguration {
                 notifyServiceAvailableCallbacks();
                 return true;
             }
-            
-            
+
             String[] serviceNames = {
                 ServiceManager.ACTIVITY_MANAGER,
                 ServiceManager.PACKAGE_MANAGER,
@@ -342,9 +328,7 @@ public class VcloudCore extends ClientConfiguration {
         if (binder != null && binder.isBinderAlive()) {
             return binder;
         }
-        
-        
-        
+
         if (isMainProcess() && !isBlackProcessRunning()) {
             Slog.w(TAG, "Main process trying to access service " + name + " but black process not running, starting it...");
             startBlackProcess();
@@ -355,16 +339,14 @@ public class VcloudCore extends ClientConfiguration {
                 Thread.currentThread().interrupt();
             }
         }
-        
-        
+
         long startTime = System.currentTimeMillis();
         long timeout = 3000; 
         
         try {
             Bundle bundle = new Bundle();
             bundle.putString("_B_|_server_name_", name);
-            
-            
+
             Bundle vm = null;
             try {
                 vm = ProviderCall.callSafely(ProxyManifest.getBindProvider(), "VM", null, bundle);
@@ -398,12 +380,10 @@ public class VcloudCore extends ClientConfiguration {
             return createFallbackService(name);
         }
     }
-    
-    
+
     private IBinder createFallbackService(String name) {
         try {
-            
-            
+
             Slog.w(TAG, "No fallback available for service: " + name + " (avoiding circular dependency)");
             return null;
         } catch (Exception e) {
@@ -411,17 +391,13 @@ public class VcloudCore extends ClientConfiguration {
             return null;
         }
     }
-    
 
-    
-    
     private boolean isBlackProcessRunning() {
         try {
             
             Bundle testBundle = new Bundle();
             testBundle.putString("_B_|_server_name_", "test");
-            
-            
+
             try {
                 Bundle result = ProviderCall.callSafely(ProxyManifest.getBindProvider(), "VM", null, testBundle);
                 if (result != null) {
@@ -431,8 +407,7 @@ public class VcloudCore extends ClientConfiguration {
             } catch (Exception e) {
                 Slog.w(TAG, "Provider call failed: " + e.getMessage());
             }
-            
-            
+
             try {
                 String authority = ProxyManifest.getBindProvider();
                 if (authority != null && !authority.isEmpty()) {
@@ -447,8 +422,7 @@ public class VcloudCore extends ClientConfiguration {
             } catch (Exception e) {
                 Slog.w(TAG, "Provider resolution failed: " + e.getMessage());
             }
-            
-            
+
             try {
                 android.app.ActivityManager am = (android.app.ActivityManager) getContext()
                     .getSystemService(Context.ACTIVITY_SERVICE);
@@ -481,24 +455,20 @@ public class VcloudCore extends ClientConfiguration {
         }
     }
 
-
     private void startBlackProcess() {
         try {
             Slog.d(TAG, "Starting black process...");
-            
-            
+
             if (!isValidProcessState()) {
                 Slog.w(TAG, "Process state is invalid, delaying service start");
                 
                 scheduleDelayedServiceStart();
                 return;
             }
-            
-            
+
             Intent intent = new Intent();
             intent.setClass(getContext(), DaemonService.class);
-            
-            
+
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             
             boolean serviceStarted = false;
@@ -546,8 +516,7 @@ public class VcloudCore extends ClientConfiguration {
                 tryAlternativeStartupMethods();
                 return;
             }
-            
-            
+
             scheduleProviderCheck();
             
             Slog.d(TAG, "Started DaemonService to initialize black process");
@@ -557,8 +526,7 @@ public class VcloudCore extends ClientConfiguration {
             scheduleDelayedServiceStart();
         }
     }
-    
-    
+
     private boolean isValidProcessState() {
         try {
             
@@ -566,14 +534,12 @@ public class VcloudCore extends ClientConfiguration {
                 Slog.w(TAG, "Context is null, process state invalid");
                 return false;
             }
-            
-            
+
             if (!isMainProcess()) {
                 Slog.w(TAG, "Not in main process, skipping service start");
                 return false;
             }
-            
-            
+
             try {
                 getContext().getPackageName();
             } catch (Exception e) {
@@ -587,8 +553,7 @@ public class VcloudCore extends ClientConfiguration {
             return false;
         }
     }
-    
-    
+
     private void scheduleDelayedRetry(Intent intent, int retry) {
         try {
             int delayMs = 1000 * retry;
@@ -616,8 +581,7 @@ public class VcloudCore extends ClientConfiguration {
             tryAlternativeStartupMethods();
         }
     }
-    
-    
+
     private void scheduleProviderCheck() {
         try {
             android.os.Handler handler = new android.os.Handler(android.os.Looper.getMainLooper());
@@ -644,8 +608,7 @@ public class VcloudCore extends ClientConfiguration {
             Slog.w(TAG, "Failed to schedule provider check: " + e.getMessage());
         }
     }
-    
-    
+
     private void handleServiceStartFailure(int retry, int maxRetries, Exception e) {
         if (retry < maxRetries - 1) {
             Slog.w(TAG, "Service start failed, will retry. Attempt " + (retry + 1) + " of " + maxRetries);
@@ -655,13 +618,11 @@ public class VcloudCore extends ClientConfiguration {
             tryAlternativeStartupMethods();
         }
     }
-    
-    
+
     private void handleProcessBadError(int retry, int maxRetries) {
         if (retry < maxRetries - 1) {
             Slog.w(TAG, "Process is bad, attempting recovery. Attempt " + (retry + 1) + " of " + maxRetries);
-            
-            
+
             try {
                 
                 scheduleProcessRecovery(retry, maxRetries);
@@ -675,8 +636,7 @@ public class VcloudCore extends ClientConfiguration {
             tryAlternativeStartupMethods();
         }
     }
-    
-    
+
     private void scheduleProcessRecovery(int retry, int maxRetries) {
         try {
             int delayMs = 2000; 
@@ -690,8 +650,7 @@ public class VcloudCore extends ClientConfiguration {
                         Slog.d(TAG, "Executing process recovery");
                         
                         refreshProcessContext();
-                        
-                        
+
                         if (isMainProcess() && !isBlackProcessRunning()) {
                             startBlackProcess();
                         }
@@ -706,8 +665,7 @@ public class VcloudCore extends ClientConfiguration {
             Slog.w(TAG, "Failed to schedule process recovery: " + e.getMessage());
         }
     }
-    
-    
+
     private void tryAlternativeStartupMethods() {
         Slog.w(TAG, "Trying alternative startup methods...");
         
@@ -741,8 +699,7 @@ public class VcloudCore extends ClientConfiguration {
         
         Slog.e(TAG, "All alternative startup methods failed");
     }
-    
-    
+
     private Context getAlternativeContext() {
         try {
             
@@ -756,22 +713,17 @@ public class VcloudCore extends ClientConfiguration {
         
         return null;
     }
-    
-    
+
     private void refreshProcessContext() {
         try {
-            
-            
+
             Slog.d(TAG, "Attempting to refresh process context");
-            
-            
-            
+
         } catch (Exception e) {
             Slog.w(TAG, "Context refresh failed: " + e.getMessage());
         }
     }
-    
-    
+
     private void scheduleDelayedServiceStart() {
         try {
             
@@ -791,14 +743,12 @@ public class VcloudCore extends ClientConfiguration {
             Slog.w(TAG, "Failed to schedule delayed service start: " + e.getMessage());
         }
     }
-    
-    
+
     public void ensureBlackProcessInitialized() {
         if (isMainProcess() && !isBlackProcessRunning()) {
             Slog.w(TAG, "Ensuring black process is initialized...");
             startBlackProcess();
-            
-            
+
             int maxRetries = 5;
             int retryCount = 0;
             while (retryCount < maxRetries && !isBlackProcessRunning()) {
@@ -824,8 +774,7 @@ public class VcloudCore extends ClientConfiguration {
         try {
             
             setEssentialProperties(context, clientConfiguration);
-            
-            
+
             try {
                 Class<?> windowManagerClass = Class.forName("android.view.WindowManager");
                 Field ignoreLeaksField = windowManagerClass.getDeclaredField("mIgnoreWindowLeaks");
@@ -841,8 +790,7 @@ public class VcloudCore extends ClientConfiguration {
 
         sContext = context;
         mClientConfiguration = clientConfiguration;
-        
-        
+
         installSystemHooks();
         
         initNotificationManager();
@@ -850,7 +798,6 @@ public class VcloudCore extends ClientConfiguration {
         String processName = getProcessName(getContext());
         if (processName.equals(VcloudCore.getHostPkg())) {
             mProcessType = ProcessType.Main;
-            startLogcat();
         } else if (processName.endsWith(getContext().getString(R.string.black_box_service_name))) {
             mProcessType = ProcessType.Server;
         } else {
@@ -876,8 +823,7 @@ public class VcloudCore extends ClientConfiguration {
                     
                     Intent intent = new Intent();
                     intent.setClass(getContext(), DaemonService.class);
-                    
-                    
+
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     
                     boolean serviceStarted = false;
@@ -932,8 +878,7 @@ public class VcloudCore extends ClientConfiguration {
                 }
             }
         }
-        
-        
+
         initVpnService();
         
         HookManager.get().init();
@@ -942,23 +887,20 @@ public class VcloudCore extends ClientConfiguration {
     public void doCreate() {
         
         installSystemHooks();
-        
-        
+
         long startTime = System.currentTimeMillis();
         long maxInitTime = 10000; 
         
         try {
             
             ensureBlackProcessInitialized();
-            
-            
+
             if (System.currentTimeMillis() - startTime > maxInitTime) {
                 Slog.w(TAG, "Initialization timeout exceeded, proceeding with fallback services");
             }
             
             ensureProperInitialization();
-            
-            
+
             if (isBlackProcess()) {
                 ContentProviderDelegate.init();
             }
@@ -969,8 +911,7 @@ public class VcloudCore extends ClientConfiguration {
                 } catch (Exception e) {
                     Slog.w(TAG, "Failed to initialize ServiceManager, continuing with fallback: " + e.getMessage());
                 }
-                
-                
+
                 getBPackageManager().resetTransactionThrottler();
             }
             
@@ -980,8 +921,7 @@ public class VcloudCore extends ClientConfiguration {
         } catch (Exception e) {
             long totalTime = System.currentTimeMillis() - startTime;
             Slog.e(TAG, "Vcloud initialization failed after " + totalTime + "ms", e);
-            
-            
+
             try {
                 if (!isServerProcess()) {
                     ServiceManager.initBlackManager();
@@ -1019,51 +959,40 @@ public class VcloudCore extends ClientConfiguration {
     public static BStorageManager getBStorageManager() {
         return BStorageManager.get();
     }
-    
-    
-    
-    
+
     public boolean hasStoragePermission() {
         return StoragePermissionHelper.hasStoragePermission(sContext);
     }
-    
-    
+
     public boolean hasAllFilesAccess() {
         return StoragePermissionHelper.hasAllFilesAccess();
     }
-    
-    
+
     public boolean hasFullFileAccess() {
         return StoragePermissionHelper.hasFullFileAccess(sContext);
     }
-    
-    
+
     public void requestStoragePermission(android.app.Activity activity) {
         StoragePermissionHelper.requestStoragePermission(activity);
     }
-    
-    
+
     public void requestAllFilesAccess(android.app.Activity activity) {
         StoragePermissionHelper.requestAllFilesAccess(activity);
     }
-    
-    
+
     public void requestFullFileAccess(android.app.Activity activity) {
         StoragePermissionHelper.requestFullFileAccess(activity);
     }
-    
-    
+
     public boolean handleStoragePermissionResult(android.app.Activity activity, int requestCode, 
             String[] permissions, int[] grantResults) {
         return StoragePermissionHelper.handlePermissionResult(activity, requestCode, permissions, grantResults);
     }
-    
-    
+
     public boolean handleAllFilesAccessResult(int requestCode) {
         return StoragePermissionHelper.handleAllFilesAccessResult(requestCode);
     }
-    
-    
+
     public static int getStoragePermissionRequestCode() {
         return StoragePermissionHelper.REQUEST_CODE_STORAGE_PERMISSION;
     }
@@ -1074,8 +1003,7 @@ public class VcloudCore extends ClientConfiguration {
 
     public boolean launchApk(String packageName, int userId) {
         onBeforeMainLaunchApk(packageName, userId);
-        
-        
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             if (!hasAllFilesAccess()) {
                 Slog.w(TAG, "All files access not granted for launching: " + packageName);
@@ -1149,10 +1077,6 @@ public class VcloudCore extends ClientConfiguration {
         return getBPackageManager().installPackageAsUser(apk.toString(), InstallOption.installByStorage().makeUriFile(), userId);
     }
 
-
-
-
-
     public List<ApplicationInfo> getInstalledApplications(int flags, int userId) {
         return getBPackageManager().getInstalledApplications(flags, userId);
     }
@@ -1210,7 +1134,6 @@ public class VcloudCore extends ClientConfiguration {
         return !GmsCore.isInstalledGoogleService(userId);
     }
 
-    
     private enum ProcessType {
         
         Server,
@@ -1242,8 +1165,6 @@ public class VcloudCore extends ClientConfiguration {
         return mClientConfiguration.isDisableFlagSecure();
     }
 
-
-
     @Override
     public String getHostPackageName() {
         return mClientConfiguration.getHostPackageName();
@@ -1254,150 +1175,11 @@ public class VcloudCore extends ClientConfiguration {
         return mClientConfiguration.requestInstallPackage(file, userId);
     }
 
-    private void startLogcat() {
-        new Thread(() -> {
-            File logFile = null;
-            Context context = getContext();
-            String fileName = context.getPackageName() + "_logcat.txt";
-            boolean useMediaStore = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q;
-            
-            
-            logDeviceInfo();
-            
-            try {
-                if (useMediaStore) {
-                    
-                    android.content.ContentValues values = new android.content.ContentValues();
-                    values.put(android.provider.MediaStore.Downloads.DISPLAY_NAME, fileName);
-                    values.put(android.provider.MediaStore.Downloads.MIME_TYPE, "text/plain");
-                    values.put(android.provider.MediaStore.Downloads.RELATIVE_PATH, android.os.Environment.DIRECTORY_DOWNLOADS + "/logs");
-                    android.net.Uri uri = context.getContentResolver().insert(android.provider.MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
-                    if (uri != null) {
-                        try (java.io.OutputStream out = context.getContentResolver().openOutputStream(uri)) {
-                            
-                            ShellUtils.execCommand("logcat -c", false);
-                            java.lang.Process process = Runtime.getRuntime().exec("logcat");
-                            try (java.io.InputStream in = process.getInputStream()) {
-                                byte[] buffer = new byte[4096];
-                                int len;
-                                while ((len = in.read(buffer)) != -1) {
-                                    out.write(buffer, 0, len);
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    
-                    File docuentsdir = new File(context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS), "logs");
-                    if (!docuentsdir.exists()) {
-                        docuentsdir.mkdirs();
-                    }
-                    logFile = new File(docuentsdir, fileName);
-                    FileUtils.deleteDir(logFile);
-                    ShellUtils.execCommand("logcat -c", false);
-                    ShellUtils.execCommand("logcat -f " + logFile.getAbsolutePath(), false);
-                }
-            } catch (Exception e) {
-                Slog.e(TAG, "Failed to save logcat: " + e.getMessage());
-            }
-        }).start();
-    }
-
-    
-    private void logDeviceInfo() {
-        try {
-            Slog.i(TAG, "╔══════════════════════════════════════════════════════════════╗");
-            Slog.i(TAG, "║                    DEVICE INFORMATION                        ║");
-            Slog.i(TAG, "╠══════════════════════════════════════════════════════════════╣");
-            
-            
-            Slog.i(TAG, "║ Android Version: " + Build.VERSION.RELEASE);
-            Slog.i(TAG, "║ SDK Level: " + Build.VERSION.SDK_INT);
-            Slog.i(TAG, "║ Build ID: " + Build.ID);
-            Slog.i(TAG, "║ Build Display: " + Build.DISPLAY);
-            
-            
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                Slog.i(TAG, "║ Security Patch: " + Build.VERSION.SECURITY_PATCH);
-            }
-            
-            
-            Slog.i(TAG, "╠══════════════════════════════════════════════════════════════╣");
-            Slog.i(TAG, "║ Manufacturer: " + Build.MANUFACTURER);
-            Slog.i(TAG, "║ Brand: " + Build.BRAND);
-            Slog.i(TAG, "║ Model: " + Build.MODEL);
-            Slog.i(TAG, "║ Device: " + Build.DEVICE);
-            Slog.i(TAG, "║ Product: " + Build.PRODUCT);
-            Slog.i(TAG, "║ Board: " + Build.BOARD);
-            Slog.i(TAG, "║ Hardware: " + Build.HARDWARE);
-            
-            
-            Slog.i(TAG, "╠══════════════════════════════════════════════════════════════╣");
-            Slog.i(TAG, "║ Supported ABIs: " + String.join(", ", Build.SUPPORTED_ABIS));
-            if (Build.SUPPORTED_32_BIT_ABIS.length > 0) {
-                Slog.i(TAG, "║ 32-bit ABIs: " + String.join(", ", Build.SUPPORTED_32_BIT_ABIS));
-            }
-            if (Build.SUPPORTED_64_BIT_ABIS.length > 0) {
-                Slog.i(TAG, "║ 64-bit ABIs: " + String.join(", ", Build.SUPPORTED_64_BIT_ABIS));
-            }
-            
-            
-            Slog.i(TAG, "╠══════════════════════════════════════════════════════════════╣");
-            Slog.i(TAG, "║ Fingerprint: " + Build.FINGERPRINT);
-            Slog.i(TAG, "║ Type: " + Build.TYPE);
-            Slog.i(TAG, "║ Tags: " + Build.TAGS);
-            
-            
-            try {
-                Runtime runtime = Runtime.getRuntime();
-                long maxMem = runtime.maxMemory() / (1024 * 1024);
-                long totalMem = runtime.totalMemory() / (1024 * 1024);
-                long freeMem = runtime.freeMemory() / (1024 * 1024);
-                Slog.i(TAG, "╠══════════════════════════════════════════════════════════════╣");
-                Slog.i(TAG, "║ Max Heap: " + maxMem + " MB");
-                Slog.i(TAG, "║ Total Heap: " + totalMem + " MB");
-                Slog.i(TAG, "║ Free Heap: " + freeMem + " MB");
-                Slog.i(TAG, "║ Used Heap: " + (totalMem - freeMem) + " MB");
-            } catch (Exception e) {
-                Slog.w(TAG, "║ Memory info unavailable: " + e.getMessage());
-            }
-            
-            
-            try {
-                Context context = getContext();
-                if (context != null) {
-                    Slog.i(TAG, "╠══════════════════════════════════════════════════════════════╣");
-                    Slog.i(TAG, "║ Package: " + context.getPackageName());
-                    android.content.pm.PackageInfo pInfo = context.getPackageManager()
-                            .getPackageInfo(context.getPackageName(), 0);
-                    Slog.i(TAG, "║ App Version: " + pInfo.versionName);
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                        Slog.i(TAG, "║ Version Code: " + pInfo.getLongVersionCode());
-                    } else {
-                        Slog.i(TAG, "║ Version Code: " + pInfo.versionCode);
-                    }
-                }
-            } catch (Exception e) {
-                Slog.w(TAG, "║ App info unavailable: " + e.getMessage());
-            }
-            
-            
-            Slog.i(TAG, "╠══════════════════════════════════════════════════════════════╣");
-            Slog.i(TAG, "║ Timestamp: " + new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z", 
-                    java.util.Locale.getDefault()).format(new java.util.Date()));
-            Slog.i(TAG, "╚══════════════════════════════════════════════════════════════╝");
-            
-        } catch (Exception e) {
-            Slog.e(TAG, "Failed to log device info: " + e.getMessage());
-        }
-    }
-
     @SuppressWarnings("deprecation")
     private static String getProcessName(Context context) {
         int pid = Process.myPid();
         String processName = null;
-        
-        
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             try {
                 ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
@@ -1414,8 +1196,7 @@ public class VcloudCore extends ClientConfiguration {
                 Slog.w(TAG, "Failed to get process name using modern API", e);
             }
         }
-        
-        
+
         if (processName == null) {
             try {
                 ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
@@ -1496,7 +1277,6 @@ public class VcloudCore extends ClientConfiguration {
             appLifecycleCallback.afterMainActivityOnCreate(activity);
         }
     }
-
 
     public static boolean isThreadInit() {
         try {
@@ -1604,8 +1384,7 @@ public class VcloudCore extends ClientConfiguration {
             Slog.w(TAG, "BActivityThread.ensureActivityContext() failed", e);
         }
     }
-    
-    
+
     public static void installSystemHooks() {
         try {
             SimpleCrashFix.installSimpleFix();
@@ -1614,8 +1393,7 @@ public class VcloudCore extends ClientConfiguration {
             Slog.e(TAG, "Failed to install system hooks", e);
         }
     }
-    
-    
+
     private void setEssentialProperties(Context context, ClientConfiguration clientConfiguration) {
         if (clientConfiguration == null) {
             throw new IllegalArgumentException("ClientConfiguration is null!");
@@ -1634,15 +1412,13 @@ public class VcloudCore extends ClientConfiguration {
         } catch (Exception e) {
             Slog.w(TAG, "Failed to call native resource disabling: " + e.getMessage());
         }
-        
-        
+
         try {
             
             System.setProperty("android.view.WindowManager.IGNORE_WINDOW_LEAKS", "true");
             System.setProperty("android.app.Activity.IGNORE_WINDOW_LEAKS", "true");
             System.setProperty("android.view.WindowManager.SUPPRESS_WINDOW_LEAK_WARNINGS", "true");
-            
-            
+
             try {
                 Class<?> resourcesManagerClass = Class.forName("android.app.ResourcesManager");
                 Field disableOverlayField = resourcesManagerClass.getDeclaredField("mDisableOverlayLoading");
@@ -1655,8 +1431,7 @@ public class VcloudCore extends ClientConfiguration {
             Slog.w(TAG, "Failed to set essential properties: " + e.getMessage());
         }
     }
-    
-    
+
     private void initVpnService() {
         try {
             
@@ -1664,8 +1439,7 @@ public class VcloudCore extends ClientConfiguration {
                 Slog.d(TAG, "VPN network mode disabled, using normal network");
                 return;
             }
-            
-            
+
             new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -1683,8 +1457,7 @@ public class VcloudCore extends ClientConfiguration {
                         Slog.d(TAG, "VPN service started successfully for internet access");
                     } catch (Exception e) {
                         Slog.w(TAG, "Failed to start VPN service: " + e.getMessage());
-                        
-                        
+
                     }
                 }
             }, "VPNServiceInit").start();
@@ -1694,30 +1467,26 @@ public class VcloudCore extends ClientConfiguration {
             
         }
     }
-    
-    
+
     private static void ensureProperInitialization() {
         try {
             
             Slog.d(TAG, "Ensuring proper initialization order...");
-            
-            
+
             try {
                 NativeCore.init(android.os.Build.VERSION.SDK_INT);
                 Slog.d(TAG, "NativeCore initialized successfully");
             } catch (Exception e) {
                 Slog.w(TAG, "NativeCore initialization failed: " + e.getMessage());
             }
-            
-            
+
             try {
                 ServiceManager.initBlackManager();
                 Slog.d(TAG, "ServiceManager initialized successfully");
             } catch (Exception e) {
                 Slog.w(TAG, "ServiceManager initialization failed: " + e.getMessage());
             }
-            
-            
+
             try {
                 BActivityThread.hookActivityThread();
                 Slog.d(TAG, "BActivityThread hooks initialized successfully");
@@ -1731,16 +1500,13 @@ public class VcloudCore extends ClientConfiguration {
         }
     }
 
-    
     public static boolean isRunningApplication(String packageName, int userId) {
         
         try {
             
             android.app.ActivityManager am = (android.app.ActivityManager) getContext().getSystemService(Context.ACTIVITY_SERVICE);
             if (am == null) return false;
-            
-            
-            
+
             ServiceManager.get();
             com.vcloud.motor.core.system.am.ActivityStack stack =
                 (com.vcloud.motor.core.system.am.ActivityStack) ServiceManager.getService(ServiceManager.ACTIVITY_MANAGER);
@@ -1764,7 +1530,6 @@ public class VcloudCore extends ClientConfiguration {
         return false;
     }
 
-    
     public void addServiceAvailableCallback(Runnable callback) {
         synchronized (mServiceCallbackLock) {
             if (mServicesInitialized) {
@@ -1775,15 +1540,13 @@ public class VcloudCore extends ClientConfiguration {
             }
         }
     }
-    
-    
+
     public void removeServiceAvailableCallback(Runnable callback) {
         synchronized (mServiceCallbackLock) {
             mServiceAvailableCallbacks.remove(callback);
         }
     }
-    
-    
+
     private void notifyServiceAvailableCallbacks() {
         synchronized (mServiceCallbackLock) {
             if (!mServiceAvailableCallbacks.isEmpty()) {
@@ -1800,7 +1563,6 @@ public class VcloudCore extends ClientConfiguration {
         }
     }
 
-    
     public boolean waitForServicesAvailable(long timeoutMs) {
         if (mServicesInitialized) {
             return true;
@@ -1818,13 +1580,11 @@ public class VcloudCore extends ClientConfiguration {
         
         return mServicesInitialized;
     }
-    
-    
+
     public boolean isServicesAvailable() {
         return mServicesInitialized;
     }
 
-    
     public boolean isVcloudApp(File apkFile) {
         try {
             if (apkFile == null || !apkFile.exists()) {
@@ -1841,16 +1601,14 @@ public class VcloudCore extends ClientConfiguration {
         }
         return false;
     }
-    
-    
+
     public boolean isVcloudApp(String packageName) {
         if (packageName == null || packageName.isEmpty()) {
             return false;
         }
         return packageName.equals(getHostPkg());
     }
-    
-    
+
     private void handleServerServiceStartFailure(int retry, int maxRetries, Exception e) {
         if (retry < maxRetries - 1) {
             Slog.w(TAG, "Server service start failed, will retry. Attempt " + (retry + 1) + " of " + maxRetries);
@@ -1860,13 +1618,11 @@ public class VcloudCore extends ClientConfiguration {
             tryAlternativeServerStartupMethods();
         }
     }
-    
-    
+
     private void handleServerProcessBadError(int retry, int maxRetries) {
         if (retry < maxRetries - 1) {
             Slog.w(TAG, "Server process is bad, attempting recovery. Attempt " + (retry + 1) + " of " + maxRetries);
-            
-            
+
             try {
                 
                 scheduleServerProcessRecovery(retry, maxRetries);
@@ -1880,8 +1636,7 @@ public class VcloudCore extends ClientConfiguration {
             tryAlternativeServerStartupMethods();
         }
     }
-    
-    
+
     private void scheduleServerProcessRecovery(int retry, int maxRetries) {
         try {
             int delayMs = 2000; 
@@ -1895,8 +1650,7 @@ public class VcloudCore extends ClientConfiguration {
                         Slog.d(TAG, "Executing server process recovery");
                         
                         refreshServerProcessContext();
-                        
-                        
+
                         if (isServerProcess() && mClientConfiguration.isEnableDaemonService()) {
                             Intent intent = new Intent();
                             intent.setClass(getContext(), DaemonService.class);
@@ -1915,8 +1669,7 @@ public class VcloudCore extends ClientConfiguration {
             Slog.w(TAG, "Failed to schedule server process recovery: " + e.getMessage());
         }
     }
-    
-    
+
     private void tryAlternativeServerStartupMethods() {
         Slog.w(TAG, "Trying alternative startup methods for server process...");
         
@@ -1950,22 +1703,17 @@ public class VcloudCore extends ClientConfiguration {
         
         Slog.e(TAG, "All alternative startup methods failed for server process");
     }
-    
-    
+
     private void refreshServerProcessContext() {
         try {
-            
-            
+
             Slog.d(TAG, "Attempting to refresh server process context");
-            
-            
-            
+
         } catch (Exception e) {
             Slog.w(TAG, "Server process context refresh failed: " + e.getMessage());
         }
     }
-    
-    
+
     private void scheduleDelayedServerServiceStart() {
         try {
             
@@ -1995,8 +1743,7 @@ public class VcloudCore extends ClientConfiguration {
             Slog.w(TAG, "Failed to schedule delayed server service start: " + e.getMessage());
         }
     }
-    
-    
+
     private void scheduleDelayedServerRetry(Intent intent, int retry) {
         try {
             int delayMs = 1000 * retry;
@@ -2024,30 +1771,6 @@ public class VcloudCore extends ClientConfiguration {
             tryAlternativeServerStartupMethods();
         }
     }
-    public interface LogSendListener {
-        void onSuccess();
-        void onFailure(String error);
-    }
-
-    public void sendLogs(String caption, boolean async) {
-        sendLogs(caption, async, null);
-    }
-
-    /** Vcloud: grava um relatório (aparelho + logcat do app e dos apps de dentro) no próprio celular. Nada sai do aparelho. */
-    public void sendLogs(String caption, boolean async, LogSendListener listener) {
-        Runnable task = () -> {
-            try {
-                File file = writeReport(caption);
-                Slog.w(TAG, "Relatório salvo em " + file.getAbsolutePath());
-                if (listener != null) new Handler(Looper.getMainLooper()).post(listener::onSuccess);
-            } catch (Exception e) {
-                Slog.e(TAG, "Falha ao salvar relatório: " + e.getMessage());
-                if (listener != null) new Handler(Looper.getMainLooper()).post(() -> listener.onFailure(e.getMessage()));
-            }
-        };
-        if (async) new Thread(task).start(); else task.run();
-    }
-
     /** Pasta Download/Vcloud (visível no app Arquivos); se não der para escrever lá, a pasta do app. */
     public File getReportDir() {
         File dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "Vcloud");
@@ -2080,19 +1803,16 @@ public class VcloudCore extends ClientConfiguration {
         try {
             sb.append("DEVICE INFORMATION\n");
             sb.append("------------------\n");
-            
-            
+
             sb.append("Android Version: ").append(Build.VERSION.RELEASE).append("\n");
             sb.append("SDK Level: ").append(Build.VERSION.SDK_INT).append("\n");
             sb.append("Build ID: ").append(Build.ID).append("\n");
             sb.append("Build Display: ").append(Build.DISPLAY).append("\n");
-            
-            
+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 sb.append("Security Patch: ").append(Build.VERSION.SECURITY_PATCH).append("\n");
             }
-            
-            
+
             sb.append("Manufacturer: ").append(Build.MANUFACTURER).append("\n");
             sb.append("Brand: ").append(Build.BRAND).append("\n");
             sb.append("Model: ").append(Build.MODEL).append("\n");
@@ -2100,8 +1820,7 @@ public class VcloudCore extends ClientConfiguration {
             sb.append("Product: ").append(Build.PRODUCT).append("\n");
             sb.append("Board: ").append(Build.BOARD).append("\n");
             sb.append("Hardware: ").append(Build.HARDWARE).append("\n");
-            
-            
+
             sb.append("Supported ABIs: ").append(String.join(", ", Build.SUPPORTED_ABIS)).append("\n");
             if (Build.SUPPORTED_32_BIT_ABIS.length > 0) {
                 sb.append("32-bit ABIs: ").append(String.join(", ", Build.SUPPORTED_32_BIT_ABIS)).append("\n");
@@ -2109,11 +1828,7 @@ public class VcloudCore extends ClientConfiguration {
             if (Build.SUPPORTED_64_BIT_ABIS.length > 0) {
                 sb.append("64-bit ABIs: ").append(String.join(", ", Build.SUPPORTED_64_BIT_ABIS)).append("\n");
             }
-            
 
-
-
-            
             try {
                 Runtime runtime = Runtime.getRuntime();
                 long maxMem = runtime.maxMemory() / (1024 * 1024);
@@ -2126,8 +1841,7 @@ public class VcloudCore extends ClientConfiguration {
             } catch (Exception e) {
                 sb.append("Memory info unavailable: ").append(e.getMessage()).append("\n");
             }
-            
-            
+
             try {
                 Context context = getContext();
                 if (context != null) {
@@ -2144,8 +1858,7 @@ public class VcloudCore extends ClientConfiguration {
             } catch (Exception e) {
                 sb.append("App info unavailable: ").append(e.getMessage()).append("\n");
             }
-            
-            
+
             sb.append("Timestamp: ").append(new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z", 
                     java.util.Locale.getDefault()).format(new java.util.Date())).append("\n");
             

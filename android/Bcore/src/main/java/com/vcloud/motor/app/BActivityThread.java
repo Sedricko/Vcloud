@@ -86,7 +86,6 @@ import com.vcloud.motor.utils.compat.ContextCompat;
 import com.vcloud.motor.utils.compat.StrictModeCompat;
 import com.vcloud.motor.core.system.JarManager;
 
-
 public class BActivityThread extends IBActivityThread.Stub {
     public static final String TAG = "BActivityThread";
 
@@ -329,16 +328,13 @@ public class BActivityThread extends IBActivityThread.Stub {
             handleBindApplication(packageName, processName);
         }
     }
-    
-    
+
     private Object createBindApplicationData(String packageName, String processName) {
         try {
             
             PackageInfo packageInfo = VcloudCore.getBPackageManager().getPackageInfo(packageName, PackageManager.GET_PROVIDERS, getUserId());
             ApplicationInfo applicationInfo = packageInfo.applicationInfo;
-            
-            
-            
+
             return new Object() {
                 public ApplicationInfo getInfo() { return applicationInfo; }
                 public List<ProviderInfo> getProviders() { 
@@ -418,7 +414,6 @@ public class BActivityThread extends IBActivityThread.Stub {
 
         mBoundApplication = bindData;
 
-        
         if (BRNetworkSecurityConfigProvider.getRealClass() != null) {
             Security.removeProvider("AndroidNSSP");
             BRNetworkSecurityConfigProvider.get().install(packageContext);
@@ -426,27 +421,23 @@ public class BActivityThread extends IBActivityThread.Stub {
         Application application;
         try {
             onBeforeCreateApplication(packageName, processName, packageContext);
-            
-            
+
             try {
                 application = BRLoadedApk.get(loadedApk).makeApplication(false, null);
             } catch (Exception makeAppException) {
                 Slog.e(TAG, "Failed to makeApplication, trying fallback approach", makeAppException);
                 application = null;
             }
-            
-            
+
             if (application == null) {
                 Slog.w(TAG, "makeApplication returned null, attempting fallback creation");
-                
-                
+
                 try {
                     application = BRLoadedApk.get(loadedApk).makeApplication(true, null);
                 } catch (Exception e) {
                     Slog.e(TAG, "Fallback makeApplication also failed", e);
                 }
-                
-                
+
                 if (application == null) {
                     Slog.w(TAG, "Creating minimal application context as fallback");
                     try {
@@ -491,153 +482,7 @@ public class BActivityThread extends IBActivityThread.Stub {
             throw new RuntimeException("Unable to makeApplication", e);
         }
     }
-    
-    
-    private void initializeJarEnvironment() {
-        try {
-            Slog.d(TAG, "Initializing JAR environment for DEX loading");
-            
-            
-            JarManager jarManager = JarManager.getInstance();
-            if (!jarManager.isReady()) {
-                Slog.d(TAG, "JarManager not ready, initializing synchronously");
-                jarManager.initializeSync();
-            }
-            
-            
-            File emptyJar = jarManager.getEmptyJar();
-            if (emptyJar == null || !emptyJar.exists()) {
-                Slog.w(TAG, "Empty JAR not available, attempting to recreate");
-                jarManager.clearCache();
-                jarManager.initializeSync();
-                emptyJar = jarManager.getEmptyJar();
-            }
-            
-            if (emptyJar != null && emptyJar.exists()) {
-                Slog.d(TAG, "Empty JAR verified: " + emptyJar.getAbsolutePath());
-            } else {
-                Slog.w(TAG, "Empty JAR still not available after retry");
-            }
-            
-        } catch (Exception e) {
-            Slog.e(TAG, "Error initializing JAR environment", e);
-        }
-    }
-    
-    
-    private Application createApplicationWithFallback(android.content.pm.ApplicationInfo appInfo) {
-        try {
-            
-            Application application = createApplication(appInfo);
-            if (application != null) {
-                Slog.d(TAG, "Application created successfully: " + appInfo.className);
-                return application;
-            }
-        } catch (Exception e) {
-            Slog.w(TAG, "Failed to create application normally: " + e.getMessage());
-        }
-        
-        try {
-            
-            Slog.d(TAG, "Attempting fallback application creation");
-            ClassLoader classLoader = getClassLoader(appInfo);
-            if (classLoader == null) {
-                Slog.w(TAG, "ClassLoader is null, using system class loader");
-                classLoader = ClassLoader.getSystemClassLoader();
-            }
-            
-            Class<?> appClass = classLoader.loadClass(appInfo.className);
-            Application application = (Application) appClass.newInstance();
-            
-            
-            ensureApplicationBaseContext(application, appInfo);
-            
-            Slog.d(TAG, "Fallback application creation successful");
-            return application;
-            
-        } catch (Exception e) {
-            Slog.e(TAG, "Fallback application creation failed: " + e.getMessage());
-            
-            
-            try {
-                Slog.d(TAG, "Creating minimal application wrapper");
-                Application wrapper = new Application() {
-                    @Override
-                    public void onCreate() {
-                        super.onCreate();
-                        Slog.d(TAG, "Minimal application wrapper onCreate called");
-                    }
-                };
-                
-                
-                ensureApplicationBaseContext(wrapper, appInfo);
-                
-                return wrapper;
-            } catch (Exception wrapperException) {
-                Slog.e(TAG, "Failed to create minimal application wrapper", wrapperException);
-                return null;
-            }
-        }
-    }
-    
-    
-    private void installContentProvidersWithFallback(Application application, Object data) {
-        try {
-            List<android.content.pm.ProviderInfo> providers = getProviderInfoList(data);
-            if (providers == null || providers.isEmpty()) {
-                Slog.d(TAG, "No content providers to install");
-                return;
-            }
-            
-            Slog.d(TAG, "Installing " + providers.size() + " content providers");
-            
-            for (android.content.pm.ProviderInfo providerInfo : providers) {
-                try {
-                    installContentProvider(application, providerInfo);
-                    Slog.d(TAG, "Successfully installed provider: " + providerInfo.name);
-                } catch (Exception e) {
-                    Slog.w(TAG, "Failed to install provider " + providerInfo.name + ": " + e.getMessage());
-                    
-                }
-            }
-            
-        } catch (Exception e) {
-            Slog.e(TAG, "Error installing content providers", e);
-        }
-    }
-    
-    
-    private android.content.pm.ApplicationInfo getApplicationInfo(Object data) {
-        try {
-            
-            if (data != null) {
-                try {
-                    
-                    Method getInfoMethod = data.getClass().getMethod("getInfo");
-                    ApplicationInfo appInfo = (ApplicationInfo) getInfoMethod.invoke(data);
-                    if (appInfo != null) {
-                        return appInfo;
-                    }
-                } catch (Exception e) {
-                    Slog.w(TAG, "Error getting info from custom data object: " + e.getMessage());
-                }
-            }
-            
-            
-            String packageName = VcloudCore.getAppPackageName();
-            if (packageName != null) {
-                PackageInfo packageInfo = VcloudCore.getBPackageManager().getPackageInfo(packageName, 0, getUserId());
-                return packageInfo.applicationInfo;
-            }
-            
-            return null;
-        } catch (Exception e) {
-            Slog.e(TAG, "Error getting application info", e);
-            return null;
-        }
-    }
-    
-    
+
     private ClassLoader getClassLoader(android.content.pm.ApplicationInfo appInfo) {
         try {
             
@@ -649,8 +494,7 @@ public class BActivityThread extends IBActivityThread.Stub {
                 }
                 return new dalvik.system.PathClassLoader(sourceDir, ClassLoader.getSystemClassLoader());
             }
-            
-            
+
             return ClassLoader.getSystemClassLoader();
         } catch (Exception e) {
             Slog.w(TAG, "Error getting class loader: " + e.getMessage());
@@ -658,15 +502,13 @@ public class BActivityThread extends IBActivityThread.Stub {
         }
     }
 
-    
     private Application createApplication(android.content.pm.ApplicationInfo appInfo) {
         try {
             
             ClassLoader classLoader = getClassLoader(appInfo);
             Class<?> appClass = classLoader.loadClass(appInfo.className);
             Application application = (Application) appClass.newInstance();
-            
-            
+
             ensureApplicationBaseContext(application, appInfo);
             
             return application;
@@ -675,8 +517,7 @@ public class BActivityThread extends IBActivityThread.Stub {
             return null;
         }
     }
-    
-    
+
     private void ensureApplicationBaseContext(Application application, android.content.pm.ApplicationInfo appInfo) {
         try {
             
@@ -684,22 +525,19 @@ public class BActivityThread extends IBActivityThread.Stub {
                 Slog.d(TAG, "Application already has base context: " + appInfo.className);
                 return;
             }
-            
-            
+
             Context packageContext = createPackageContext(appInfo);
             if (packageContext == null) {
                 Slog.w(TAG, "Could not create package context for application: " + appInfo.className + ", using fallback");
                 
                 packageContext = createFallbackContext(appInfo.packageName);
             }
-            
-            
+
             if (packageContext == null) {
                 Slog.e(TAG, "Failed to create any context for application: " + appInfo.className);
                 return;
             }
-            
-            
+
             try {
                 Method attachBaseContext = Application.class.getDeclaredMethod("attachBaseContext", Context.class);
                 attachBaseContext.setAccessible(true);
@@ -713,8 +551,7 @@ public class BActivityThread extends IBActivityThread.Stub {
             Slog.e(TAG, "Error ensuring application base context: " + e.getMessage());
         }
     }
-    
-    
+
     private Context createFallbackContext(String packageName) {
         try {
             Context baseContext = VcloudCore.getContext();
@@ -722,8 +559,7 @@ public class BActivityThread extends IBActivityThread.Stub {
                 Slog.e(TAG, "VcloudCore.getContext() is null, cannot create fallback context");
                 return null;
             }
-            
-            
+
             return new ContextWrapper(baseContext) {
                 @Override
                 public String getPackageName() {
@@ -785,8 +621,7 @@ public class BActivityThread extends IBActivityThread.Stub {
             return null;
         }
     }
-    
-    
+
     private List<android.content.pm.ProviderInfo> getProviderInfoList(Object data) {
         try {
             
@@ -802,16 +637,14 @@ public class BActivityThread extends IBActivityThread.Stub {
                     Slog.w(TAG, "Error getting providers from custom data object: " + e.getMessage());
                 }
             }
-            
-            
+
             return new ArrayList<>();
         } catch (Exception e) {
             Slog.e(TAG, "Error getting provider info list", e);
             return new ArrayList<>();
         }
     }
-    
-    
+
     private void installContentProvider(Application application, android.content.pm.ProviderInfo providerInfo) {
         try {
 
@@ -868,67 +701,6 @@ public class BActivityThread extends IBActivityThread.Stub {
                 || lower.contains("xposeddetect")
                 || lower.contains("magiskdetect");
     }
-    
-    
-    private void setApplication(Application application) {
-        try {
-            mInitialApplication = application;
-            BRActivityThread.get(VcloudCore.mainThread())._set_mInitialApplication(application);
-            Slog.d(TAG, "Application set in ActivityThread successfully");
-        } catch (Exception e) {
-            Slog.e(TAG, "Error setting application in ActivityThread", e);
-        }
-    }
-
-    private void handleSecurityException(SecurityException se, String packageName, String processName, Context packageContext) {
-        Slog.w(TAG, "Handling SecurityException for " + packageName);
-        
-        
-        try {
-                            Application basicApp = createMinimalApplication(packageContext, packageName);
-            if (basicApp != null) {
-                mInitialApplication = basicApp;
-                BRActivityThread.get(VcloudCore.mainThread())._set_mInitialApplication(mInitialApplication);
-                ContextCompat.fix(mInitialApplication);
-                
-                
-                Slog.w(TAG, "Created basic application, skipping problematic operations");
-                return;
-            }
-        } catch (Exception e) {
-            Slog.e(TAG, "Failed to create basic application after SecurityException: " + e.getMessage());
-        }
-        
-        
-        throw new RuntimeException("Unable to handle SecurityException", se);
-    }
-
-    private void installProvidersWithErrorHandling(Context context, String processName, List<ProviderInfo> providers) {
-        long origId = Binder.clearCallingIdentity();
-        try {
-            for (ProviderInfo providerInfo : providers) {
-                try {
-                    if (processName.equals(providerInfo.processName) ||
-                            providerInfo.processName.equals(context.getPackageName()) || providerInfo.multiprocess) {
-                        installProvider(VcloudCore.mainThread(), context, providerInfo, null);
-                    }
-                } catch (SecurityException se) {
-                    Slog.w(TAG, "SecurityException installing provider " + providerInfo.name + ": " + se.getMessage());
-                    
-                } catch (Throwable t) {
-                    Slog.w(TAG, "Error installing provider " + providerInfo.name + ": " + t.getMessage());
-                    
-                }
-            }
-        } finally {
-            Binder.restoreCallingIdentity(origId);
-            try {
-                ContentProviderDelegate.init();
-            } catch (Exception e) {
-                Slog.w(TAG, "Error initializing ContentProviderDelegate: " + e.getMessage());
-            }
-        }
-    }
 
     public static Context createPackageContext(ApplicationInfo info) {
         try {
@@ -940,60 +712,10 @@ public class BActivityThread extends IBActivityThread.Stub {
         return null;
     }
 
-    
-    private static Context createMinimalPackageContext(ApplicationInfo info) {
-        try {
-            
-            Context baseContext = VcloudCore.getContext();
-            
-            
-            try {
-                Context packageContext = baseContext.createPackageContext(info.packageName, 0);
-                if (packageContext != null) {
-                    Slog.d(TAG, "Successfully created package context with minimal flags for " + info.packageName);
-                    return packageContext;
-                }
-            } catch (Exception e) {
-                Slog.w(TAG, "Failed to create package context with minimal flags for " + info.packageName + ": " + e.getMessage());
-            }
-            
-            
-            try {
-                Context packageContext = baseContext.createPackageContext(info.packageName, Context.CONTEXT_IGNORE_SECURITY);
-                if (packageContext != null) {
-                    Slog.d(TAG, "Successfully created package context with ignore security for " + info.packageName);
-                    return packageContext;
-                }
-            } catch (Exception e) {
-                Slog.w(TAG, "Failed to create package context with ignore security for " + info.packageName + ": " + e.getMessage());
-            }
-            
-            
-            try {
-                Context packageContext = baseContext.createPackageContext(info.packageName, Context.CONTEXT_INCLUDE_CODE);
-                if (packageContext != null) {
-                    Slog.d(TAG, "Successfully created package context with include code for " + info.packageName);
-                    return packageContext;
-                }
-            } catch (Exception e) {
-                Slog.w(TAG, "Failed to create package context with include code for " + info.packageName + ": " + e.getMessage());
-            }
-            
-        } catch (Exception e) {
-            Slog.e(TAG, "Failed to create minimal package context for " + info.packageName + ": " + e.getMessage());
-        }
-        
-        
-        Slog.w(TAG, "Using base context as fallback for " + info.packageName);
-        return createWrappedBaseContext(info.packageName);
-    }
-
-    
     private static Context createWrappedBaseContext(String packageName) {
         try {
             Context baseContext = VcloudCore.getContext();
-            
-            
+
             return new ContextWrapper(baseContext) {
                 @Override
                 public String getPackageName() {
@@ -1061,8 +783,6 @@ public class BActivityThread extends IBActivityThread.Stub {
             installProvider.invoke(mainThread, context, holder, providerInfo, false, true, true);
         }
     }
-
-
 
     @Override
     public IBinder getActivityThread() {
@@ -1213,7 +933,6 @@ public class BActivityThread extends IBActivityThread.Stub {
         }
     }
 
-    
     public static void ensureActivityContext(Activity activity) {
         if (activity == null) {
             return;
@@ -1228,8 +947,7 @@ public class BActivityThread extends IBActivityThread.Stub {
             }
             
             Slog.w(TAG, "Activity has null context, ensuring valid context: " + activity.getClass().getName());
-            
-            
+
             Context validContext = null;
             try {
                 validContext = getApplication();
@@ -1248,8 +966,7 @@ public class BActivityThread extends IBActivityThread.Stub {
                         activity.getPackageName(),
                         Context.CONTEXT_INCLUDE_CODE | Context.CONTEXT_IGNORE_SECURITY
                     );
-                    
-                    
+
                     java.lang.reflect.Method attachBaseContext = Activity.class.getDeclaredMethod("attachBaseContext", Context.class);
                     attachBaseContext.setAccessible(true);
                     attachBaseContext.invoke(activity, packageContext);
@@ -1263,7 +980,6 @@ public class BActivityThread extends IBActivityThread.Stub {
         }
     }
 
-    
     public static void hookActivityThread() {
         try {
             
@@ -1273,12 +989,10 @@ public class BActivityThread extends IBActivityThread.Stub {
                 Instrumentation instrumentation = BRActivityThread.get(activityThread).mInstrumentation();
                 if (instrumentation != null) {
                     Slog.d(TAG, "Found ActivityThread instrumentation, ensuring it's our AppInstrumentation");
-                    
-                    
+
                     if (!(instrumentation instanceof AppInstrumentation)) {
                         Slog.w(TAG, "ActivityThread instrumentation is not our AppInstrumentation, attempting to replace");
-                        
-                        
+
                         try {
                             AppInstrumentation appInstrumentation = AppInstrumentation.get();
                             appInstrumentation.injectHook();
@@ -1300,12 +1014,10 @@ public class BActivityThread extends IBActivityThread.Stub {
         }
     }
 
-    
     private Application createMinimalApplication(Context packageContext, String packageName) {
         try {
             Slog.d(TAG, "Creating minimal application for " + packageName);
-            
-            
+
             Application app = new Application() {
                 @Override
                 public void onCreate() {
@@ -1323,8 +1035,7 @@ public class BActivityThread extends IBActivityThread.Stub {
                     return this;
                 }
             };
-            
-            
+
             if (packageContext != null) {
                 try {
                     Method attachBaseContext = Application.class.getDeclaredMethod("attachBaseContext", Context.class);

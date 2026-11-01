@@ -20,17 +20,3 @@ inline fun <reified T : ViewBinding> Fragment.inflate(): Lazy<T> = lazy {
 inline fun <reified T : ViewBinding> Dialog.inflate(): Lazy<T> = lazy {
     inflateBinding(layoutInflater)
 }
-
-
-inline fun <reified T : ViewBinding> inflateBinding(layoutInflater: LayoutInflater): T {
-    val method = T::class.java.getMethod("inflate", LayoutInflater::class.java)
-    return method.invoke(null, layoutInflater) as T
-}
-
-inline fun <reified T : ViewBinding> newBindingViewHolder(viewGroup: ViewGroup, attachToParent:Boolean = false): T {
-    val method = T::class.java.getMethod("inflate",
-            LayoutInflater::class.java,
-            ViewGroup::class.java,
-            Boolean::class.java)
-    return method.invoke(null,LayoutInflater.from(viewGroup.context),viewGroup,attachToParent) as T
-}

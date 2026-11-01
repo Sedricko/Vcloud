@@ -13,7 +13,6 @@ import com.vcloud.motor.utils.Slog;
 import android.os.Bundle;
 import com.vcloud.motor.utils.AttributionSourceUtils;
 
-
 public class ContentProviderStub extends ClassInvocationStub implements BContentProvider {
     public static final String TAG = "ContentProviderStub";
     private IInterface mBase;
@@ -46,12 +45,9 @@ public class ContentProviderStub extends ClassInvocationStub implements BContent
         if ("asBinder".equals(method.getName())) {
             return method.invoke(mBase, args);
         }
-        
-        
+
         String methodName = method.getName();
-        
-        
-        
+
         if ("call".equals(methodName)) {
             
             AttributionSourceUtils.fixAttributionSourceInArgs(args);
@@ -73,14 +69,12 @@ public class ContentProviderStub extends ClassInvocationStub implements BContent
                 AttributionSourceUtils.fixAttributionSourceInArgs(args);
             }
         }
-        
-        
+
         methodName = method.getName();
         if (methodName.equals("query") || methodName.equals("insert") || 
             methodName.equals("update") || methodName.equals("delete") || 
             methodName.equals("bulkInsert") || methodName.equals("call")) {
-            
-            
+
             try {
                 return method.invoke(mBase, args);
             } catch (Throwable e) {
@@ -96,8 +90,7 @@ public class ContentProviderStub extends ClassInvocationStub implements BContent
                         return getSafeDefaultValue(methodName, method.getReturnType());
                     }
                 }
-                
-                
+
                 if (methodName.equals("call")) {
                     Slog.w(TAG, "Error in call method, returning safe default: " + e.getMessage());
                     return getSafeDefaultValue(methodName, method.getReturnType());
@@ -106,8 +99,7 @@ public class ContentProviderStub extends ClassInvocationStub implements BContent
                 throw e.getCause();
             }
         }
-        
-        
+
         try {
             return method.invoke(mBase, args);
         } catch (Throwable e) {
@@ -147,8 +139,7 @@ public class ContentProviderStub extends ClassInvocationStub implements BContent
 
     private boolean isSystemProviderAuthority(String authority) {
         if (authority == null) return false;
-        
-        
+
         return authority.equals("settings") || 
                authority.equals("settings_global") || 
                authority.equals("settings_system") || 
@@ -157,15 +148,13 @@ public class ContentProviderStub extends ClassInvocationStub implements BContent
                authority.equals("telephony") ||
                authority.startsWith("android.provider.Settings");
     }
-    
-    
+
     private boolean isUidMismatchError(Throwable error) {
         if (error == null) return false;
         
         String message = error.getMessage();
         if (message == null) return false;
-        
-        
+
         return message.contains("Calling uid") && 
                message.contains("doesn't match source uid") ||
                message.contains("uid") && 
@@ -173,14 +162,12 @@ public class ContentProviderStub extends ClassInvocationStub implements BContent
                message.contains("SecurityException") ||
                message.contains("UID mismatch");
     }
-    
-    
+
     private Object getSafeDefaultValue(String methodName, Class<?> returnType) {
         if (returnType == null) {
             return getSafeDefaultValue(methodName);
         }
-        
-        
+
         if (returnType == String.class) {
             return "true"; 
         } else if (returnType == int.class || returnType == Integer.class) {
@@ -194,57 +181,8 @@ public class ContentProviderStub extends ClassInvocationStub implements BContent
         } else if (returnType == Bundle.class) {
             return new Bundle(); 
         }
-        
-        
-        return getSafeDefaultValue(methodName);
-    }
 
-    
-    private void fixAttributionSourceUid(Object attributionSource) {
-        try {
-            if (attributionSource == null) return;
-            
-            Class<?> attributionSourceClass = attributionSource.getClass();
-            
-            
-            try {
-                java.lang.reflect.Field uidField = attributionSourceClass.getDeclaredField("mUid");
-                uidField.setAccessible(true);
-                uidField.set(attributionSource, VcloudCore.getHostUid());
-                Slog.d(TAG, "Fixed AttributionSource UID via field access");
-            } catch (NoSuchFieldException e) {
-                
-                try {
-                    java.lang.reflect.Field uidField = attributionSourceClass.getDeclaredField("uid");
-                    uidField.setAccessible(true);
-                    uidField.set(attributionSource, VcloudCore.getHostUid());
-                    Slog.d(TAG, "Fixed AttributionSource UID via alternative field");
-                } catch (NoSuchFieldException e2) {
-                    
-                    try {
-                        java.lang.reflect.Method setUidMethod = attributionSourceClass.getDeclaredMethod("setUid", int.class);
-                        setUidMethod.setAccessible(true);
-                        setUidMethod.invoke(attributionSource, VcloudCore.getHostUid());
-                        Slog.d(TAG, "Fixed AttributionSource UID via setter method");
-                    } catch (Exception e3) {
-                        Slog.w(TAG, "Could not fix AttributionSource UID: " + e3.getMessage());
-                    }
-                }
-            }
-            
-            
-            try {
-                java.lang.reflect.Field packageField = attributionSourceClass.getDeclaredField("mPackageName");
-                packageField.setAccessible(true);
-                packageField.set(attributionSource, mAppPkg);
-                Slog.d(TAG, "Fixed AttributionSource package name");
-            } catch (Exception e) {
-                
-            }
-            
-        } catch (Exception e) {
-            Slog.w(TAG, "Error fixing AttributionSource UID: " + e.getMessage());
-        }
+        return getSafeDefaultValue(methodName);
     }
 
     @Override

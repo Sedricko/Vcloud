@@ -73,7 +73,9 @@ class RootManagerActivity : BaseActivity() {
             .joinToString("\n").ifEmpty { "Nenhum pedido ainda." }
         Thread {
             val apps = try {
-                VcloudCore.get().getInstalledApplications(0, 0).orEmpty().map { ai ->
+                VcloudCore.get().getInstalledApplications(0, 0).orEmpty()
+                    .filterNot { it.packageName.startsWith("com.google.android.") || it.packageName == "com.android.vending" }
+                    .map { ai ->
                     val nome = try { ai.loadLabel(VcloudCore.getPackageManager()).toString() } catch (e: Exception) { ai.packageName }
                     nome to ai.packageName
                 }.sortedBy { it.first.lowercase() }

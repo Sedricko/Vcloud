@@ -25,17 +25,13 @@ import com.vcloud.motor.fake.hook.ProxyMethod;
 import com.vcloud.motor.utils.Slog;
 import com.vcloud.motor.utils.DexFileRecovery;
 
-
 public class ClassLoaderProxy extends ClassInvocationStub {
     private static final String TAG = "ClassLoaderProxy";
-    
-    
+
     private static final Map<String, Class<?>> sClassCache = new HashMap<>();
-    
-    
+
     private static final Map<String, Boolean> sDexFileCache = new HashMap<>();
-    
-    
+
     private static final List<ClassLoader> sFallbackClassLoaders = new ArrayList<>();
 
     public ClassLoaderProxy() {
@@ -59,7 +55,6 @@ public class ClassLoaderProxy extends ClassInvocationStub {
         return false;
     }
 
-    
     private void initializeFallbackClassLoaders() {
         try {
             
@@ -71,15 +66,13 @@ public class ClassLoaderProxy extends ClassInvocationStub {
                     Slog.d(TAG, "Added host class loader as fallback");
                 }
             }
-            
-            
+
             ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
             if (systemClassLoader != null) {
                 sFallbackClassLoaders.add(systemClassLoader);
                 Slog.d(TAG, "Added system class loader as fallback");
             }
-            
-            
+
             ClassLoader bootClassLoader = Object.class.getClassLoader();
             if (bootClassLoader != null) {
                 sFallbackClassLoaders.add(bootClassLoader);
@@ -91,21 +84,18 @@ public class ClassLoaderProxy extends ClassInvocationStub {
         }
     }
 
-    
     @ProxyMethod("loadClass")
     public static class LoadClass extends MethodHook {
         @Override
         protected Object hook(Object who, Method method, Object[] args) throws Throwable {
             String className = (String) args[0];
             boolean resolve = args.length > 1 ? (Boolean) args[1] : false;
-            
-            
+
             if (sClassCache.containsKey(className)) {
                 Slog.d(TAG, "ClassLoader: loadClass returning cached class: " + className);
                 return sClassCache.get(className);
             }
-            
-            
+
             if (isProblematicClass(className)) {
                 Slog.d(TAG, "ClassLoader: loadClass called for problematic class: " + className + ", returning null");
                 return null;
@@ -123,35 +113,30 @@ public class ClassLoaderProxy extends ClassInvocationStub {
             } catch (Exception e) {
                 Slog.w(TAG, "ClassLoader: loadClass failed for " + className + ", trying fallbacks: " + e.getMessage());
             }
-            
-            
+
             Class<?> fallbackResult = tryFallbackClassLoaders(className);
             if (fallbackResult != null) {
                 sClassCache.put(className, fallbackResult);
                 Slog.d(TAG, "ClassLoader: loadClass successful via fallback for: " + className);
                 return fallbackResult;
             }
-            
-            
+
             Slog.w(TAG, "ClassLoader: loadClass failed for " + className + ", returning null");
             return null;
         }
     }
 
-    
     @ProxyMethod("findClass")
     public static class FindClass extends MethodHook {
         @Override
         protected Object hook(Object who, Method method, Object[] args) throws Throwable {
             String className = (String) args[0];
-            
-            
+
             if (sClassCache.containsKey(className)) {
                 Slog.d(TAG, "ClassLoader: findClass returning cached class: " + className);
                 return sClassCache.get(className);
             }
-            
-            
+
             if (isProblematicClass(className)) {
                 Slog.d(TAG, "ClassLoader: findClass called for problematic class: " + className + ", returning null");
                 return null;
@@ -169,35 +154,30 @@ public class ClassLoaderProxy extends ClassInvocationStub {
             } catch (Exception e) {
                 Slog.w(TAG, "ClassLoader: findClass failed for " + className + ", trying fallbacks: " + e.getMessage());
             }
-            
-            
+
             Class<?> fallbackResult = tryFallbackClassLoaders(className);
             if (fallbackResult != null) {
                 sClassCache.put(className, fallbackResult);
                 Slog.d(TAG, "ClassLoader: findClass successful via fallback for: " + className);
                 return fallbackResult;
             }
-            
-            
+
             Slog.w(TAG, "ClassLoader: findClass failed for " + className + ", returning null");
             return null;
         }
     }
 
-    
     @ProxyMethod("forName")
     public static class ForName extends MethodHook {
         @Override
         protected Object hook(Object who, Method method, Object[] args) throws Throwable {
             String className = (String) args[0];
-            
-            
+
             if (sClassCache.containsKey(className)) {
                 Slog.d(TAG, "ClassLoader: forName returning cached class: " + className);
                 return sClassCache.get(className);
             }
-            
-            
+
             if (isProblematicClass(className)) {
                 Slog.d(TAG, "ClassLoader: forName called for problematic class: " + className + ", returning null");
                 return null;
@@ -215,33 +195,28 @@ public class ClassLoaderProxy extends ClassInvocationStub {
             } catch (Exception e) {
                 Slog.w(TAG, "ClassLoader: forName failed for " + className + ", trying fallbacks: " + e.getMessage());
             }
-            
-            
+
             Class<?> fallbackResult = tryFallbackClassLoaders(className);
             if (fallbackResult != null) {
                 sClassCache.put(className, fallbackResult);
                 Slog.d(TAG, "ClassLoader: forName successful via fallback for: " + className);
                 return fallbackResult;
             }
-            
-            
+
             Slog.w(TAG, "ClassLoader: forName failed for " + className + ", returning null");
             return null;
         }
     }
 
-    
     @ProxyMethod("openDexFile")
     public static class OpenDexFile extends MethodHook {
         @Override
         protected Object hook(Object who, Method method, Object[] args) throws Throwable {
             String sourceFile = (String) args[0];
-            
-            
+
             if (!isValidDexFile(sourceFile)) {
                 Slog.w(TAG, "DexFile: Invalid DEX file detected: " + sourceFile + ", attempting recovery");
-                
-                
+
                 String recoveredFile = recoverDexFile(sourceFile);
                 if (recoveredFile != null) {
                     args[0] = recoveredFile;
@@ -261,7 +236,6 @@ public class ClassLoaderProxy extends ClassInvocationStub {
         }
     }
 
-    
     @ProxyMethod("loadDexFile")
     public static class LoadDexFile extends MethodHook {
         @Override
@@ -272,8 +246,7 @@ public class ClassLoaderProxy extends ClassInvocationStub {
                 String errorMessage = e.getMessage();
                 if (errorMessage != null && errorMessage.contains("classes.dex") && errorMessage.contains("Entry not found")) {
                     Slog.w(TAG, "DexPathList: classes.dex entry not found, attempting recovery");
-                    
-                    
+
                     String corruptedFilePath = extractCorruptedFilePathFromError(e, who);
                     if (corruptedFilePath != null) {
                         DexFileRecovery.RecoveryResult recoveryResult = DexFileRecovery.recoverDexFile(corruptedFilePath);
@@ -294,8 +267,7 @@ public class ClassLoaderProxy extends ClassInvocationStub {
                 return null; 
             }
         }
-        
-        
+
         private String extractCorruptedFilePathFromError(Exception e, Object who) {
             try {
                 
@@ -314,8 +286,7 @@ public class ClassLoaderProxy extends ClassInvocationStub {
                         }
                     }
                 }
-                
-                
+
                 try {
                     Field pathListField = who.getClass().getDeclaredField("pathList");
                     pathListField.setAccessible(true);
@@ -343,7 +314,6 @@ public class ClassLoaderProxy extends ClassInvocationStub {
         }
     }
 
-    
     private static Class<?> tryFallbackClassLoaders(String className) {
         for (ClassLoader fallbackLoader : sFallbackClassLoaders) {
             try {
@@ -359,11 +329,9 @@ public class ClassLoaderProxy extends ClassInvocationStub {
         return null;
     }
 
-    
     private static boolean isValidDexFile(String sourceFile) {
         if (sourceFile == null) return false;
-        
-        
+
         if (sDexFileCache.containsKey(sourceFile)) {
             return sDexFileCache.get(sourceFile);
         }
@@ -374,8 +342,7 @@ public class ClassLoaderProxy extends ClassInvocationStub {
                 sDexFileCache.put(sourceFile, false);
                 return false;
             }
-            
-            
+
             if (sourceFile.endsWith(".apk") || sourceFile.endsWith(".zip")) {
                 
                 boolean isValid = validateApkFile(file);
@@ -393,18 +360,15 @@ public class ClassLoaderProxy extends ClassInvocationStub {
         }
     }
 
-    
     private static boolean validateApkFile(File apkFile) {
         try {
-            
-            
+
             return apkFile.length() > 1000; 
         } catch (Exception e) {
             return false;
         }
     }
 
-    
     private static String recoverDexFile(String sourceFile) {
         try {
             
@@ -412,8 +376,7 @@ public class ClassLoaderProxy extends ClassInvocationStub {
             if (alternativeFile != null) {
                 return alternativeFile;
             }
-            
-            
+
             Context hostContext = VcloudCore.getContext();
             if (hostContext != null) {
                 ApplicationInfo appInfo = hostContext.getApplicationInfo();
@@ -430,7 +393,6 @@ public class ClassLoaderProxy extends ClassInvocationStub {
         return null;
     }
 
-    
     private static String findAlternativeApkFile(String originalFile) {
         try {
             File original = new File(originalFile);
@@ -452,30 +414,9 @@ public class ClassLoaderProxy extends ClassInvocationStub {
         return null;
     }
 
-    
-    private static Object recoverDexPathList(Object who, Object[] args) {
-        try {
-            
-            Context hostContext = VcloudCore.getContext();
-            if (hostContext != null) {
-                ApplicationInfo appInfo = hostContext.getApplicationInfo();
-                if (appInfo != null && appInfo.sourceDir != null) {
-                    
-                    Slog.d(TAG, "Recovering DexPathList using host APK: " + appInfo.sourceDir);
-                    return createFallbackDexPathList(who, appInfo.sourceDir);
-                }
-            }
-        } catch (Exception e) {
-            Slog.w(TAG, "Error recovering DexPathList: " + e.getMessage());
-        }
-        return null;
-    }
-
-    
     private static Object createFallbackDexPathList(Object who, String fallbackApk) {
         try {
-            
-            
+
             Slog.d(TAG, "Creating fallback DexPathList with: " + fallbackApk);
             return null; 
         } catch (Exception e) {
@@ -484,35 +425,29 @@ public class ClassLoaderProxy extends ClassInvocationStub {
         }
     }
 
-    
     private static boolean isProblematicClass(String className) {
         if (className == null) return false;
-        
-        
+
         if (className.contains("kotlinx.coroutines.test")) {
             return true;
         }
-        
-        
+
         if (className.contains("com.mediatek.perfservice") || 
             className.contains("com.mediatek.powerhalmgr")) {
             return true;
         }
-        
-        
+
         if (className.contains("androidx.datastore.preferences.protobuf") ||
             className.contains("NewInstanceSchemaFull") ||
             className.contains("ExtensionSchemaFull")) {
             return true;
         }
-        
-        
+
         if (className.contains("org.robolectric") ||
             className.contains("Robolectric")) {
             return true;
         }
-        
-        
+
         if (className.contains("TestMainDispatcherFactory") ||
             className.contains("PerfServiceWrapper") ||
             className.contains("PowerHalMgrFactory")) {
@@ -522,14 +457,12 @@ public class ClassLoaderProxy extends ClassInvocationStub {
         return false;
     }
 
-    
     public static void clearClassCache() {
         sClassCache.clear();
         sDexFileCache.clear();
         Slog.d(TAG, "Class and DEX file caches cleared");
     }
 
-    
     public static String getCacheStats() {
         return "Class Cache: " + sClassCache.size() + " entries, DEX Cache: " + sDexFileCache.size() + " entries";
     }

@@ -86,7 +86,6 @@ public class FileUtils {
         return in;
     }
 
-    
     public static void chmod(String path, int mode) throws Exception {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             try {
@@ -297,12 +296,10 @@ public class FileUtils {
         }
     }
 
-    
     public static boolean isValidExtFilename(String name) {
         return (name != null) && name.equals(buildValidExtFilename(name));
     }
 
-    
     public static String buildValidExtFilename(String name) {
         if (TextUtils.isEmpty(name) || ".".equals(name) || "..".equals(name)) {
             return "(invalid)";
@@ -355,7 +352,6 @@ public class FileUtils {
                 | MODE_IROTH | MODE_IXOTH;
     }
 
-    
     public static class FileLock {
         private static FileLock singleton;
         private Map<String, FileLockCount> mRefCountMap = new ConcurrentHashMap<String, FileLockCount>();
@@ -420,7 +416,6 @@ public class FileUtils {
             }
         }
 
-        
         public void unLock(File targetFile) {
 
             File lockFile = new File(targetFile.getParentFile().getAbsolutePath().concat("/lock"));
@@ -466,35 +461,6 @@ public class FileUtils {
                 this.fChannel = fChannel;
             }
         }
-    }
-
-    private static String getDataColumn(Context context, Uri uri, String selection, String[] selectionArgs) {
-        Cursor cursor = null;
-        final String column = "_data";
-        final String[] projection = {column};
-        try {
-            cursor = context.getContentResolver().query(uri, projection, selection, selectionArgs, null);
-            if (cursor != null && cursor.moveToFirst()) {
-                final int column_index = cursor.getColumnIndexOrThrow(column);
-                return cursor.getString(column_index);
-            }
-        } finally {
-            if (cursor != null)
-                cursor.close();
-        }
-        return null;
-    }
-
-    private static boolean isExternalStorageDocument(Uri uri) {
-        return "com.android.externalstorage.documents".equals(uri.getAuthority());
-    }
-
-    private static boolean isDownloadsDocument(Uri uri) {
-        return "com.android.providers.downloads.documents".equals(uri.getAuthority());
-    }
-
-    private static boolean isMediaDocument(Uri uri) {
-        return "com.android.providers.media.documents".equals(uri.getAuthority());
     }
 
 }

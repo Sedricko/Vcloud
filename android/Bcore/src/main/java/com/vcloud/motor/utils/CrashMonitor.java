@@ -338,39 +338,14 @@ public class CrashMonitor {
     }
     
     
+    // Vcloud: antes gravava um arquivo por queda em crash_logs; agora é uma linha no histórico da Central de diagnóstico.
     private static void writeCrashLog(CrashInfo crashInfo) {
-        try {
-            Context context = VcloudCore.getContext();
-            if (context == null) return;
-            
-            File logDir = new File(context.getFilesDir(), "crash_logs");
-            if (!logDir.exists()) {
-                logDir.mkdirs();
-            }
-            
-            String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date(crashInfo.timestamp));
-            File logFile = new File(logDir, "crash_" + timestamp + ".log");
-            
-            try (PrintWriter writer = new PrintWriter(new FileWriter(logFile))) {
-                writer.println("=== CRASH LOG ===");
-                writer.println("Timestamp: " + new Date(crashInfo.timestamp));
-                writer.println("Crash Type: " + crashInfo.crashType);
-                writer.println("Package: " + crashInfo.packageName);
-                writer.println("Error: " + crashInfo.errorMessage);
-                writer.println("Recovered: " + crashInfo.wasRecovered);
-                writer.println("=== STACK TRACE ===");
-                writer.println(crashInfo.stackTrace);
-                writer.println("=== END ===");
-            }
-            
-            Slog.d(TAG, "Crash log written to: " + logFile.getAbsolutePath());
-            
-        } catch (Exception e) {
-            Slog.w(TAG, "Failed to write crash log: " + e.getMessage());
-        }
+        String primeira = crashInfo.stackTrace == null ? "" : crashInfo.stackTrace.split("\n", 3)[0];
+        Diagnostico.evento("ERRO  " + crashInfo.crashType + " em " + crashInfo.packageName
+                + (crashInfo.wasRecovered ? " (recuperado)" : " (sem recuperação)")
+                + "\n    " + crashInfo.errorMessage + (primeira.isEmpty() ? "" : "\n      " + primeira));
     }
-    
-    
+
     private static void performHealthCheck() {
         try {
             Slog.d(TAG, "Performing periodic health check...");

@@ -43,7 +43,6 @@ import com.vcloud.motor.utils.compat.ActivityManagerCompat;
 
 import static android.content.pm.PackageManager.GET_ACTIVITIES;
 
-
 @SuppressWarnings({"deprecation", "unchecked"})
 public class ActivityStack {
     public static final String TAG = "ActivityStack";
@@ -137,7 +136,6 @@ public class ActivityStack {
                 break;
         }
 
-        
         if (taskRecord == null || taskRecord.needNewTask()) {
             return startActivityInNewTaskLocked(userId, intent, activityInfo, resultTo, launchModeFlags);
         }
@@ -226,14 +224,12 @@ public class ActivityStack {
             newIntentRecord = topActivityRecord;
         }
 
-        
         if (clearTask && newTask) {
             for (ActivityRecord activity : taskRecord.activities) {
                 activity.finished = true;
             }
             finishAllActivity(userId);
         }
-        
 
         if (newIntentRecord != null) {
             
@@ -428,21 +424,6 @@ public class ActivityStack {
             for (TaskRecord next : mTasks.values()) {
                 if (userId == next.userId && next.taskAffinity.equals(taskAffinity))
                     return next;
-            }
-            return null;
-        }
-    }
-
-    private TaskRecord findTaskRecordByTokenLocked(int userId, IBinder token) {
-        synchronized (mTasks) {
-            for (TaskRecord next : mTasks.values()) {
-                if (userId == next.userId) {
-                    for (ActivityRecord activity : next.activities) {
-                        if (activity.token == token) {
-                            return next;
-                        }
-                    }
-                }
             }
             return null;
         }

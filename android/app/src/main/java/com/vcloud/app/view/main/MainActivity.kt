@@ -63,7 +63,6 @@ class MainActivity : LoadingActivity() {
             initFab()
             initToolbarSubTitle()
 
-            
             checkStoragePermission()
 
             // Vcloud: não pedir VPN ao abrir (a VPN do motor só liga se o modo VPN estiver ativo)
@@ -200,23 +199,6 @@ class MainActivity : LoadingActivity() {
                     Log.e(TAG, "Error handling storage permission result: ${e.message}")
                 }
             }
-
-    
-    private fun checkVpnPermission() {
-        try {
-            val vpnIntent = VpnService.prepare(this)
-            if (vpnIntent != null) {
-                
-                Log.d(TAG, "VPN permission not granted, requesting...")
-                vpnPermissionResult.launch(vpnIntent)
-            } else {
-                
-                Log.d(TAG, "VPN permission already granted")
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error checking VPN permission: ${e.message}")
-        }
-    }
 
     private val vpnPermissionResult =
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->

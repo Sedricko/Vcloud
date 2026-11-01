@@ -1,13 +1,13 @@
 package com.vcloud.app.view.root
 
-import android.app.Activity
-import android.app.AlertDialog
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.vcloud.motor.VcloudCore
 import com.vcloud.motor.core.root.RootPolicy
 
 /** Janela "Permitir root?" aberta pelo servidor de root quando um app sem decisão pede su. Sem resposta = nega. */
-class RootPromptActivity : Activity() {
+class RootPromptActivity : AppCompatActivity() {
     private var respondeu = false
     private var pacote = ""
 
@@ -21,7 +21,7 @@ class RootPromptActivity : Activity() {
                 ?.loadLabel(VcloudCore.getPackageManager())?.toString() ?: pacote
         } catch (e: Exception) { pacote }
 
-        AlertDialog.Builder(this)
+        MaterialAlertDialogBuilder(this)
             .setTitle("Permitir root?")
             .setMessage("$nome quer usar root dentro do Vcloud.\n\nComando: $comando\n\nVale só dentro do Vcloud, não no celular. " +
                 "Você muda isso depois em Configurações > Gerenciador de root.")

@@ -16,7 +16,6 @@ import com.vcloud.motor.fake.hook.ProxyMethod;
 import com.vcloud.motor.utils.Slog;
 import com.vcloud.motor.app.BActivityThread;
 
-
 public class GoogleAccountManagerProxy extends ClassInvocationStub {
     public static final String TAG = "GoogleAccountManagerProxy";
 
@@ -53,8 +52,7 @@ public class GoogleAccountManagerProxy extends ClassInvocationStub {
         protected Object hook(Object who, Method method, Object[] args) throws Throwable {
             try {
                 Slog.d(TAG, "GoogleAccountManager: Handling getAccounts call");
-                
-                
+
                 Object result = method.invoke(who, args);
                 if (result != null && result instanceof Account[]) {
                     Account[] accounts = (Account[]) result;
@@ -63,8 +61,7 @@ public class GoogleAccountManagerProxy extends ClassInvocationStub {
                         return result;
                     }
                 }
-                
-                
+
                 Slog.d(TAG, "GoogleAccountManager: No real accounts found, returning mock account");
                 return createMockGoogleAccounts();
                 
@@ -85,15 +82,13 @@ public class GoogleAccountManagerProxy extends ClassInvocationStub {
                 if (args != null && args.length > 0) {
                     String accountType = (String) args[0];
                     Slog.d(TAG, "GoogleAccountManager: Requesting accounts of type: " + accountType);
-                    
-                    
+
                     if ("com.google".equals(accountType)) {
                         Slog.d(TAG, "GoogleAccountManager: Returning mock Google accounts");
                         return createMockGoogleAccounts();
                     }
                 }
-                
-                
+
                 return method.invoke(who, args);
                 
             } catch (Exception e) {
@@ -289,16 +284,13 @@ public class GoogleAccountManagerProxy extends ClassInvocationStub {
         }
     }
 
-    
     private static Account[] createMockGoogleAccounts() {
         try {
             List<Account> accounts = new ArrayList<>();
-            
-            
+
             Account primaryAccount = new Account("mock.user@gmail.com", "com.google");
             accounts.add(primaryAccount);
-            
-            
+
             Account secondaryAccount = new Account("virtual.user@gmail.com", "com.google");
             accounts.add(secondaryAccount);
             
@@ -311,22 +303,4 @@ public class GoogleAccountManagerProxy extends ClassInvocationStub {
         }
     }
 
-    
-    private static boolean isGoogleApp() {
-        try {
-            Context context = VcloudCore.getContext();
-            if (context != null) {
-                String packageName = context.getPackageName();
-                return packageName != null && (
-                    packageName.startsWith("com.google.") ||
-                    packageName.startsWith("com.android.") ||
-                    packageName.contains("gms") ||
-                    packageName.contains("google")
-                );
-            }
-        } catch (Exception e) {
-            Slog.w(TAG, "Failed to check if current package is Google app", e);
-        }
-        return false;
-    }
 }

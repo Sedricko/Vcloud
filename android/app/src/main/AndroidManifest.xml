@@ -38,7 +38,7 @@
             android:exported="false"
             android:excludeFromRecents="true"
             android:taskAffinity=""
-            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+            android:theme="@style/Theme.Vcloud.Prompt" />
         <activity
             android:name=".view.main.WelcomeActivity"
             android:exported="true"

@@ -60,6 +60,11 @@ public final class RootServer {
             BufferedReader r = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
             RootDecisor.Pedido pedido = RootDecisor.Pedido.ler(r);
             Credentials cred = socket.getPeerCredentials();
+            if (cred.getUid() != android.os.Process.myUid()) { // outro app do celular tentando usar o socket abstrato
+                socket.getOutputStream().write("DENY origem nao permitida\n".getBytes(StandardCharsets.UTF_8));
+                Diagnostico.evento("ROOT pedido recusado: uid " + cred.getUid() + " não é do Vcloud");
+                return;
+            }
             String pkg = pacoteDoPid(cred.getPid());
             if (pkg == null && RootPolicy.pacoteValido(pedido.dicaPacote) && VcloudCore.get().isInstalled(pedido.dicaPacote, 0)) {
                 pkg = pedido.dicaPacote; // processo que perdeu o pai (daemon): usa a dica do su, só se o app existe no Vcloud
