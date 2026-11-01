@@ -216,6 +216,10 @@ public class HookManager {
                 addInjector(new IFingerprintManagerProxy());
                 addInjector(new IGraphicsStatsProxy());
             }
+
+            if (android.os.Build.VERSION.SDK_INT >= 33) {
+                addInjector(new com.vcloud.motor.fake.service.ILocaleManagerProxy());
+            }
             
             if (BuildCompat.isL()) {
                 addInjector(new IJobServiceProxy());
