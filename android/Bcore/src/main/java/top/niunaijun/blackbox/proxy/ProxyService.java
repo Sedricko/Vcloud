@@ -88,8 +88,8 @@ public class ProxyService extends Service {
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(android.R.drawable.stat_notify_sync_noanim)
-                .setContentTitle("Virtual app service")
-                .setContentText("A virtual application is running in the foreground")
+                .setContentTitle("Vcloud")
+                .setContentText("Um app está rodando dentro do Vcloud")
                 .setCategory(NotificationCompat.CATEGORY_SERVICE)
                 .setOngoing(true)
                 .setPriority(NotificationCompat.PRIORITY_LOW);

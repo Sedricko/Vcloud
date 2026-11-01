@@ -76,7 +76,7 @@ class MainActivity : LoadingActivity() {
         } catch (e: Exception) {
             Log.e(TAG, "Critical error in onCreate: ${e.message}")
             
-            showErrorDialog("Failed to initialize app: ${e.message}")
+            showErrorDialog("Falha ao iniciar o app: ${e.message}")
         }
     }
 
@@ -148,13 +148,13 @@ class MainActivity : LoadingActivity() {
     private fun showStoragePermissionDialog() {
         try {
             MaterialDialog(this).show {
-                title(text = "Storage Permission Required")
+                title(text = "Permissão de arquivos")
                 message(
                         text =
-                                "This app needs 'All Files Access' permission to properly run sandboxed apps. Without this permission, some apps may not work correctly.\n\nPlease grant permission in the next screen."
+                                "O Vcloud precisa do 'Acesso a todos os arquivos' para os apps de dentro usarem as mesmas pastas do celular. Sem ela, alguns apps podem não funcionar.\n\nPermita na próxima tela."
                 )
-                positiveButton(text = "Grant Permission") { openAllFilesAccessSettings() }
-                negativeButton(text = "Later") { Log.w(TAG, "User postponed storage permission") }
+                positiveButton(text = "Permitir") { openAllFilesAccessSettings() }
+                negativeButton(text = "Depois") { Log.w(TAG, "User postponed storage permission") }
                 cancelable(false)
             }
         } catch (e: Exception) {
@@ -235,7 +235,7 @@ class MainActivity : LoadingActivity() {
     private fun showErrorDialog(message: String) {
         try {
             MaterialDialog(this).show {
-                title(text = "Error")
+                title(text = "Erro")
                 message(text = message)
                 positiveButton(text = "OK") { finish() }
             }
@@ -359,15 +359,15 @@ class MainActivity : LoadingActivity() {
     private fun updateUserRemark(userId: Int) {
         try {
             var remark =
-                    AppManager.mRemarkSharedPreferences.getString("Remark$userId", "User $userId")
+                    AppManager.mRemarkSharedPreferences.getString("Remark$userId", "Usuário $userId")
             if (remark.isNullOrEmpty()) {
-                remark = "User $userId"
+                remark = "Usuário $userId"
             }
 
             viewBinding.toolbarLayout.toolbar.subtitle = remark
         } catch (e: Exception) {
             Log.e(TAG, "Error updating user remark: ${e.message}")
-            viewBinding.toolbarLayout.toolbar.subtitle = "User $userId"
+            viewBinding.toolbarLayout.toolbar.subtitle = "Usuário $userId"
         }
     }
 

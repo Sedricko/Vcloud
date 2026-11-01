@@ -98,8 +98,8 @@ public class ProxyVpnService extends VpnService {
         }
         
         return builder
-            .setContentTitle("BlackBox VPN Active")
-            .setContentText("Managing network access for sandboxed apps")
+            .setContentTitle("VPN do Vcloud ativa")
+            .setContentText("Internet dos apps de dentro passando pela VPN")
             .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setOngoing(true)
             .setPriority(Notification.PRIORITY_LOW)

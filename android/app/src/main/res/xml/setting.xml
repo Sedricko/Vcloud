@@ -33,8 +33,8 @@
 
         <Preference
                 android:key="send_logs"
-                android:title="Send Logs"
-                android:summary="Upload debug logs to developer" />
+                android:title="Gerar relatório de erros"
+                android:summary="Salva em Download/Vcloud, no próprio celular" />
 
     </PreferenceCategory>
 

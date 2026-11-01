@@ -131,8 +131,8 @@ public class DaemonService extends Service {
     private Notification createNotification() {
         try {
             NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle("BlackBox Core")
-                .setContentText("Core services are running")
+                .setContentTitle("Vcloud")
+                .setContentText("O motor do Vcloud está ativo")
                 .setSmallIcon(android.R.drawable.ic_dialog_info)
                 .setPriority(NotificationCompat.PRIORITY_LOW)
                 .setOngoing(true)
