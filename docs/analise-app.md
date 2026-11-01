@@ -3,6 +3,11 @@
 Escopo: módulo `android/app` (telas, ~3.600 linhas) e o caminho de abertura do motor. Motor inteiro (`Bcore`, ~70 mil
 linhas) não foi revisado linha por linha.
 
+## Causa real da tela preta (achada em 01/11, 06:57)
+`res/drawable/splash.xml` (fundo da tela de entrada) usava `<bitmap android:src="@mipmap/ic_launcher">`. Com o ícone
+novo adaptável (`mipmap-anydpi-v26`), `@mipmap/ic_launcher` deixou de ser imagem simples e a tela de entrada não se
+desenhava: tela preta em todas as versões a partir do ícone novo. Corrigido usando `<item android:drawable=...>`.
+
 ## Falhas encontradas
 
 | # | Onde | O que acontece | Gravidade |

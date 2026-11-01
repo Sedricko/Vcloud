@@ -6,9 +6,11 @@
         </shape>
     </item>
 
-    <item>
-        <bitmap
-                android:gravity="center"
-                android:src="@mipmap/ic_launcher" />
-    </item>
+    <!-- Vcloud: o ícone agora é adaptável (não é imagem simples), então entra como drawable e não como <bitmap>.
+         Com <bitmap> a tela de entrada não se desenhava e o app ficava em tela preta. -->
+    <item
+            android:width="108dp"
+            android:height="108dp"
+            android:drawable="@mipmap/ic_launcher"
+            android:gravity="center" />
 </layer-list>
