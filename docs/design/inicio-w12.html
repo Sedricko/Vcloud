@@ -1,0 +1,65 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><style>
+*{box-sizing:border-box;margin:0;font-family:"Segoe UI Variable","Segoe UI",Roboto,system-ui,sans-serif}
+body{width:412px;height:892px;overflow:hidden;position:relative;color:#eef3ff;background:#c9d3ea}
+.wall{position:absolute;inset:0}
+.search{position:absolute;top:26px;left:50%;transform:translateX(-50%);width:200px;height:42px;border-radius:14px;background:rgba(70,82,110,.55);backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,.18);display:flex;align-items:center;gap:10px;padding:0 14px;color:#dfe6f7;font-size:14px}
+.panel{position:absolute;top:96px;left:14px;right:14px;border-radius:24px;background:linear-gradient(160deg,rgba(78,92,126,.72),rgba(38,46,70,.78));backdrop-filter:blur(26px) saturate(1.2);border:1px solid rgba(255,255,255,.16);box-shadow:0 20px 60px rgba(20,30,60,.35);padding:20px 16px}
+.hd{display:flex;justify-content:space-between;align-items:center;margin:0 4px 14px}
+.hd b{font-size:19px;font-weight:600} .hd span{font-size:12px;color:#c3cde6}
+.grid{display:grid;grid-template-columns:1fr 1.45fr;gap:10px}
+.tile{background:rgba(25,32,52,.45);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:13px}
+.fix{display:grid;grid-template-columns:1fr 1fr;gap:10px;place-items:center;padding:16px 10px}
+.ic{width:44px;height:44px;border-radius:13px;background:linear-gradient(150deg,rgba(255,255,255,.28),rgba(255,255,255,.08));border:1px solid rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:16px;color:#f3f6ff}
+.cap{font-size:10.5px;color:#c7d0e6;text-align:center;margin-top:4px}
+.k{font-size:11.5px;color:#b9c4de} .big{font-size:15px;font-weight:600;margin-top:2px}
+.root .row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#9fc2ff;margin-right:6px;box-shadow:0 0 8px #9fc2ff}
+.mini{font-size:12px;color:#d5ddf0;line-height:1.7}
+.dev{text-align:center} .ph{width:46px;height:84px;margin:4px auto 8px;border-radius:10px;background:linear-gradient(160deg,#a9b6d6,#5d6a8c);border:1px solid rgba(255,255,255,.35);position:relative}
+.ph::after{content:"";position:absolute;inset:5px;border-radius:7px;background:linear-gradient(160deg,#2a3656,#16203a)}
+.acts{margin-top:10px;background:rgba(255,255,255,.06);border-radius:10px;padding:6px 0;font-size:11.5px;color:#d9e0f2;text-align:left}
+.acts div{padding:5px 12px}
+.all{grid-column:2} .all .hd2{display:flex;justify-content:space-between;font-size:14px;font-weight:600;margin-bottom:8px}
+.it{display:flex;align-items:center;gap:10px;padding:7px 0}
+.it .ic{width:32px;height:32px;border-radius:9px;font-size:13px} .it .n{flex:1;font-size:13px} .it .n small{display:block;font-size:10.5px;color:#aeb9d4}
+.sw{width:34px;height:19px;border-radius:999px;background:rgba(255,255,255,.14);position:relative;border:1px solid rgba(255,255,255,.18)}
+.sw::after{content:"";position:absolute;top:2px;left:2px;width:13px;height:13px;border-radius:50%;background:#aab5d0}
+.sw.on{background:rgba(120,165,255,.6)} .sw.on::after{left:17px;background:#fff}
+.add{margin-top:10px;text-align:center;font-size:12.5px;padding:9px;border-radius:10px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12)}
+.foot{margin:18px 6px 0;display:flex;justify-content:space-between;align-items:center;font-size:13px;color:#dbe2f3}
+.av{width:28px;height:28px;border-radius:50%;background:linear-gradient(150deg,#8ea6d8,#3e4e78);display:inline-block;vertical-align:middle;margin-right:9px}
+.pw{width:26px;height:26px;border:2px solid #dbe2f3;border-radius:50%;position:relative}
+.pw::after{content:"";position:absolute;left:50%;top:-5px;width:2px;height:12px;background:#dbe2f3;transform:translateX(-50%);box-shadow:0 0 0 3px rgba(60,72,100,.9)}
+.bar{position:absolute;left:0;right:0;bottom:0;height:70px;background:rgba(40,50,78,.72);backdrop-filter:blur(20px);border-top:1px solid rgba(255,255,255,.12);display:flex;justify-content:center;align-items:center;gap:22px}
+.bar .ic{width:40px;height:40px;border-radius:11px}
+.bar .on{background:linear-gradient(150deg,rgba(150,190,255,.55),rgba(90,130,220,.35))}
+</style></head><body>
+<svg class="wall" viewBox="0 0 412 892" preserveAspectRatio="none">
+<defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e4e8f5"/><stop offset="1" stop-color="#b9c6e6"/></linearGradient>
+<linearGradient id="w1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7f9fe0"/><stop offset="1" stop-color="#2f56b8"/></linearGradient>
+<linearGradient id="w2" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a9c1f2" stop-opacity=".9"/><stop offset="1" stop-color="#4c74cf" stop-opacity=".8"/></linearGradient></defs>
+<rect width="412" height="892" fill="url(#bg)"/>
+<path d="M-40 120 C 90 60, 160 260, 120 420 S 30 700, 180 900 L -40 900 Z" fill="url(#w1)" opacity=".85"/>
+<path d="M-40 200 C 60 160, 120 330, 80 480 S 40 760, 140 900 L -40 900 Z" fill="#dfe7fb" opacity=".45"/>
+<path d="M460 300 C 330 340, 300 520, 360 640 S 330 860, 260 900 L 460 900 Z" fill="url(#w2)"/>
+<path d="M460 380 C 360 420, 350 560, 390 660 S 380 850, 320 900 L 460 900 Z" fill="#e8eefc" opacity=".4"/>
+</svg>
+<div class="search"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#e6ecfa" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>Buscar no Vcloud</div>
+<div class="panel">
+ <div class="hd"><b>Fixados</b><span>Root interno ativo</span></div>
+ <div class="grid">
+  <div class="tile fix"><div><div class="ic">U</div><div class="cap">Unit</div></div><div><div class="ic">O</div><div class="cap">Orecraft</div></div><div><div class="ic">D</div><div class="cap">Dysmantle</div></div><div><div class="ic">+</div><div class="cap">Fixar</div></div></div>
+  <div class="tile root"><div class="row"><div><div class="k">Espaço Vcloud</div><div class="big"><span class="dot"></span>Ligado</div></div><div class="k">01 nov</div></div>
+   <div class="mini">Root: 1 app permitido<br>Saves: pasta /Vcloud<br>Celular: sem root</div></div>
+  <div class="tile dev"><div class="ph"></div><div class="big" style="font-size:13px">Galaxy S25</div><div class="k">Android 16 · 92%</div>
+   <div class="acts"><div>▸ Abrir pasta</div><div>▸ Backup saves</div><div>▸ Atalhos</div></div></div>
+  <div class="tile all"><div class="hd2"><span>Todos os apps</span><span>›</span></div>
+   <div class="it"><div class="ic">U</div><div class="n">Unit<small>app de root</small></div><div class="sw on"></div></div>
+   <div class="it"><div class="ic">O</div><div class="n">Orecraft<small>jogo offline</small></div><div class="sw"></div></div>
+   <div class="it"><div class="ic">D</div><div class="n">Dysmantle<small>jogo offline</small></div><div class="sw"></div></div>
+   <div class="add">+ Adicionar app</div></div>
+ </div>
+<div class="foot"><div><span class="av"></span>Usuário</div><div class="pw" title="Desligar espaço"></div></div>
+</div>
+<div class="bar"><div class="ic on">V</div><div class="ic">U</div><div class="ic">O</div><div class="ic">▤</div></div>
+</body></html>

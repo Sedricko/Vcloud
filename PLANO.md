@@ -48,6 +48,12 @@ Foco: **o root funcionar lá dentro** e **o que estiver lá dentro rodar bem**. 
 - Google **de verdade, sem fingir**: jogo vem da loja, licença confirmada pela loja, login com a conta real.
   Play Integrity não é enganado; jogo que recusar fica no celular normal.
 
+## Visual (escolhido em 01/11)
+- **Conceito Windows 12**: fundo claro com ondas azuis, painel de vidro, blocos (Fixados, Espaço Vcloud, Celular,
+  Todos os apps), busca no topo, barra embaixo. Prévia aprovada: `docs/design/inicio-w12.png` (fonte `.html` junto).
+- Ícones por enquanto com a letra do app (sem cor); trocar pelos ícones reais só se o usuário pedir.
+- A tela só é programada depois do motor e do root funcionando; cada tela nova ganha prévia antes.
+
 ## Cuidados já conhecidos
 - Matador de processos do Android 12+ (os dois emuladores tratam dele). Testar na F0/F1.
 - Apps que recusam espaço virtual: não escondemos, só ficam de fora.
