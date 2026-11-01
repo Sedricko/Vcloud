@@ -56,8 +56,7 @@ include $(BUILD_SHARED_LIBRARY)
 # Vcloud: "su" do root interno. Executável com nome de biblioteca (libvsu.so) para o Gradle empacotar na pasta
 # de bibliotecas nativas, a única de onde o Android deixa um app executar um arquivo.
 include $(CLEAR_VARS)
-LOCAL_MODULE := vsu
-LOCAL_MODULE_FILENAME := libvsu.so
+LOCAL_MODULE := libvsu.so
 LOCAL_SRC_FILES := su/su.c
 LOCAL_CFLAGS += -Wall -fPIE
 LOCAL_LDFLAGS += -pie -Wl,-z,max-page-size=16384
