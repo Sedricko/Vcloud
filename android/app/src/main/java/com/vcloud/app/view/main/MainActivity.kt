@@ -229,7 +229,16 @@ class MainActivity : LoadingActivity() {
 
     /** Vcloud: toolbar transparente sobre o vidro e bloco "Celular" com o aparelho real. */
     private fun initGlassHome() {
-        viewBinding.toolbarLayout.toolbar.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+        // Fundo de ondas na janela inteira (também atrás da barra de status e da de navegação).
+        window.setBackgroundDrawableResource(R.drawable.bg_waves)
+        // Barra do topo sobre o vidro: texto e ícones nas cores do vidro, não nas do tema comum.
+        viewBinding.toolbarLayout.toolbar.apply {
+            setBackgroundColor(android.graphics.Color.TRANSPARENT)
+            val sobreVidro = androidx.core.content.ContextCompat.getColor(context, R.color.glass_text)
+            setTitleTextColor(sobreVidro)
+            setSubtitleTextColor(androidx.core.content.ContextCompat.getColor(context, R.color.glass_text_dim))
+            overflowIcon?.setTint(sobreVidro)
+        }
         viewBinding.tileDeviceModel.text = android.os.Build.MODEL
         viewBinding.tileDeviceAndroid.text = "Android ${android.os.Build.VERSION.RELEASE}"
         // Vcloud: prepara os Serviços do Google só depois que a tela inicial já apareceu

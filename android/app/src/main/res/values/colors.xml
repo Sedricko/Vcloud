@@ -15,19 +15,19 @@
     <color name="on_surface">#1C2640</color>
     <color name="surface_line">#1F1E2D5A</color>
 
-    <!-- tela inicial: painel de vidro, blocos e texto sobre o vidro -->
-    <color name="glass_start">#BCFFFFFF</color>
-    <color name="glass_end">#BCF4F7FD</color>
-    <color name="glass_stroke">#F2FFFFFF</color>
-    <color name="tile_bg">#9EFFFFFF</color>
-    <color name="tile_stroke">#1A283C78</color>
-    <color name="glass_text">#1C2640</color>
-    <color name="glass_text_dim">#5B6888</color>
-    <color name="glass_dot">#2F56B8</color>
+    <!-- tela inicial: o VISUAL ORIGINAL (vidro escuro sobre ondas claras). O tema escuro troca por values-night. -->
+    <color name="glass_start">#B84E5C7E</color>
+    <color name="glass_end">#C7262E46</color>
+    <color name="glass_stroke">#29FFFFFF</color>
+    <color name="tile_bg">#73192034</color>
+    <color name="tile_stroke">#14FFFFFF</color>
+    <color name="glass_text">#EEF3FF</color>
+    <color name="glass_text_dim">#B9C4DE</color>
+    <color name="glass_dot">#9FC2FF</color>
 
     <!-- fundo de ondas -->
-    <color name="wave_bg_start">#FFEEF2FB</color>
-    <color name="wave_bg_end">#FFC6D4F1</color>
+    <color name="wave_bg_start">#FFE4E8F5</color>
+    <color name="wave_bg_end">#FFB9C6E6</color>
     <color name="wave_a_start">#FF7F9FE0</color>
     <color name="wave_a_end">#FF2F56B8</color>
     <color name="wave_b">#73DFE7FB</color>
