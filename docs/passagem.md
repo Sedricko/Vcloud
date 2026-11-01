@@ -306,3 +306,14 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
   arquivos em `blackbox/painel/`) e Configurações > "Painel lateral" (mostrar/ocultar e opacidade).
 - NÃO feito: "Bloquear gesto de voltar" (precisa interceptar a entrada de voltar do app; sem gancho simples) e personalizar menu.
 - Pendente: analisar X8 Sandbox (modo PIP, 17 partes .7z) enviado pelo usuário; opções 3 (personalizar painel) e 4 (manter apps vivos).
+
+## 01/11 noite — Manter apps vivos (implementado, NÃO testado no aparelho)
+- `view/vivos/{VivosActivity,VivosFragment}.kt` + `res/xml/vivos.xml` (PreferenceScreen, mesmo molde das Configurações; entrada em
+  Configurações > "Manter apps vivos"). Linhas: restrição de bateria (`PowerManager.isIgnoringBatteryOptimizations`; botão abre o pedido
+  do Android; permissão `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS`), limite de processos fantasma (lê `Settings.Global
+  settings_enable_monitor_phantom_procs`; se não conseguir ler diz "não consegui verificar"), encerrados pelo Android
+  (`CausaDeErro.contarEncerradosPeloAndroid` no histórico) e atalho para a chave de segundo plano.
+- Pedido do usuário: SEM ADB/comandos; levar direto à opção. O botão abre `ACTION_APPLICATION_DEVELOPMENT_SETTINGS` com os extras
+  `:settings:fragment_args_key` = `disable_phantom_process_monitor` (chave do AOSP, lida do código-fonte via WebFetch; não confirmada
+  no One UI). Se as Opções do desenvolvedor estão desligadas, abre "Sobre o telefone" (`ACTION_DEVICE_INFO_SETTINGS`).
+- Regra de design reforçada: telas novas seguem o padrão nativo das Configurações (linhas título+resumo, sem ícones/cartões coloridos).
