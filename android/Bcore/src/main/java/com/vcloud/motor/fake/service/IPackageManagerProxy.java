@@ -244,7 +244,7 @@ public class IPackageManagerProxy extends BinderInvocationStub {
         protected Object hook(Object who, Method method, Object[] args) throws Throwable {
             int flags = MethodParameterUtils.toInt(args[0]);
             List<ApplicationInfo> installedApplications = VcloudCore.getBPackageManager().getInstalledApplications(flags, VcloudCore.getUserId());
-            return ParceledListSliceCompat.create(installedApplications);
+            return embrulharLista(who, method, args, installedApplications);
         }
     }
 
@@ -255,8 +255,30 @@ public class IPackageManagerProxy extends BinderInvocationStub {
         protected Object hook(Object who, Method method, Object[] args) throws Throwable {
             int flags = MethodParameterUtils.toInt(args[0]);
             List<PackageInfo> installedPackages = VcloudCore.getBPackageManager().getInstalledPackages(flags, VcloudCore.getUserId());
-            return ParceledListSliceCompat.create(installedPackages);
+            return embrulharLista(who, method, args, installedPackages);
         }
+    }
+
+    // Vcloud: no Android 17 getInstalledPackages devolve PackageInfoList (não mais ParceledListSlice);
+    // devolver o tipo errado derrubava a Play Store (ClassCastException). Monta o tipo que o método espera.
+    static Object embrulharLista(Object who, Method method, Object[] args, List<?> lista) throws Throwable {
+        Object slice = ParceledListSliceCompat.create(lista);
+        Class<?> tipo = method.getReturnType();
+        if (slice == null || tipo.isInstance(slice)) return slice;
+        for (java.lang.reflect.Constructor<?> c : tipo.getDeclaredConstructors()) {
+            Class<?>[] p = c.getParameterTypes();
+            if (p.length != 1) continue;
+            try {
+                c.setAccessible(true);
+                if (p[0].isAssignableFrom(List.class) || p[0].isInstance(lista)) return c.newInstance(lista);
+                if (p[0].isInstance(slice)) return c.newInstance(slice);
+            } catch (Throwable e) {
+                Slog.w(TAG, "embrulharLista: " + tipo.getName() + " " + e);
+            }
+        }
+        // shortcut: sem construtor conhecido, devolve a lista do próprio celular em vez de derrubar o app
+        Slog.w(TAG, "embrulharLista: não sei montar " + tipo.getName() + ", usando a resposta do sistema");
+        return method.invoke(who, args);
     }
 
     @ProxyMethod("getApplicationInfo")
