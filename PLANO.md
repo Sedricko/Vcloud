@@ -72,6 +72,15 @@ Foco: **o root funcionar lá dentro** e **o que estiver lá dentro rodar bem**. 
 - Ícones por enquanto com a letra do app (sem cor); trocar pelos ícones reais só se o usuário pedir.
 - A tela só é programada depois do motor e do root funcionando; cada tela nova ganha prévia antes.
 
+## Próxima tarefa (para uma conversa nova): ferramenta de diagnóstico para ver erros
+- Objetivo: ver os erros do Vcloud sem ler 14 mil linhas. **Só o Vcloud e os apps de dentro dele**; nada sai do celular.
+- Resumo em português no **topo do relatório** (`Download/Vcloud/relatorio-*.txt`): quais apps caíram, a hora, o erro e a
+  causa; avisos conhecidos com o que fazer (ex.: "precisa do Google Play Services → ative em Configurações > Serviços
+  do Google"); os tipos de erro mais frequentes.
+- **Aviso discreto quando um app de dentro fecha:** "Orecraft fechou — relatório salvo".
+- Depois, com prévia antes: tela "Diagnóstico" (apps rodando, memória, últimos erros, botões Relatório e Parar app).
+- Até lá: o usuário manda o relatório e o agente faz o resumo na conversa.
+
 ## Cuidados já conhecidos
 - Matador de processos do Android 12+ (os dois emuladores tratam dele). Testar na F0/F1.
 - Apps que recusam espaço virtual: não escondemos, só ficam de fora.
