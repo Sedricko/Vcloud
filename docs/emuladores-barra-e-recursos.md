@@ -75,3 +75,18 @@ Origem: APK de 503 MB (17 partes .7z). Textos traduzidos do chinês por mim. **[
   (14) **Voltar ao Vcloud sem sair: aba que vira bolinha** (já temos a aba; falta arrastar-para-esconder); (15) **clique automático/velocidade** só mediante pedido.
 - **Janela pequena**: nos 3 emuladores ela é desenhada pelo emulador (o Android virtual é uma imagem dentro de uma janela). No Vcloud o app é
   uma tela real: só dá com PIP nativo do Android (toque limitado) ou janela livre do One UI (incerto). Fica como pesquisa.
+
+---
+## Como os 3 emuladores fazem o Google Play (para o conserto da Play Store do Vcloud)
+**[lido]** X8 Sandbox: tela própria `PlayEnableActivity` ("Google services": ligar/desligar), baixa um **pacote de serviços do Google** à parte
+(`play_download_info_`: md5, tamanho, lista de URLs; "precisamos baixar o pacote de serviços do Google, tamanho %s"), pede **reiniciar o app**
+para ligar/desligar, e a ROM é baixada pela Play Store do celular real (verificação de licença do próprio X8). Dual Space: plugin `play.zip`
+(cifrado, 102 MB, análise anterior) + avisos do Google Play Services. vPhoneOS: Google vem na ROM/Android virtual.
+**[dedução]** Os três são Android INTEIRO dentro do app: o Google é instalado como parte do SISTEMA virtual deles (privilegiado, com
+propriedades/identidade do aparelho controladas por eles), então o GSF/GMS faz o "checkin" e recebe um android-id próprio.
+O Vcloud é diferente: o app roda no Android real e o Google é uma CÓPIA do celular (GMS/GSF/Play Store) rodando como app comum. Hoje o
+motor encaminha os provedores `com.google.android.gms*`/`gsf*` para o Google REAL do celular, e a Play Store de dentro fica sem android-id.
+Caminhos: (a) fazer o GSF de dentro (cópia) ser dono do próprio Gservices e fazer o checkin dele; (b) entregar à Play Store o id do GSF
+real (se o celular deixar o Vcloud ler); (c) pacote de Google separado como o X8 (não serve: sem sistema próprio, as permissões privilegiadas
+faltam); (d) microG (faz checkin sem ser sistema, mas NÃO passa licença/Play Integrity: não serve para Touch Macro/DYSMANTLE).
+Escolha depende da medição "Testar Google" (APK `Vcloud-medir-google`).
