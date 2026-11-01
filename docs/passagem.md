@@ -259,3 +259,13 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Gerenciador de root: notificações Nenhuma/Mensagem/Notificação (`RootPolicy.Aviso`, `_aviso` = `toast`|`notif`), resposta para
   todos (RadioGroup), botões "aplicar agora a todos" COM confirmação, e a janela de root tem "Usar a mesma resposta para todos".
 - Não verificado no aparelho: aparência real dos dois temas, `SwitchMaterial`/`MaterialButton` programáticos, notificação do root.
+
+## 01/11 noite — correção: tema claro volta ao visual ORIGINAL
+- O usuário mandou print do visual original (vidro escuro sobre ondas claras, texto branco). A paleta clara tinha virado vidro
+  branco, o que fugia do design ativo. Agora `values/colors.xml` (claro) tem os valores originais; `values-night` mantém o escuro.
+  REGRA: o tema do sistema alterna claro/escuro, mas o claro é o visual original; não redesenhar sem prévia aprovada.
+- Fundo de ondas virou `window.setBackgroundDrawableResource` (vai até as bordas, atrás das barras do sistema); a barra do topo
+  da tela inicial usa as cores do vidro (`glass_text`).
+- As prévias `docs/design/tema-inicio.png` e `amostra-*.png` mostram o claro ANTIGO (vidro branco): estão superadas.
+- Pendente: layout em tela cheia aprovado (`inicio-w12-tela-cheia.png`: busca, Fixados, barra de baixo, usuário/desligar) NÃO foi
+  programado; só o tema.
