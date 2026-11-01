@@ -18,7 +18,7 @@ import com.vcloud.motor.utils.Diagnostico
 
 /**
  * Mostra o que pode estar fechando os apps em segundo plano e como evitar. Não muda nada no celular sozinho:
- * tudo passa por telas do próprio Android (bateria, Opções do desenvolvedor) ou por comandos que você roda.
+ * tudo passa por telas do próprio Android (bateria, Opções do desenvolvedor).
  */
 class VivosFragment : PreferenceFragmentCompat() {
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
@@ -75,17 +75,21 @@ class VivosFragment : PreferenceFragmentCompat() {
             .show()
     }
 
+    private fun desenvolvedorLigado(ctx: Context) = try {
+        Settings.Global.getInt(ctx.contentResolver, Settings.Global.DEVELOPMENT_SETTINGS_ENABLED, 0) == 1
+    } catch (e: Exception) { false }
+
+    /** Leva direto à tela certa: Opções do desenvolvedor (se já ligadas) ou Sobre o telefone (para ligá-las). */
     private fun fantasma() {
-        MaterialAlertDialogBuilder(requireContext())
-            .setTitle("Desativar o limite")
-            .setMessage(
-                "1. Ative as Opções do desenvolvedor: Configurações > Sobre o telefone > Informações do software > toque 7 vezes em Número da versão.\n\n" +
-                "2. Em Opções do desenvolvedor, procure \"Desativar restrições de processos secundários\" (o nome varia) e ligue.\n\n" +
-                "Nem todo celular tem essa chave. Se o seu não tiver, este ajuste não está disponível nele."
-            )
-            .setPositiveButton("Opções do desenvolvedor") { _, _ -> abrir(Intent(Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS)) }
-            .setNegativeButton("Fechar", null)
-            .show()
+        val b = MaterialAlertDialogBuilder(requireContext()).setTitle("Limite de processos fantasma")
+        if (desenvolvedorLigado(requireContext())) {
+            b.setMessage("Nas Opções do desenvolvedor, procure \"Desativar restrições de processos secundários\" (o nome varia) e ligue. Se o seu celular não tiver essa chave, este ajuste não está disponível nele.")
+                .setPositiveButton("Abrir Opções do desenvolvedor") { _, _ -> abrir(Intent(Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS)) }
+        } else {
+            b.setMessage("As Opções do desenvolvedor estão desligadas. Em Sobre o telefone > Informações do software, toque 7 vezes em Número da versão. Depois volte aqui.")
+                .setPositiveButton("Abrir Sobre o telefone") { _, _ -> abrir(Intent(Settings.ACTION_DEVICE_INFO_SETTINGS)) }
+        }
+        b.setNegativeButton("Fechar", null).show()
     }
 
     private fun abrir(i: Intent) {
