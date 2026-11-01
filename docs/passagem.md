@@ -274,3 +274,15 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Root OK no Tinker (`ROOT dev.tinker.app: ALLOW`). Regressão minha corrigida (CatLoadingView, acima).
 - O histórico estava poluído por `ERRO JavaException em null` repetido: agora `Diagnostico.erroCapturado` junta o mesmo erro por 30 s e escreve
   "(o próprio Vcloud)" quando não há pacote.
+
+## 01/11 noite — painel lateral sobre a tela cheia (implementado, NÃO testado no aparelho)
+- `view/painel/PainelLateral.kt` (roda só no processo `:black`, iniciado em `App.onCreate`): a cada 1 s vê se um processo
+  `com.vcloud.app:pN` está em primeiro plano (`IMPORTANCE_FOREGROUND`); se sim e `canDrawOverlays`, mostra a aba (arrastável,
+  lado e altura salvos em prefs `painel_lateral`); tocar abre painel em tela cheia com fundo escurecido (toque fora fecha).
+  Itens: Minimizar (volta à MainActivity, não à tela do celular), Capturar tela, Trocar de app (apps abertos, `launchApk`),
+  Configurações, Gerenciador de root, Diagnóstico, Fechar app (com confirmação; abre a MainActivity antes de `stopPackage`).
+- Captura: `CapturaActivity` pede a permissão do Android (ela pergunta a CADA captura) e `CapturaService` (FGS mediaProjection)
+  salva PNG em `Pictures/Vcloud`. A aba some 15 s para não sair na foto.
+- Ações abrem a tela ANTES de fechar o painel: o Android só deixa serviço em segundo plano abrir tela com janela visível.
+- Riscos a verificar no S25: `IMPORTANCE_FOREGROUND` do processo guest com jogo na frente; abrir activity a partir do `:black`;
+  a permissão de captura; Unity pausar com o painel aberto (a janela não toma foco, então não deveria).
