@@ -172,3 +172,17 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
   do Android, `view/setting/DiagnosticoActivity.kt` (tela simples, sem visual W12 ainda), resumo no topo de `writeReport`.
 - O CI agora roda `:app:testDebugUnitTest` antes de montar o APK.
 - Ainda não visto em aparelho: se o diário enche (assume que o gerenciador de processos roda no processo principal).
+
+## Relatórios de 01/11 14:30 (APK diagnóstico) — o que o Diagnóstico achou
+- **Unit e Tinker** caíam com `CannotPostForegroundServiceNotificationException: Bad notification for startForeground`.
+  Causa: `INotificationManagerProxy.createNotificationChannels` só criava o canal no gerenciador VIRTUAL; o canal do
+  `ProxyService` (`blackbox_proxy_service`) não existia no Android de verdade, então o `startForeground` (que passa adiante
+  desde f7eaa28) era recusado. Correção: o canal do ProxyService passa para o sistema (aguardando teste).
+- **Touch Macro Pro**: `System.exit(0)` do próprio app aos 3 s = checagem de licença (Play Store). Não é queda. Regra do projeto: não burlar.
+- **Orecraft**: rodou 29 s e foi fechado normalmente (antes o diagnóstico dizia "Play Services" por engano; corrigido).
+- **Play Store de dentro** (`com.android.vending`): laço de quedas a cada ~0,4 s: `ClassNotFoundException AssetBrowserActivity`
+  (split do APK não está no classpath) e `ClassCastException` no `:background`. Play Services (`gms.unstable`): queda nativa no
+  `CronetInit`. Não resolvido; só aparece com "Mostrar a Play Store". Ver item 4 acima.
+- Diagnóstico corrigido: classifica pelo bloco `FATAL EXCEPTION` (antes pegava ruído `BootstrapClass`/`setHiddenApiExemptions`),
+  espera 1,5 s o `ApplicationExitInfo`, `ABRIU` mostra o pid, novas causas (`System.exit`, fechamento normal, notificação ruim).
+  Testado com o relatório real (`R.java` em scratchpad) e `CausaDeErroTest`.

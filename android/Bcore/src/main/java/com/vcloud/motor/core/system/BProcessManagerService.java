@@ -193,7 +193,7 @@ public class BProcessManagerService implements ISystemService {
             e.printStackTrace();
         }
         app.initLock.open();
-        Diagnostico.abriu(app.getPackageName(), app.processName, app.pid);
+        Diagnostico.abriu(app.getPackageName(), app.processName, app.pid != 0 ? app.pid : Binder.getCallingPid());
     }
 
     public void onProcessDie(ProcessRecord record) {

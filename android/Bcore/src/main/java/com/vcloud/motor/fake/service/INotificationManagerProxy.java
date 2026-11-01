@@ -127,6 +127,13 @@ public class INotificationManagerProxy extends BinderInvocationStub {
             List<?> list = BRParceledListSlice.get(args[1]).getList();
             if (list == null)
                 return 0;
+            // Vcloud: o canal do ProxyService tem de existir no Android de verdade; o startForeground dele é postado
+            // pelo sistema e, sem o canal, vira "Bad notification for startForeground" e derruba o app de dentro.
+            for (Object o : list) {
+                if (com.vcloud.motor.proxy.ProxyService.CHANNEL_ID.equals(((NotificationChannel) o).getId())) {
+                    return method.invoke(who, args);
+                }
+            }
             for (Object o : list) {
                 BNotificationManager.get().createNotificationChannel((NotificationChannel) o);
             }

@@ -18,7 +18,7 @@ import com.vcloud.motor.app.dispatcher.AppServiceDispatcher;
 public class ProxyService extends Service {
     public static final String TAG = "StubService";
     public static final String EXTRA_REQUIRE_FOREGROUND = "_B_|_require_foreground_";
-    private static final String CHANNEL_ID = "blackbox_proxy_service";
+    public static final String CHANNEL_ID = "blackbox_proxy_service";
 
     @Nullable
     @Override

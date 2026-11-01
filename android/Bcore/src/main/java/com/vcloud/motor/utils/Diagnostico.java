@@ -13,7 +13,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -83,6 +82,7 @@ public final class Diagnostico {
             long seg = (System.currentTimeMillis() - ini) / 1000;
             StringBuilder sb = new StringBuilder("FECHOU  " + pacote + " pid=" + pid + " depois de " + seg + " s");
             if (seg < 15) sb.append("  [fechou logo ao abrir]");
+            try { Thread.sleep(1500); } catch (InterruptedException ignored) { /* o registro do Android sai com atraso */ }
             int codigo = codigoDoAndroid(pid);
             sb.append("\n    Android: ").append(codigo < 0 ? "indisponível" : nomeDoMotivo(codigo) + descricao(pid));
             StringBuilder erros = new StringBuilder();
@@ -157,24 +157,18 @@ public final class Diagnostico {
     // Lê o logcat só deste pid; devolve a causa e anota até 3 linhas de erro em 'linhas'.
     private static String causaDoLogcat(int pid, StringBuilder linhas) {
         if (pid <= 0) return "sem pid (o processo nem chegou a nascer)";
-        List<String> erros = new ArrayList<>();
         StringBuilder tudo = new StringBuilder();
         try {
             Process p = Runtime.getRuntime().exec(new String[]{"logcat", "-d", "-v", "threadtime", "--pid=" + pid});
             try (BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()))) {
                 String l;
-                while ((l = r.readLine()) != null) {
-                    tudo.append(l).append('\n');
-                    if (erros.size() < 3 && (l.contains("Exception") || l.contains("Error") || l.contains("FATAL")
-                            || l.contains("Fatal signal") || l.contains("Cannot run"))) {
-                        erros.add(l.length() > 220 ? l.substring(0, 220) : l);
-                    }
-                }
+                while ((l = r.readLine()) != null) tudo.append(l).append('\n');
             }
         } catch (Exception e) {
             return "não consegui ler o logcat (" + e.getMessage() + ")";
         }
-        for (String l : erros) linhas.append("\n      ").append(l);
-        return CausaDeErro.de(tudo.toString());
+        String log = tudo.toString();
+        for (String l : CausaDeErro.linhas(log)) linhas.append("\n      ").append(l);
+        return CausaDeErro.de(log);
     }
 }
