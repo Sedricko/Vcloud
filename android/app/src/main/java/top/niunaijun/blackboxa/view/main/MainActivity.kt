@@ -59,6 +59,7 @@ class MainActivity : LoadingActivity() {
 
             setContentView(viewBinding.root)
             initToolbar(viewBinding.toolbarLayout.toolbar, R.string.app_name)
+            initGlassHome()
             initViewPager()
             initFab()
             initToolbarSubTitle()
@@ -243,6 +244,13 @@ class MainActivity : LoadingActivity() {
             Log.e(TAG, "Error showing error dialog: ${e.message}")
             finish()
         }
+    }
+
+    /** Vcloud: toolbar transparente sobre o vidro e bloco "Celular" com o aparelho real. */
+    private fun initGlassHome() {
+        viewBinding.toolbarLayout.toolbar.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+        viewBinding.tileDeviceModel.text = android.os.Build.MODEL
+        viewBinding.tileDeviceAndroid.text = "Android ${android.os.Build.VERSION.RELEASE}"
     }
 
     private fun initToolbarSubTitle() {
