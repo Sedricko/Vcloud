@@ -23,7 +23,11 @@ dentro, **sem root no celular**. O resto fica no celular normal.
   Ainda não testado: jogo com login Google e outros apps.
 - Visto nos prints: o BlackBox já traz "GMS Manager" (Google dentro dele, útil para a F1b) e opções Xposed.
   As opções "Hide Root" e "Hide Xposed" (esconder de verificações) **saem do nosso build** (regra do projeto).
-- **Próximo:** F1, compilar o BlackBox do código (conferir licença, ler o código, cortar o que não usamos).
+- **F1 em andamento:** motor escolhido para começar = **NewBlackbox (LamPPKK)**, Apache 2.0, Android 5–16
+  (minSdk 21, targetSdk 36), última mudança 25/08/2026. Copiado para `android/` (origem e mudanças em
+  `android/NOTICE-VCLOUD.md`). Tirado: envio de registros para servidor de terceiros, esconder root, pular verificações,
+  falsificar aparelho (Pixel 6/Android 12).
+- **Falta na F1:** compilar (precisa de permissão do usuário para rodar o build nesta máquina) e o usuário testar o APK.
 
 ## Fases
 Foco: **o root funcionar lá dentro** e **o que estiver lá dentro rodar bem**. O Unit é um dos apps de root.
