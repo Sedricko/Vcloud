@@ -19,6 +19,8 @@ public final class CausaDeErro {
     // No log inteiro só vale o que não costuma aparecer como ruído em apps que seguem vivos.
     private static final String[][] NO_LOG_TODO = {
             {"ForegroundServiceDidNotStartInTime", "Serviço em primeiro plano não iniciou a tempo"},
+            {"Cannot run program", "Programa não encontrado (ex.: su; ligue o Root interno do app)"},
+            {"UnsatisfiedLinkError", "Biblioteca nativa não carregou (arquitetura/ABI do app?)"},
             {"Fatal signal", "Queda nativa (código C/C++ do app ou do motor)"},
             {"ANR in", "O app não respondeu (ANR)"},
             {"Google Play services is missing", "Precisa do Google Play Services: ative em Configurações > Serviços do Google"},
