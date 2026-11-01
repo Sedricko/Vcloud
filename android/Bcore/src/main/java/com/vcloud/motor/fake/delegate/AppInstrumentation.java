@@ -112,6 +112,8 @@ public final class AppInstrumentation extends BaseInstrumentationDelegate implem
         if (info.theme != 0) {
             activity.getTheme().applyStyle(info.theme, true);
         }
+        // Vcloud: registra a orientação pedida pelo app (para investigar jogos deitados que abrem em pé)
+        Log.i(TAG, "Orientação: " + activity.getClass().getName() + " pede screenOrientation=" + info.screenOrientation);
         ActivityManagerCompat.setActivityOrientation(activity, info.screenOrientation);
     }
 
