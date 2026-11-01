@@ -13,7 +13,8 @@ dentro, **sem root no celular**. O resto fica no celular normal.
 - **Root do Vcloud:** `su` interno com janela "permitir root?", só vale lá dentro. Chave por app: ligada nos apps de
   root, desligada nos jogos.
 - **Natural de usar:** atalho na tela inicial, mesmas pastas do celular, mesma internet, notificações e copiar e colar.
-- Meta: Android 7 ao 16.
+- Meta: Android 7 até o **mais atual (Android 17)**; o S25 (Android novo) é o teste principal, quando o usuário autorizar.
+  Se o 17 quebrar o motor, estudar as correções de quem já cuida do 17 (`docs/pesquisa.md`) e trazer só elas.
 
 ## Onde estamos (01/11)
 - Analisados: vPhoneOS (`docs/vphone.md`) e Virtual Master (`docs/virtualmaster.md`). Os dois confirmam o princípio
@@ -40,7 +41,7 @@ Foco: **o root funcionar lá dentro** e **o que estiver lá dentro rodar bem**. 
 | F2 | Root do Vcloud (`su` interno com janela "permitir root?") | Um verificador de root dentro diz "tem root" |
 | F3 | Apps de root funcionando: o Unit (e outro app de root) lendo e mudando o Orecraft lá dentro | Achar, editar e congelar o Cobre |
 | F4 | Pastas: mesmas do celular + pasta dos saves visível; opção "isolado" | Backup do save pelo app Arquivos |
-| F5 | Testar em Android antigo e novo (vPhone, outro emulador, S25 se autorizar) | Funciona no 7 e no 16 |
+| F5 | Testar em Android antigo e novo (vPhone, outro emulador, S25 se autorizar) | Funciona do 7 ao 17 |
 | Lab | Plano B: APK do jogo com uma pecinha nossa | Só se algum jogo não rodar no espaço |
 | Lab | Google completo dentro do Vcloud (Play Store + Play Services) | Só se a ponte da F1b não servir para algum jogo |
 
