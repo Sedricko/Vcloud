@@ -1,0 +1,38 @@
+<!doctype html><html><meta charset="utf-8"><style>
+*{box-sizing:border-box;margin:0;font-family:"Segoe UI Variable","Segoe UI",Roboto,system-ui,sans-serif}
+body{width:900px;height:900px;background:#cfd8ec;display:flex;gap:40px;justify-content:center;align-items:center}
+.col{display:flex;flex-direction:column;align-items:center;gap:12px;color:#33405e;font-size:15px;font-weight:600}
+.phone{position:relative;width:360px;height:760px;border-radius:34px;overflow:hidden;border:6px solid #1b2236;background:linear-gradient(170deg,#2c4d2c,#18301f 45%,#3a2a4f);box-shadow:0 20px 50px rgba(20,30,60,.35)}
+.game{position:absolute;inset:0}
+.g1{position:absolute;left:18px;top:34px;width:120px;height:26px;border-radius:13px;background:rgba(255,255,255,.25)}
+.g2{position:absolute;left:50%;top:230px;width:150px;height:150px;transform:translateX(-50%);border-radius:50%;background:radial-gradient(circle,#ffd36b,#a86a1c);opacity:.85}
+.g3{position:absolute;left:14px;right:14px;bottom:70px;height:150px;border-radius:18px;background:rgba(120,70,30,.55)}
+.handle{position:absolute;right:0;top:340px;width:11px;height:64px;border-radius:8px 0 0 8px;background:rgba(220,228,245,.6);border:1px solid rgba(255,255,255,.35);border-right:none;backdrop-filter:blur(6px)}
+.dim{position:absolute;inset:0;background:rgba(10,14,28,.35)}
+.panel{position:absolute;right:0;top:150px;width:210px;padding:12px;border-radius:22px 0 0 22px;background:linear-gradient(160deg,rgba(78,92,126,.82),rgba(38,46,70,.88));backdrop-filter:blur(26px) saturate(1.2);border:1px solid rgba(255,255,255,.16);border-right:none;box-shadow:-10px 14px 40px rgba(10,14,30,.45)}
+.hd{color:#dfe6f7;font-size:12px;padding:2px 6px 8px;display:flex;justify-content:space-between}
+.hd b{color:#fff;font-size:14px}
+.it{display:flex;align-items:center;gap:12px;padding:8px 8px;border-radius:14px;color:#eef3ff;font-size:14px}
+.it+.it{margin-top:2px}
+.it:nth-child(odd){background:rgba(255,255,255,.05)}
+.ic{width:34px;height:34px;border-radius:11px;background:linear-gradient(150deg,rgba(255,255,255,.28),rgba(255,255,255,.08));border:1px solid rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;color:#f3f6ff}
+.sep{height:1px;background:rgba(255,255,255,.14);margin:6px 4px}
+.dang .ic{background:linear-gradient(150deg,rgba(255,140,140,.45),rgba(255,255,255,.08))}
+.note{font-size:12px;font-weight:400;color:#4d5a78;max-width:360px;text-align:center;line-height:1.35}
+</style><body>
+<div class="col"><div class="phone"><div class="game"><div class="g1"></div><div class="g2"></div><div class="g3"></div></div><div class="handle"></div></div>
+<div>1. Jogo aberto: só uma aba na borda</div><div class="note">Fica quase invisível. Arrastar para cima ou para baixo muda a posição; encostar na esquerda muda o lado.</div></div>
+<div class="col"><div class="phone"><div class="game"><div class="g1"></div><div class="g2"></div><div class="g3"></div></div><div class="dim"></div>
+<div class="panel">
+ <div class="hd"><b>Vcloud</b><span>Orecraft</span></div>
+ <div class="it"><div class="ic">—</div>Minimizar</div>
+ <div class="it"><div class="ic">▢</div>Capturar tela</div>
+ <div class="it"><div class="ic">⇄</div>Trocar de app</div>
+ <div class="it"><div class="ic">⚙</div>Configurações</div>
+ <div class="it"><div class="ic">#</div>Gerenciador de root</div>
+ <div class="it"><div class="ic">!</div>Diagnóstico</div>
+ <div class="sep"></div>
+ <div class="it dang"><div class="ic">✕</div>Fechar app</div>
+</div></div>
+<div>2. Toca na aba: abre o painel</div><div class="note">Toque fora ou na aba fecha. O painel só aparece com um app do Vcloud na frente.</div></div>
+</body></html>
