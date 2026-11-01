@@ -326,3 +326,11 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
   `libhttpengine.so` (HttpEngine do Android) é consequência. Resolver = fazer o GMS de dentro registrar o aparelho (grande e incerto).
   Decisão pendente do usuário: perseguir isso ou deixar a Play Store de dentro desativada.
 - Histórico: erros agora em UMA linha (`CausaDeErro.resumirMensagem`) e erros repetidos de pacotes do Google no máximo 1x/5 min.
+
+## 01/11 noite — conserto da Play Store: etapa 1 (medir)
+- Hipóteses: (a) a consulta ao Gservices volta sem a linha `android_id`; (b) falha por outro caminho. `ContentProviderStub.invoke` engole
+  erros de uid/permissão e devolve vazio (agora vira evento `PROVEDOR erro engolido` no histórico). NÃO havia essas linhas no logcat antigo.
+- `utils/ProbeGoogle.java`: `consultarAndroidId` (mesma consulta da Play Store: `content://com.google.android.gsf.gservices`, arg `android_id`),
+  `relatorio` (permissão READ_GSERVICES, ANDROID_ID, versões GSF/GMS/Play Store no celular e dentro do Vcloud) e `medirDentro`
+  (roda 3 s depois de abrir vending/gms e escreve `GOOGLE dentro de <pkg>: Gservices -> ...`). Central ganhou "Testar Google".
+- Próximo: com a resposta, escolher o conserto (identidade da consulta, ANDROID_ID, checkin do GSF).
