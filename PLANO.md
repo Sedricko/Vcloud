@@ -37,8 +37,11 @@ dentro, **sem root no celular**. O resto fica no celular normal.
   `Download/Vcloud/relatorio-AAAAMMDD-HHMMSS.txt` (aparelho + logcat do Vcloud e dos apps de dentro); o usuário manda o
   arquivo na conversa. Nada sai do celular sozinho. **S25 = Android 17 (API 37), confirmado pelo relatório** (SM-S938B, patch 2026-10-05).
   Primeiro relatório: o jogo `com.evrika.miner.camp` fechava ao abrir por uma mudança do Android 17
-  (`IServiceConnection.connected` ganhou um parâmetro `IBinderSession`). Corrigido no motor; aguardando novo teste.
-  **Falta na F1:** Orecraft (abre, liso, salva) no S25 com a correção.
+  (`IServiceConnection.connected` ganhou um parâmetro `IBinderSession`). Corrigido no motor e **confirmado pelo 2º relatório** (erro sumiu).
+  2º relatório (23:05): Orecraft, DYSMANTLE e com.slg.policewar abrem mas pedem **Google Play Services** ("missing").
+  Outros erros vistos: (a) abrir a Play Store de dentro cai no "IntentRedirect Hardening" do Android 17 (intent embrulhado
+  sem token); (b) Tinker caiu por ForegroundServiceDidNotStartInTime no ProxyService. Ficam anotados para depois.
+  **Falta na F1:** ativar "Serviços do Google" no Vcloud e ver se o Orecraft roda e salva no S25.
 
 ## Fases
 Foco: **o root funcionar lá dentro** e **o que estiver lá dentro rodar bem**. O Unit é um dos apps de root.
