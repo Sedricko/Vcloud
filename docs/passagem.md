@@ -296,3 +296,13 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - NÃO testado no aparelho. Risco: reflexão em `WindowManagerGlobal` no Android 17 (APK debuggable ignora a restrição de API oculta).
 - Pendente: os botões do painel lateral abrem OUTRAS telas (saem do jogo). Nos emuladores (vPhoneOS/Virtual Master) a barra é parte
   da própria tela do emulador, por isso nunca sai. Os APKs deles não estão nesta sessão; aguardando decisão do usuário.
+
+## 01/11 noite — painel lateral v2 (voltar/girar/gestos) — implementado, NÃO testado no aparelho
+- Novo canal host -> app de dentro: `IBActivityThread.executarComando(int)` (AIDL) -> `BActivityThread` -> `utils/ComandoDoPainel`
+  (`VOLTAR` = `dispatchKeyEvent` BACK na tela do topo; `GIRAR` = alterna `setRequestedOrientation`). O topo é registrado em
+  `AppInstrumentation.callActivityOnResume/Pause`. Voltar/Girar agem só DENTRO do app.
+- `PainelLateral`: gestos na aba (1 toque = painel, 2 = Voltar, 3 = Apps recentes, segurar = Início do Vcloud; espera 300 ms),
+  linha "Root do Vcloud" com chave, "Ocultar painel", aba com opacidade (`PainelConfig`: Normal/Discreta/Quase invisível;
+  arquivos em `blackbox/painel/`) e Configurações > "Painel lateral" (mostrar/ocultar e opacidade).
+- NÃO feito: "Bloquear gesto de voltar" (precisa interceptar a entrada de voltar do app; sem gancho simples) e personalizar menu.
+- Pendente: analisar X8 Sandbox (modo PIP, 17 partes .7z) enviado pelo usuário; opções 3 (personalizar painel) e 4 (manter apps vivos).
