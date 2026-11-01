@@ -79,12 +79,23 @@ class VivosFragment : PreferenceFragmentCompat() {
         Settings.Global.getInt(ctx.contentResolver, Settings.Global.DEVELOPMENT_SETTINGS_ENABLED, 0) == 1
     } catch (e: Exception) { false }
 
+    /**
+     * Abre as Opções do desenvolvedor já destacando a chave do limite (o Android de referência lê esta chave nos extras; se o
+     * celular não reconhecer, abre as Opções do desenvolvedor normalmente). A chave vem do código do Android (AOSP).
+     */
+    private fun opcaoDoLimite(): Intent {
+        val chave = "disable_phantom_process_monitor"
+        return Intent(Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS)
+            .putExtra(":settings:fragment_args_key", chave)
+            .putExtra(":settings:show_fragment_args", Bundle().apply { putString(":settings:fragment_args_key", chave) })
+    }
+
     /** Leva direto à tela certa: Opções do desenvolvedor (se já ligadas) ou Sobre o telefone (para ligá-las). */
     private fun fantasma() {
         val b = MaterialAlertDialogBuilder(requireContext()).setTitle("Limite de processos fantasma")
         if (desenvolvedorLigado(requireContext())) {
             b.setMessage("Nas Opções do desenvolvedor, procure \"Desativar restrições de processos secundários\" (o nome varia) e ligue. Se o seu celular não tiver essa chave, este ajuste não está disponível nele.")
-                .setPositiveButton("Abrir Opções do desenvolvedor") { _, _ -> abrir(Intent(Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS)) }
+                .setPositiveButton("Abrir direto na opção") { _, _ -> abrir(opcaoDoLimite()) }
         } else {
             b.setMessage("As Opções do desenvolvedor estão desligadas. Em Sobre o telefone > Informações do software, toque 7 vezes em Número da versão. Depois volte aqui.")
                 .setPositiveButton("Abrir Sobre o telefone") { _, _ -> abrir(Intent(Settings.ACTION_DEVICE_INFO_SETTINGS)) }

@@ -25,7 +25,7 @@ def dev():
 <div class="cat">Estado</div>
 <div class="pf"><b>Limite de processos fantasma</b><span>Toque para ver como desativar.</span></div>
 </div><div class="scrim"></div>
-<div class="dlg" style="top:230px"><h3>Limite de processos fantasma</h3><p>Nas Opções do desenvolvedor, procure "Desativar restrições de processos secundários" (o nome varia) e ligue. Se o seu celular não tiver essa chave, este ajuste não está disponível nele.</p><div class="act"><div>Fechar</div><div>Abrir Opções do desenvolvedor</div></div></div>{NAV}</div>'''
+<div class="dlg" style="top:230px"><h3>Limite de processos fantasma</h3><p>Nas Opções do desenvolvedor, procure "Desativar restrições de processos secundários" (o nome varia) e ligue. Se o seu celular não tiver essa chave, este ajuste não está disponível nele.</p><div class="act"><div>Fechar</div><div>Abrir direto na opção</div></div></div>{NAV}</div>'''
 h=f'<!doctype html><html lang="pt-BR"><meta charset="utf-8"><style>{CSS}</style><body>'
 for txt,d in (("CLARO",claro),("ESCURO",escuro)):
     h+=f'<div class="lin"><div class="lab">{txt}</div>'+''.join(f'<div style="{V(d)}">{f()}</div>' for f in (tela,bateria,dev))+'</div>'
