@@ -272,6 +272,11 @@ class AppsRepository {
                         return@forEachIndexed
                     }
 
+                    // Vcloud: peças dos Serviços do Google (Play Services, Play Store, ConfigUpdater...) não aparecem na tela
+                    if (com.vcloud.motor.core.GmsCore.isGoogleAppOrService(applicationInfo.packageName)) {
+                        return@forEachIndexed
+                    }
+
                     
                     if (applicationInfo.packageName.isNullOrBlank()) {
                         Log.w(
