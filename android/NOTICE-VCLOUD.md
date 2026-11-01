@@ -22,4 +22,5 @@ github.com/LamPPKK/NewBlackbox, commit `6e6d90137213148af5a19df3f3ffd60cbf2700f3
   `BlackBoxCore` → `VcloudCore`, `BlackBoxSystem` → `VcloudSystem`, `BlackBoxLoader` → `VcloudLoader`; textos "BlackBox" →
   "Vcloud"; projeto `Vcloud`; tema `Theme.Vcloud`. Apagados README/Docs/RELEASE_NOTES/docs/assets do projeto de origem.
   (Ficam só nomes internos de pastas de dados em minúsculas, invisíveis ao usuário.)
+- Removida a "Play Store falsa" (`createFakeGooglePlayServicesPackageInfo`): o motor agora entrega a Play Store verdadeira (de dentro ou do celular), com assinatura real. Jogos pagos davam "assinatura inválida".
 Motivo: regras do projeto (não enganar verificações de segurança; nada de enviar dados para fora).
