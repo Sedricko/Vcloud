@@ -12,6 +12,9 @@
         android:maxSdkVersion="29" />
 
 
+    <!-- Vcloud: pedir para não restringir a bateria (os jogos de dentro não são fechados em segundo plano) -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+
     <application
         android:name=".app.App"
         android:allowBackup="true"

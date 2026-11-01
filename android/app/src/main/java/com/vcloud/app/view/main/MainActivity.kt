@@ -111,6 +111,22 @@ class MainActivity : LoadingActivity() {
             Log.e(TAG, "Error checking storage permission: ${e.message}")
         }
         pedirNotificacoes()
+        pedirSemRestricaoDeBateria()
+    }
+
+    /** Vcloud: pede uma vez para tirar o Vcloud da otimização de bateria (senão o Android fecha os jogos de dentro). */
+    private fun pedirSemRestricaoDeBateria() {
+        try {
+            val pm = getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
+            if (pm.isIgnoringBatteryOptimizations(packageName)) return
+            val prefs = getSharedPreferences("vcloud", Context.MODE_PRIVATE)
+            if (prefs.getBoolean("bateria_pedida", false)) return
+            prefs.edit { putBoolean("bateria_pedida", true) }
+            startActivity(Intent(android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+                    .setData(Uri.parse("package:$packageName")))
+        } catch (e: Exception) {
+            Log.e(TAG, "Não consegui pedir a liberação da bateria: ${e.message}")
+        }
     }
 
     /** Vcloud: Android 13+ só mostra notificações (as dos apps de dentro e a do motor) se o usuário permitir. */
