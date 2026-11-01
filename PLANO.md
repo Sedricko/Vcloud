@@ -59,8 +59,8 @@ largura da tela. Layout: `activity_main.xml`, `view_toolbar.xml`, `AppsFragment`
 barra de baixo da prévia `docs/design/inicio-w12.png`) e o teste do usuário em pé e deitado.
 
 **Central de diagnóstico única (01/11):** as 3 entradas de relatório (Configurações > Gerar relatório, menu ⋮ > Gerar relatório e
-a tela Diagnóstico) viraram uma só: **Central de diagnóstico** (Configurações e menu ⋮). Ela mostra o histórico dos apps e tem
-Atualizar, Copiar, Gerar relatório (mostra o caminho) e Limpar. Telas agora respeitam as barras do sistema (Android 15+, targetSdk 36
+a tela Diagnóstico) e o relatório AUTOMÁTICO a cada queda (`SimpleCrashFix`, 3-5 MB por arquivo) viraram uma só: **Central de diagnóstico** (Configurações e menu ⋮). Ela mostra o histórico dos apps e tem
+Atualizar, Copiar, Gerar relatório (mostra o caminho) e Limpar. Quedas viram uma linha no histórico (`Diagnostico.erro`). Telas agora respeitam as barras do sistema (Android 15+, targetSdk 36
 desenha por baixo): a Central herda de `BaseActivity` e a tela inicial não aplica mais o inset duas vezes.
 
 ## Fases

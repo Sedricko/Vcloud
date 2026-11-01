@@ -47,42 +47,42 @@ public class SimpleCrashFix {
                     
                     if (isNullContextCrash(throwable)) {
                         Slog.w(TAG, "Caught null context crash, preventing crash: " + throwable.getMessage());
-                        VcloudCore.get().sendLogs("CRASH DETECTED (Caught/NullContext): " + throwable.getMessage(), true);
+                        Diagnostico.erro("capturado/NullContext", throwable);
                         return; 
                     }
 
                     
                     if (isGooglePlayServicesCrash(throwable)) {
                         Slog.w(TAG, "Caught Google Play Services crash, preventing crash: " + throwable.getMessage());
-                        VcloudCore.get().sendLogs("CRASH DETECTED (Caught/GMS): " + throwable.getMessage(), true);
+                        Diagnostico.erro("capturado/GMS", throwable);
                         return; 
                     }
 
                     
                     if (isWebViewCrash(throwable)) {
                         Slog.w(TAG, "Caught WebView crash, preventing crash: " + throwable.getMessage());
-                        VcloudCore.get().sendLogs("CRASH DETECTED (Caught/WebView): " + throwable.getMessage(), true);
+                        Diagnostico.erro("capturado/WebView", throwable);
                         return; 
                     }
 
                     
                     if (isAttributionSourceCrash(throwable)) {
                         Slog.w(TAG, "Caught AttributionSource crash, preventing crash: " + throwable.getMessage());
-                        VcloudCore.get().sendLogs("CRASH DETECTED (Caught/Attribution): " + throwable.getMessage(), true);
+                        Diagnostico.erro("capturado/Attribution", throwable);
                         return; 
                     }
 
                     
                     if (isSocialMediaAppCrash(throwable)) {
                         Slog.w(TAG, "Caught social media app crash, preventing crash: " + throwable.getMessage());
-                        VcloudCore.get().sendLogs("CRASH DETECTED (Caught/SocialMedia): " + throwable.getMessage(), true);
+                        Diagnostico.erro("capturado/SocialMedia", throwable);
                         return; 
                     }
 
                     
-                    Slog.e(TAG, "Fatal crash detected, attempting to report before death...");
+                    Slog.e(TAG, "Fatal crash detected, registrando no histórico antes de morrer...");
                     try {
-                         VcloudCore.get().sendLogs("FATAL CRASH (Uncaught): " + throwable.getMessage(), false);
+                         Diagnostico.erro("FATAL sem tratamento", throwable);
                     } catch (Throwable e) {
                          Slog.e(TAG, "Failed to report fatal crash: " + e.getMessage());
                     }

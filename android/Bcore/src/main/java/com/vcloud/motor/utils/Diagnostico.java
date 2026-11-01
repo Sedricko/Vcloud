@@ -42,8 +42,8 @@ public final class Diagnostico {
             }
             String hora = new SimpleDateFormat("dd/MM HH:mm:ss", Locale.US).format(new Date());
             try (FileWriter w = new FileWriter(f, true)) { w.write(hora + "  " + texto + "\n"); }
-        } catch (Exception ignored) {
-            // diagnóstico nunca pode derrubar o motor
+        } catch (Throwable ignored) {
+            // diagnóstico nunca pode derrubar o motor (nem por erro de inicialização de BEnvironment)
         }
     }
 
@@ -59,6 +59,15 @@ public final class Diagnostico {
 
     public static synchronized void limpar() {
         arquivo().delete();
+    }
+
+    /** Erro de Java visto dentro de um app: uma linha no histórico (o relatório completo só sai pelo botão da Central). */
+    public static void erro(String tipo, Throwable t) {
+        String onde;
+        try { onde = VcloudCore.getAppProcessName(); } catch (Throwable e) { onde = "?"; }
+        StackTraceElement[] st = t.getStackTrace();
+        evento("ERRO  " + tipo + " em " + onde + "\n    " + t.getClass().getName() + ": " + t.getMessage()
+                + (st.length > 0 ? "\n      em " + st[0] : ""));
     }
 
     public static void abrindo(String pacote, String processo) {
