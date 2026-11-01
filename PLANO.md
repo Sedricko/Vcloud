@@ -29,7 +29,8 @@ dentro, **sem root no celular**. O resto fica no celular normal.
   `android/NOTICE-VCLOUD.md`). Tirado: envio de registros para servidor de terceiros, esconder root, pular verificações,
   falsificar aparelho (Pixel 6/Android 12).
 - **Compilação pelo GitHub:** `.github/workflows/android.yml` gera o APK a cada mudança em `android/` (aba Actions,
-  artefato `vcloud-debug-apk`). **Falta na F1:** o build passar e o usuário testar o APK.
+  artefato `vcloud-debug-apk`). **Build passou (01/11, run 2)**: APK arm64 de ~10 MB, pacote ainda
+  `top.niunaijun.blackbox` (renomear para Vcloud depois). **Falta na F1:** o usuário testar o APK com o Orecraft.
 
 ## Fases
 Foco: **o root funcionar lá dentro** e **o que estiver lá dentro rodar bem**. O Unit é um dos apps de root.
