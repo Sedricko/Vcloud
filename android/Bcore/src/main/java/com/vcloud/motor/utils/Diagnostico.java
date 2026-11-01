@@ -4,6 +4,9 @@ import android.app.ActivityManager;
 import android.app.ApplicationExitInfo;
 import android.content.Context;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
+import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -24,22 +27,6 @@ import com.vcloud.motor.core.env.BEnvironment;
 public final class Diagnostico {
     private static final long MAX_BYTES = 200 * 1024;
     private static final Map<String, Long> INICIO = new ConcurrentHashMap<>();
-
-    // Primeira regra que casar com o logcat do app vence.
-    private static final String[][] CAUSAS = {
-            {"ForegroundServiceDidNotStartInTime", "Serviço em primeiro plano não iniciou a tempo"},
-            {"UnsatisfiedLinkError", "Biblioteca nativa não carregou (arquitetura/ABI do app?)"},
-            {"Google Play services", "Precisa do Google Play Services: ative em Configurações > Serviços do Google"},
-            {"GooglePlayServicesUtil", "Precisa do Google Play Services: ative em Configurações > Serviços do Google"},
-            {"OutOfMemoryError", "Sem memória"},
-            {"Cannot run program", "Programa não encontrado (ex.: su; ligue o Root interno do app)"},
-            {"ClassNotFoundException", "Classe não encontrada (o motor não achou código do app)"},
-            {"Permission Denial", "Permissão negada pelo Android"},
-            {"SecurityException", "Permissão negada pelo Android"},
-            {"ANR in", "O app não respondeu (ANR)"},
-            {"Fatal signal", "Queda nativa (código C/C++ do app ou do motor)"},
-            {"FATAL EXCEPTION", "Erro de Java no app (veja as linhas abaixo)"},
-    };
 
     private Diagnostico() {}
 
@@ -96,26 +83,60 @@ public final class Diagnostico {
             long seg = (System.currentTimeMillis() - ini) / 1000;
             StringBuilder sb = new StringBuilder("FECHOU  " + pacote + " pid=" + pid + " depois de " + seg + " s");
             if (seg < 15) sb.append("  [fechou logo ao abrir]");
-            sb.append("\n    Android: ").append(motivoDoAndroid(pid));
+            int codigo = codigoDoAndroid(pid);
+            sb.append("\n    Android: ").append(codigo < 0 ? "indisponível" : nomeDoMotivo(codigo) + descricao(pid));
             StringBuilder erros = new StringBuilder();
             String causa = causaDoLogcat(pid, erros);
             sb.append("\n    Causa provável: ").append(causa).append(erros);
             evento(sb.toString());
+            if (anormal(codigo, seg)) avisar(pacote);
         }, "diagnostico").start();
     }
 
-    private static String motivoDoAndroid(int pid) {
-        if (Build.VERSION.SDK_INT < 30 || pid <= 0) return "indisponível";
+    // -1 = sem informação (Android antigo, pid desconhecido ou sem registro).
+    private static int codigoDoAndroid(int pid) {
+        ApplicationExitInfo e = saida(pid);
+        return e == null ? -1 : e.getReason();
+    }
+
+    private static String descricao(int pid) {
+        ApplicationExitInfo e = saida(pid);
+        return e == null || e.getDescription() == null ? "" : " (" + e.getDescription() + ")";
+    }
+
+    private static ApplicationExitInfo saida(int pid) {
+        if (Build.VERSION.SDK_INT < 30 || pid <= 0) return null;
         try {
             Context c = VcloudCore.getContext();
             ActivityManager am = (ActivityManager) c.getSystemService(Context.ACTIVITY_SERVICE);
             List<ApplicationExitInfo> l = am.getHistoricalProcessExitReasons(c.getPackageName(), pid, 1);
-            if (l.isEmpty()) return "sem registro";
-            ApplicationExitInfo e = l.get(0);
-            return nomeDoMotivo(e.getReason()) + (e.getDescription() == null ? "" : " (" + e.getDescription() + ")");
+            return l.isEmpty() ? null : l.get(0);
         } catch (Exception e) {
-            return "indisponível";
+            return null;
         }
+    }
+
+    // Parar pelo usuário ou pelo Vcloud não é problema; queda, ANR, pouca memória ou fechar logo ao abrir é.
+    private static boolean anormal(int codigo, long seg) {
+        if (Build.VERSION.SDK_INT >= 30 && codigo >= 0) {
+            return codigo == ApplicationExitInfo.REASON_CRASH || codigo == ApplicationExitInfo.REASON_CRASH_NATIVE
+                    || codigo == ApplicationExitInfo.REASON_ANR || codigo == ApplicationExitInfo.REASON_LOW_MEMORY
+                    || codigo == ApplicationExitInfo.REASON_INITIALIZATION_FAILURE
+                    || codigo == ApplicationExitInfo.REASON_EXCESSIVE_RESOURCE_USAGE;
+        }
+        return seg < 15;
+    }
+
+    // Toast simples (sem permissão de notificação): vale enquanto algum app do Vcloud está na tela.
+    private static void avisar(String pacote) {
+        new Handler(Looper.getMainLooper()).post(() -> {
+            try {
+                Toast.makeText(VcloudCore.getContext(),
+                        pacote + " fechou. Veja Configurações > Diagnóstico", Toast.LENGTH_LONG).show();
+            } catch (Exception ignored) {
+                // sem janela para mostrar: o registro no diário já existe
+            }
+        });
     }
 
     private static String nomeDoMotivo(int r) {
@@ -154,9 +175,6 @@ public final class Diagnostico {
             return "não consegui ler o logcat (" + e.getMessage() + ")";
         }
         for (String l : erros) linhas.append("\n      ").append(l);
-        String s = tudo.toString();
-        for (String[] c : CAUSAS) if (s.contains(c[0])) return c[1];
-        return s.isEmpty() ? "sem registro no logcat (o sistema pode ter matado o processo)"
-                : "não identificada: gere o relatório e mande";
+        return CausaDeErro.de(tudo.toString());
     }
 }

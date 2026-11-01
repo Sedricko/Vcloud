@@ -182,6 +182,7 @@ public class IOCore {
             Os.setenv("PATH", bin.getAbsolutePath() + ":" + System.getenv("PATH"), true);
             for (String p : SU_PATHS) rule.put(p, su.getAbsolutePath());
             Log.i("VcloudRoot", "root interno ligado para " + packageName);
+            com.vcloud.motor.utils.Diagnostico.evento("ROOT interno ligado para " + packageName + " (su em " + su + ")");
         } catch (Exception e) {
             Log.e("VcloudRoot", "falhou ao ligar o root interno", e);
         }

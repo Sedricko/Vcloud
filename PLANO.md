@@ -45,6 +45,14 @@ dentro, **sem root no celular**. O resto fica no celular normal.
 
 **Atualização 01/11 10:25:** estado completo, correções e problemas atuais em `docs/passagem.md` (ler primeiro). DYSMANTLE deitado e balão do Unit funcionando; Play Store abre até o login.
 
+**Atualização 01/11 (tarde):** (1) **Root interno v1** (commit 95b0512): chave por app (segurar o app > Root interno); com a chave
+ligada o `su` (atalho do `sh`) entra no `PATH` do app e os caminhos `/system/xbin/su` etc. "existem". NÃO é uid 0 e exec por
+caminho absoluto não é redirecionado. Aguardando teste no Tinker. (2) **Diagnóstico interno**: diário
+(`blackbox/diagnostico.log`) com ABRINDO/ABRIU/NÃO ABRIU/FECHOU + causa em português (`Diagnostico`, `CausaDeErro`, testada em
+`app/src/test`), tela Configurações > Diagnóstico, resumo no topo do relatório e aviso (toast) quando um app fecha de forma
+anormal. **Próximo bloco do root (depende do teste do Tinker):** `su` nativo + janela "permitir root?" (Uma vez/Sempre/Negar),
+uid 0 de mentira (`LD_PRELOAD` com `libfakeuid.so` ou `su` que responde sozinho), tela Root (lista) e registro de pedidos.
+
 ## Fases
 Foco: **o root funcionar lá dentro** e **o que estiver lá dentro rodar bem**. O Unit é um dos apps de root.
 

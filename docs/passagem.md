@@ -157,3 +157,18 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - 09:50: `VcloudSobrepor ... -> 1` (uid virtual) → corrigido para o uid real.
 - 10:11: `-> 0`, balão aparece; Unit travou 30 s depois (startForeground engolido) → ANR; Orecraft sem Play Services.
 - 10:20: Serviços do Google por padrão. Versão 3d1dd2f entregue.
+
+
+---
+
+# Atualização (01/11, tarde): root interno e diagnóstico
+- **Root interno v1** (95b0512): `BEnvironment.getRootFlag(pkg)` (arquivo marcador = ligado), `IOCore.liberarRoot` (symlink
+  `blackbox/rootbin/su` -> `/system/bin/sh`, `PATH` do app, regras de caminho para `SU_PATHS`), menu "Root interno" em
+  `AppsFragment.alternarRoot`. Limites e próximo passo: ver PLANO.md. Pedir ao usuário: ligar no Tinker, reabrir, mandar o
+  Diagnóstico/relatório (linha `VcloudRoot`).
+- **Diagnóstico**: `utils/Diagnostico.java` (diário em `blackbox/diagnostico.log`, máx. 200 KB; ganchos em
+  `BProcessManagerService`: `startProcessLocked`, `attachClientL`, `onProcessDie`), `utils/CausaDeErro.java` (tabela
+  logcat -> causa; teste `app/src/test/.../CausaDeErroTest.java`, roda no CI), `ApplicationExitInfo` (API 30+) para o motivo
+  do Android, `view/setting/DiagnosticoActivity.kt` (tela simples, sem visual W12 ainda), resumo no topo de `writeReport`.
+- O CI agora roda `:app:testDebugUnitTest` antes de montar o APK.
+- Ainda não visto em aparelho: se o diário enche (assume que o gerenciador de processos roda no processo principal).
