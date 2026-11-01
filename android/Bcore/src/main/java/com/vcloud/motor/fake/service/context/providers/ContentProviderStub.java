@@ -50,7 +50,7 @@ public class ContentProviderStub extends ClassInvocationStub implements BContent
 
         if ("call".equals(methodName)) {
             
-            AttributionSourceUtils.fixAttributionSourceInArgs(args);
+            fixarOrigem(args);
         } else {
             
             if (args != null && args.length > 0) {
@@ -66,7 +66,7 @@ public class ContentProviderStub extends ClassInvocationStub implements BContent
                     }
                 }
                 
-                AttributionSourceUtils.fixAttributionSourceInArgs(args);
+                fixarOrigem(args);
             }
         }
 
@@ -117,6 +117,19 @@ public class ContentProviderStub extends ClassInvocationStub implements BContent
         }
     }
     
+    // Vcloud: o provedor de dentro compara o uid de quem chama (virtual, pelo gancho do Binder) com o uid da origem;
+    // o antigo ajuste punha o uid do celular e dava "Calling uid doesn't match source uid".
+    private static void fixarOrigem(Object[] args) {
+        AttributionSourceUtils.fixAttributionSourceInArgs(args);
+        if (args == null) return;
+        int uid = BActivityThread.getBUid();
+        for (Object a : args) {
+            if (a != null && a.getClass().getName().endsWith("AttributionSource")) {
+                try { com.vcloud.motor.utils.compat.ContextCompat.fixAttributionSourceState(a, uid); } catch (Throwable ignored) {}
+            }
+        }
+    }
+
     private Object getSafeDefaultValue(String methodName) {
         switch (methodName) {
             case "query":
