@@ -17,6 +17,12 @@ import top.niunaijun.blackboxa.util.getString
 
 
 class AppsRepository {
+
+    companion object {
+        /** Vcloud: apps do sistema ficam escondidos na lista de adicionar, a menos que o usuário peça. */
+        @Volatile var showSystemApps = false
+    }
+
     val TAG: String = "AppsRepository"
     private var mInstalledList = mutableListOf<AppInfo>()
 
@@ -89,7 +95,7 @@ class AppsRepository {
                     try {
                         val file = File(installedApplication.sourceDir)
 
-                        if ((installedApplication.flags and ApplicationInfo.FLAG_SYSTEM) != 0)
+                        if (!showSystemApps && (installedApplication.flags and ApplicationInfo.FLAG_SYSTEM) != 0)
                                 continue
 
                         if (!AbiUtils.isSupport(file)) continue

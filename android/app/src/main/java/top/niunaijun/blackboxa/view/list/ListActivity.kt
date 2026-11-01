@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import cbfg.rvadapter.RVAdapter
 import com.ferfalk.simplesearchview.SimpleSearchView
 import top.niunaijun.blackboxa.R
+import top.niunaijun.blackboxa.data.AppsRepository
 import top.niunaijun.blackboxa.bean.InstalledAppBean
 import top.niunaijun.blackboxa.databinding.ActivityListBinding
 import top.niunaijun.blackboxa.util.InjectionUtil
@@ -131,6 +132,10 @@ class ListActivity : BaseActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == R.id.list_choose) {
             openDocumentedResult.launch("application/vnd.android.package-archive")
+        } else if (item.itemId == R.id.list_show_system) {
+            AppsRepository.showSystemApps = !item.isChecked
+            item.isChecked = AppsRepository.showSystemApps
+            viewModel.reloadInstallList(intent.getIntExtra("userID", 0))
         }
         return true
     }
@@ -139,6 +144,7 @@ class ListActivity : BaseActivity() {
         menuInflater.inflate(R.menu.menu_list, menu)
         val item = menu!!.findItem(R.id.list_search)
         viewBinding.searchView.setMenuItem(item)
+        menu.findItem(R.id.list_show_system)?.isChecked = AppsRepository.showSystemApps
 
         return true
     }

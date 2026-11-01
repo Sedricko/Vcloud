@@ -16,6 +16,14 @@ class ListViewModel(private val repo: AppsRepository) : BaseViewModel() {
         launchOnUI { repo.previewInstallList() }
     }
 
+    /** Recarrega a lista (usado ao ligar/desligar "Mostrar apps do sistema"). */
+    fun reloadInstallList(userID: Int) {
+        launchOnUI {
+            repo.previewInstallList()
+            repo.getInstalledAppList(userID, loadingLiveData, appsLiveData)
+        }
+    }
+
     fun getInstallAppList(userID: Int) {
         launchOnUI { repo.getInstalledAppList(userID, loadingLiveData, appsLiveData) }
     }

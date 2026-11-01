@@ -14,4 +14,10 @@
             android:title="@string/filter"
             android:icon="@drawable/ic_search"
             app:showAsAction="always" />
+
+    <item
+            android:id="@+id/list_show_system"
+            android:checkable="true"
+            android:title="Mostrar apps do sistema"
+            app:showAsAction="never" />
 </menu>
