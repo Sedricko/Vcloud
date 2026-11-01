@@ -44,18 +44,20 @@ public class IAppOpsManagerProxy extends BinderInvocationStub {
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         String methodName = method.getName();
-        // Vcloud: "sobrepor a outros apps" (op 24) responde o estado real do Vcloud; antes dizia sempre "permitido",
-        // o app de dentro (ex.: Unit) tentava abrir o balão e o Android recusava (permission denied for window type 2038).
-        if (methodName.startsWith("checkOperation") && args != null && args.length > 2
-                && args[0] instanceof Integer && (Integer) args[0] == 24) {
-            // pergunta ao Android de verdade, com a identidade do Vcloud (args: code, uid, pacote, ...)
-            args[1] = android.os.Process.myUid();
-            args[2] = VcloudCore.getHostPkg();
-            try {
-                return method.invoke(getBase(), args);
-            } catch (Throwable e) {
-                Slog.w(TAG, "AppOps: falha ao consultar sobreposição real: " + e);
-                return AppOpsManager.MODE_ALLOWED;
+        // Vcloud: "sobrepor a outros apps" (op 24) responde o estado real do Vcloud (que é quem desenha a janela);
+        // antes dizia sempre "permitido" e o Android recusava o balão do Unit (permission denied for window type 2038).
+        if (args != null && args.length > 2 && args[0] instanceof Integer && (Integer) args[0] == 24
+                && (methodName.startsWith("check") || methodName.startsWith("note"))) {
+            int modo = modoSobreposicaoDoVcloud();
+            Slog.i("VcloudSobrepor", methodName + " -> " + modo + " (0=permitido)");
+            if (methodName.startsWith("checkOperation") || methodName.startsWith("checkOp")) {
+                return modo;
+            }
+            if (modo != AppOpsManager.MODE_ALLOWED) {
+                // noteOperation devolve tipos diferentes conforme o Android; com o modo negado, usa a resposta real
+                args[1] = android.os.Process.myUid();
+                if (args[2] instanceof String) args[2] = VcloudCore.getHostPkg();
+                try { return method.invoke(getBase(), args); } catch (Throwable ignored) { }
             }
         }
         
@@ -92,6 +94,23 @@ public class IAppOpsManagerProxy extends BinderInvocationStub {
     @Override
     public boolean isBadEnv() {
         return false;
+    }
+
+    // Pergunta ao Android, com a identidade do Vcloud, se ele pode sobrepor; MODE_DEFAULT conta como a chave do sistema.
+    private int modoSobreposicaoDoVcloud() {
+        try {
+            Method m = getBase().getClass().getMethod("checkOperation", int.class, int.class, String.class);
+            int modo = (Integer) m.invoke(getBase(), 24, android.os.Process.myUid(), VcloudCore.getHostPkg());
+            if (modo == AppOpsManager.MODE_DEFAULT) {
+                modo = VcloudCore.getContext().checkPermission(android.Manifest.permission.SYSTEM_ALERT_WINDOW,
+                        android.os.Process.myPid(), android.os.Process.myUid()) == android.content.pm.PackageManager.PERMISSION_GRANTED
+                        ? AppOpsManager.MODE_ALLOWED : AppOpsManager.MODE_ERRORED;
+            }
+            return modo;
+        } catch (Throwable e) {
+            Slog.w("VcloudSobrepor", "não consegui consultar: " + e);
+            return AppOpsManager.MODE_ALLOWED;
+        }
     }
 
     @ProxyMethod("noteProxyOperation")
