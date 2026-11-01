@@ -27,6 +27,23 @@ class SettingFragment : PreferenceFragmentCompat() {
 
 
         initSendLogs()
+        initSobrepor()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        findPreference<Preference>("sobrepor")?.summary =
+                if (android.provider.Settings.canDrawOverlays(requireContext())) "Ligado: os apps de dentro podem mostrar balões flutuantes"
+                else "Desligado: toque para ligar (necessário para o balão do Unit)"
+    }
+
+    // Vcloud: a permissão vale para o Vcloud inteiro; os apps de dentro desenham por cima usando a dele.
+    private fun initSobrepor() {
+        findPreference<Preference>("sobrepor")?.setOnPreferenceClickListener {
+            startActivity(android.content.Intent(android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                    android.net.Uri.parse("package:" + requireContext().packageName)))
+            true
+        }
     }
 
     private fun initGms() {

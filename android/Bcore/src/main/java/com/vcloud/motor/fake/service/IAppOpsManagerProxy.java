@@ -44,7 +44,20 @@ public class IAppOpsManagerProxy extends BinderInvocationStub {
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         String methodName = method.getName();
-        
+        // Vcloud: "sobrepor a outros apps" (op 24) responde o estado real do Vcloud; antes dizia sempre "permitido",
+        // o app de dentro (ex.: Unit) tentava abrir o balão e o Android recusava (permission denied for window type 2038).
+        if (methodName.startsWith("checkOperation") && args != null && args.length > 2
+                && args[0] instanceof Integer && (Integer) args[0] == 24) {
+            // pergunta ao Android de verdade, com a identidade do Vcloud (args: code, uid, pacote, ...)
+            args[1] = android.os.Process.myUid();
+            args[2] = VcloudCore.getHostPkg();
+            try {
+                return method.invoke(getBase(), args);
+            } catch (Throwable e) {
+                Slog.w(TAG, "AppOps: falha ao consultar sobreposição real: " + e);
+                return AppOpsManager.MODE_ALLOWED;
+            }
+        }
         
         
         if (methodName.startsWith("check") || 
