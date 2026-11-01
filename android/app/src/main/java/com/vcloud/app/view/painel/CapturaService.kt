@@ -48,7 +48,7 @@ class CapturaService : Service() {
         if (data == null) { terminar("Captura cancelada"); return START_NOT_STICKY }
         try {
             val mpm = getSystemService(MediaProjectionManager::class.java)
-            val p = mpm.getMediaProjection(code, data)
+            val p = mpm.getMediaProjection(code, data) ?: throw IllegalStateException("o Android não deu a projeção")
             projecao = p
             p.registerCallback(object : MediaProjection.Callback() { override fun onStop() { liberar() } }, main)
             val m = resources.displayMetrics
