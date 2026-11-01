@@ -203,11 +203,32 @@ public final class AppInstrumentation extends BaseInstrumentationDelegate implem
         } catch (ClassNotFoundException e) {
             try {
                 return mBaseInstrumentation.newActivity(cl, className, intent);
+            } catch (ClassNotFoundException cnf) {
+                // Vcloud: activity-alias (ex.: Play Store AssetBrowserActivity) não tem classe; abre a atividade de verdade.
+                String alvo = alvoDoAlias(className);
+                if (alvo != null) {
+                    com.vcloud.motor.utils.Diagnostico.eventoLimitado("alias|" + className, 60_000,
+                            "ATIVIDADE alias " + className + " -> " + alvo);
+                    return mBaseInstrumentation.newActivity(cl, alvo, intent);
+                }
+                com.vcloud.motor.utils.Diagnostico.eventoLimitado("newact|" + className, 60_000,
+                        "ATIVIDADE não instanciou: " + className + " | " + cnf);
+                throw cnf;
             } catch (Throwable t) {
                 com.vcloud.motor.utils.Diagnostico.eventoLimitado("newact|" + className, 60_000,
                         "ATIVIDADE não instanciou: " + className + " | " + t + " | loader=" + cl);
                 throw t;
             }
+        }
+    }
+
+    private static String alvoDoAlias(String className) {
+        try {
+            ActivityInfo ai = VcloudCore.getBPackageManager().getActivityInfo(
+                    new android.content.ComponentName(VcloudCore.getAppPackageName(), className), 0, BActivityThread.getUserId());
+            return ai == null ? null : ai.targetActivity;
+        } catch (Throwable e) {
+            return null;
         }
     }
 }

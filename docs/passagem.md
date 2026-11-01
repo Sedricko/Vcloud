@@ -341,7 +341,7 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Não testado no aparelho. Incógnitas: checkin do GMS de dentro como app comum, login de conta, licenças (não se burla). Teste: ligar, abrir a Play Store de dentro, Central > Testar Google > Copiar.
 
 ## Regra: versão do app
-- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.3 (403).
+- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.4 (404).
 
 ## Play Store de dentro: erro de uid no provedor (4.0.2)
 - Relatório 19:33: `PROVEDOR erro engolido (query) em gms: Calling uid: 10014 doesn't match source uid: 10454` (modo Google completo ligado, caminho de dentro ativo).
@@ -351,3 +351,7 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 ## 4.0.3
 - Relatório 19:39: o ajuste de uid da 4.0.2 resolveu o provedor do gms, mas inverteu no provedor do próprio Vcloud (`Calling uid 10454 != source 10014`). Regra: provedor do Vcloud (processo real) usa uid do celular; provedor de dentro usa uid virtual do chamador.
 - `android_id=null` no Gservices continua (sem checkin do GMS de dentro). `AssetBrowserActivity` não instancia: só o APK base é instalado por cópia (sem splits); 4.0.3 registra no histórico o motivo real (`ATIVIDADE não instanciou`).
+
+## 4.0.4
+- Relatório 19:47: `AssetBrowserActivity` = ClassNotFoundException mesmo com base+splits no loader → é um `activity-alias` (sem classe). `AppInstrumentation.newActivity` agora abre o `targetActivity` do alias (histórico: `ATIVIDADE alias X -> Y`). Não testado.
+- No mesmo relatório o modo "Google completo" aparecia desligado (a chave pode ter sido desligada). `android_id=null` até no Google do celular real pelo Gservices (sonda pode estar sem permissão efetiva); `android-id = 0` no Finsky segue aberto — não vou inventar um id falso.
