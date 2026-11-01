@@ -110,8 +110,9 @@ class MainActivity : LoadingActivity() {
         } catch (e: Exception) {
             Log.e(TAG, "Error checking storage permission: ${e.message}")
         }
-        pedirNotificacoes()
-        pedirSemRestricaoDeBateria()
+        // Vcloud: os pedidos esperam a tela inicial aparecer (antes deixavam a tela preta)
+        window.decorView.postDelayed({ pedirNotificacoes() }, 800)
+        window.decorView.postDelayed({ pedirSemRestricaoDeBateria() }, 2500)
     }
 
     /** Vcloud: pede uma vez para tirar o Vcloud da otimização de bateria (senão o Android fecha os jogos de dentro). */
@@ -277,7 +278,8 @@ class MainActivity : LoadingActivity() {
         viewBinding.toolbarLayout.toolbar.setBackgroundColor(android.graphics.Color.TRANSPARENT)
         viewBinding.tileDeviceModel.text = android.os.Build.MODEL
         viewBinding.tileDeviceAndroid.text = "Android ${android.os.Build.VERSION.RELEASE}"
-        ativarServicosGooglePadrao()
+        // Vcloud: prepara os Serviços do Google só depois que a tela inicial já apareceu
+        window.decorView.postDelayed({ ativarServicosGooglePadrao() }, 4000)
     }
 
     /** Vcloud: Serviços do Google vêm ativados de fábrica, só na primeira vez; se o usuário desativar depois, fica desativado. */
@@ -288,7 +290,16 @@ class MainActivity : LoadingActivity() {
             try {
                 val core = VcloudCore.get()
                 if (core.isSupportGms() && !core.isInstallGms(0)) {
+                    runOnUiThread {
+                        android.widget.Toast.makeText(this, "Preparando os Serviços do Google (pode levar um minuto)…",
+                                android.widget.Toast.LENGTH_LONG).show()
+                    }
                     val r = core.installGms(0)
+                    runOnUiThread {
+                        android.widget.Toast.makeText(this,
+                                if (r.success) "Serviços do Google prontos" else "Serviços do Google: ${r.msg}",
+                                android.widget.Toast.LENGTH_LONG).show()
+                    }
                     Log.i(TAG, "Serviços do Google ativados por padrão: ${r.success} ${r.msg ?: ""}")
                 }
                 prefs.edit { putBoolean("gms_padrao_feito", true) }
