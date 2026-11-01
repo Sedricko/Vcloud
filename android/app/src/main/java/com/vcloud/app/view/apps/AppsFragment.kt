@@ -331,6 +331,52 @@ class AppsFragment : Fragment() {
         }
     }
 
+    private val pedirPermissoes =
+            registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions()) { r ->
+                val negadas = r.count { !it.value }
+                toast(if (negadas == 0) "Permissões liberadas" else "$negadas permissão(ões) não liberada(s)")
+            }
+
+    /**
+     * Vcloud: os apps de dentro usam as permissões do próprio Vcloud. Pega as permissões "perigosas" que o app pede
+     * (câmera, microfone, localização...), que o Vcloud também declara e ainda não tem, e pede todas de uma vez ao Android.
+     */
+    private fun darPermissoes(pacote: String) {
+        try {
+            val ctx = requireContext()
+            val pm = ctx.packageManager
+            val doApp = com.vcloud.motor.fake.frameworks.BPackageManager.get()
+                    .getPackageInfo(pacote, android.content.pm.PackageManager.GET_PERMISSIONS, userID)
+                    ?.requestedPermissions?.toSet() ?: emptySet()
+            val doVcloud = pm.getPackageInfo(ctx.packageName, android.content.pm.PackageManager.GET_PERMISSIONS)
+                    .requestedPermissions?.toSet() ?: emptySet()
+            val faltando = doApp.filter { p ->
+                p in doVcloud &&
+                        p != android.Manifest.permission.ACCESS_BACKGROUND_LOCATION && // o Android exige pedir separado
+                        androidx.core.content.ContextCompat.checkSelfPermission(ctx, p) != android.content.pm.PackageManager.PERMISSION_GRANTED &&
+                        try {
+                            (pm.getPermissionInfo(p, 0).protectionLevel and android.content.pm.PermissionInfo.PROTECTION_MASK_BASE) ==
+                                    android.content.pm.PermissionInfo.PROTECTION_DANGEROUS
+                        } catch (e: Exception) { false }
+            }
+            val precisaArquivos = doApp.any { it.endsWith("EXTERNAL_STORAGE") } &&
+                    android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R &&
+                    !android.os.Environment.isExternalStorageManager()
+            if (precisaArquivos) {
+                startActivity(android.content.Intent(android.provider.Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
+                        android.net.Uri.parse("package:" + ctx.packageName)))
+            }
+            if (faltando.isEmpty()) {
+                if (!precisaArquivos) toast("Este app já tem as permissões que precisa")
+                return
+            }
+            pedirPermissoes.launch(faltando.toTypedArray())
+        } catch (e: Exception) {
+            Log.e(TAG, "Erro ao pedir permissões: ${e.message}")
+            toast("Não consegui ler as permissões deste app")
+        }
+    }
+
     private fun setOnLongClick() {
         try {
             mAdapter.setItemLongClickListener { view, data, _ ->
@@ -358,6 +404,10 @@ class AppsFragment : Fragment() {
 
                                     R.id.app_shortcut -> {
                                         ShortcutUtil.createShortcut(requireContext(), userID, data)
+                                    }
+
+                                    R.id.app_permissions -> {
+                                        darPermissoes(data.packageName)
                                     }
                                 }
                                 return@setOnMenuItemClickListener true
