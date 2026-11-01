@@ -12,6 +12,8 @@
         android:maxSdkVersion="29" />
 
 
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
+
     <application
         android:name=".app.App"
         android:allowBackup="true"
@@ -33,6 +35,16 @@
         <activity android:name=".view.gms.GmsManagerActivity" />
         <activity android:name=".view.setting.DiagnosticoActivity" />
         <activity android:name=".view.root.RootManagerActivity" />
+        <activity
+            android:name=".view.painel.CapturaActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:taskAffinity=""
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+        <service
+            android:name=".view.painel.CapturaService"
+            android:exported="false"
+            android:foregroundServiceType="mediaProjection" />
         <activity
             android:name=".view.root.RootPromptActivity"
             android:exported="false"

@@ -66,6 +66,7 @@ class App : Application() {
         try {
             super.onCreate()
             AppManager.doOnCreate(mContext)
+            com.vcloud.app.view.painel.PainelLateral.iniciarSeForServidor(mContext)
         } catch (e: Exception) {
             Log.e("App", "Error in onCreate: ${e.message}")
         }
