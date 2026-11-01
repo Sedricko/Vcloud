@@ -22,6 +22,6 @@ github.com/LamPPKK/NewBlackbox, commit `6e6d90137213148af5a19df3f3ffd60cbf2700f3
   `BlackBoxCore` → `VcloudCore`, `BlackBoxSystem` → `VcloudSystem`, `BlackBoxLoader` → `VcloudLoader`; textos "BlackBox" →
   "Vcloud"; projeto `Vcloud`; tema `Theme.Vcloud`. Apagados README/Docs/RELEASE_NOTES/docs/assets do projeto de origem.
   (Ficam só nomes internos de pastas de dados em minúsculas, invisíveis ao usuário.)
-- Ícone próprio do Vcloud (nuvem com V); chave de assinatura fixa de teste (`vcloud-debug.keystore`) para os APKs instalarem por cima; Serviços do Google ativados por padrão; Play Store escondida na tela a menos que a opção esteja ligada.
+- Ícone próprio do Vcloud (nuvem com V); chave de assinatura fixa de teste (`vcloud-debug.keystore`) para os APKs instalarem por cima; Play Store escondida na tela a menos que a opção esteja ligada.
 - Android 17: `ProxyService` sempre cumpre o startForeground (evita ForegroundServiceDidNotStartInTime); `startActivity` marca o intent repassado com `removeLaunchSecurityProtection` (proteção Intent Redirect do Android 16+/17).
 Motivo: regras do projeto (não enganar verificações de segurança; nada de enviar dados para fora).
