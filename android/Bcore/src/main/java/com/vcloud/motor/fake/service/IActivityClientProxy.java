@@ -56,6 +56,16 @@ public class IActivityClientProxy extends ClassInvocationStub {
         super.onlyProxy(o);
     }
 
+    // Vcloud: registra os pedidos de orientação feitos durante o jogo (Unity pede "deitado" em tempo de execução)
+    @ProxyMethod("setRequestedOrientation")
+    public static class SetRequestedOrientation extends MethodHook {
+        @Override
+        protected Object hook(Object who, Method method, Object[] args) throws Throwable {
+            android.util.Log.i("VcloudOrientacao", "setRequestedOrientation pedido=" + (args.length > 1 ? args[1] : "?"));
+            return method.invoke(who, args);
+        }
+    }
+
     @ProxyMethod("finishActivity")
     public static class FinishActivity extends MethodHook {
         @Override

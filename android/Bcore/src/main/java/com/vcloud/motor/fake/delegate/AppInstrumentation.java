@@ -163,6 +163,22 @@ public final class AppInstrumentation extends BaseInstrumentationDelegate implem
     }
 
     @Override
+    public void callActivityOnResume(Activity activity) {
+        super.callActivityOnResume(activity);
+        // Vcloud: reaplica a orientação lida do APK sempre que a tela volta à frente (jogos deitados)
+        try {
+            int o = orientacaoDoApk(activity, activity.getClass().getName());
+            Log.i(TAG, "Orientação (retomada): " + activity.getClass().getName() + " apk=" + o
+                    + " atual=" + activity.getRequestedOrientation());
+            if (o != ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED && activity.getRequestedOrientation() != o) {
+                activity.setRequestedOrientation(o);
+            }
+        } catch (Throwable e) {
+            Log.w(TAG, "Orientação (retomada) falhou: " + e);
+        }
+    }
+
+    @Override
     public void callActivityOnCreate(Activity activity, Bundle icicle) {
         checkActivity(activity);
         super.callActivityOnCreate(activity, icicle);
