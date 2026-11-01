@@ -43,7 +43,6 @@
             </intent-filter>
         </activity>
         <activity android:name=".view.list.ListActivity" />
-        <activity android:name=".view.fake.FakeManagerActivity" />
 
         <activity
             android:name=".view.main.ShortcutActivity"

@@ -16,4 +16,5 @@ github.com/LamPPKK/NewBlackbox, commit `6e6d90137213148af5a19df3f3ffd60cbf2700f3
 - **Android 17 (API 37):** `ServiceConnectionDelegate` ganhou `connected(..., IBinderSession, boolean)` (o sistema mudou a assinatura; sem isso os apps fechavam com AbstractMethodError) e stub `android/app/IBinderSession.java` só para compilar.
 - Opções removidas da tela: ocultar root, rede VPN, permitir captura de tela (agora sempre desligados no loader), localização falsa e link de código aberto no menu.
 - Identidade própria: `applicationId "com.vcloud.app"` e APK `Vcloud_*.apk` (classes internas continuam em `top.niunaijun.*`).
+- Limpeza do app (telas): apagados localização falsa (view/fake, RockerManager, RockerView, EnFloatView, osmdroid), telas de Xposed e 27 textos sem uso.
 Motivo: regras do projeto (não enganar verificações de segurança; nada de enviar dados para fora).
