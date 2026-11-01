@@ -285,9 +285,22 @@ class MainActivity : LoadingActivity() {
         }
     }
 
+    // Vcloud: a lista de usuários vem do motor; pedir isso na linha da tela travava a abertura quando o motor estava
+    // ocupado. Agora pede em segundo plano e monta a tela quando chegar.
     private fun initViewPager() {
+        Thread {
+            val userList = try {
+                VcloudCore.get().users
+            } catch (e: Exception) {
+                Log.e(TAG, "Error loading users: ${e.message}")
+                emptyList()
+            }
+            runOnUiThread { if (!isFinishing && !isDestroyed) montarViewPager(userList) }
+        }.start()
+    }
+
+    private fun montarViewPager(userList: List<com.vcloud.motor.core.system.user.BUserInfo>) {
         try {
-            val userList = VcloudCore.get().users
             userList.forEach { fragmentList.add(AppsFragment.newInstance(it.id)) }
 
             currentUser = userList.firstOrNull()?.id ?: 0
