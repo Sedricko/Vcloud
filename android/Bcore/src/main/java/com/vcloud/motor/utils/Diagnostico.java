@@ -108,15 +108,17 @@ public final class Diagnostico {
 
     /** Erro de Java visto e recuperado pelo motor. O mesmo erro (tipo + mensagem) só entra de novo depois de 30 s. */
     public static void erroCapturado(String tipo, String pacote, boolean recuperado, String mensagem, String primeiraLinha) {
-        String msg = mensagem == null ? "" : mensagem;
-        String chave = tipo + "|" + (msg.length() > 80 ? msg.substring(0, 80) : msg);
+        String msg = CausaDeErro.resumirMensagem(mensagem, 160);
+        String chave = tipo + "|" + (pacote == null ? "" : pacote) + "|" + (msg.length() > 80 ? msg.substring(0, 80) : msg);
         long agora = System.currentTimeMillis();
         Long antes = ULTIMO_ERRO.get(chave);
-        if (antes != null && agora - antes < 30_000) return;
+        // Play Store/Play Services de dentro repetem o mesmo erro o tempo todo: no máximo 1 vez a cada 5 minutos
+        long janela = pacote != null && infraGoogle(pacote) ? 300_000 : 30_000;
+        if (antes != null && agora - antes < janela) return;
         ULTIMO_ERRO.put(chave, agora);
         evento("ERRO  " + tipo + " em " + (pacote == null ? "(o próprio Vcloud)" : pacote)
                 + (recuperado ? " (recuperado)" : " (sem recuperação)")
-                + "\n    " + msg + (primeiraLinha == null || primeiraLinha.isEmpty() ? "" : "\n      " + primeiraLinha));
+                + "\n    " + msg);
     }
 
     public static void abrindo(String pacote, String processo) {

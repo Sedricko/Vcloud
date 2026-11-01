@@ -81,4 +81,11 @@ public class CausaDeErroTest {
         assertTrue(CausaDeErro.contarEncerradosPeloAndroid(null) == 0);
         assertTrue(CausaDeErro.contarEncerradosPeloAndroid("") == 0);
     }
+
+    @Test public void mensagemDeErroViraUmaLinhaCurta() {
+        String pilha = "Native stack trace:\n#00 pc 0x7fea3 /apex/x/libhttpengine.so\n#01 pc 0x68e6f /apex/x/libhttpengine.so";
+        assertTrue(CausaDeErro.resumirMensagem(pilha, 160).equals("Native stack trace:"));
+        assertTrue(CausaDeErro.resumirMensagem("a".repeat(300), 10).equals("aaaaaaaaaa…"));
+        assertTrue(CausaDeErro.resumirMensagem(null, 10).isEmpty());
+    }
 }

@@ -101,6 +101,14 @@ public final class CausaDeErro {
         return n;
     }
 
+    /** Mensagem de erro em uma linha só (as de pilha nativa têm dezenas de linhas), com no máximo 'max' letras. */
+    public static String resumirMensagem(String m, int max) {
+        if (m == null) return "";
+        int nl = m.indexOf('\n');
+        String um = (nl < 0 ? m : m.substring(0, nl)).trim();
+        return um.length() > max ? um.substring(0, max) + "…" : um;
+    }
+
     private static String corta(String l) {
         return l.length() > 220 ? l.substring(0, 220) : l;
     }
