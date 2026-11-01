@@ -254,21 +254,11 @@ class BlackBoxLoader {
                                 }
 
                                 override fun isUseVpnNetwork(): Boolean {
-                                    return try {
-                                        mUseVpnNetwork
-                                    } catch (e: Exception) {
-                                        Log.e(TAG, "Error checking useVpnNetwork: ${e.message}")
-                                        false
-                                    }
+                                    return false // Vcloud: modo VPN removido
                                 }
 
                                 override fun isDisableFlagSecure(): Boolean {
-                                    return try {
-                                        mDisableFlagSecure
-                                    } catch (e: Exception) {
-                                        Log.e(TAG, "Error checking disableFlagSecure: ${e.message}")
-                                        false
-                                    }
+                                    return false // Vcloud: "permitir captura de tela" removido (não furamos a proteção dos apps)
                                 }
 
                                 override fun requestInstallPackage(

@@ -14,4 +14,6 @@ github.com/LamPPKK/NewBlackbox, commit `6e6d90137213148af5a19df3f3ffd60cbf2700f3
 - Tirado o pedido de permissão de VPN ao abrir o app (a VPN do motor não encaminha tráfego; só liga no "modo VPN").
 - Relatório de erros agora fica **no próprio celular** (`Download/Vcloud/relatorio-*.txt`): o envio automático foi trocado por gravação local (`BlackBoxCore.sendLogs/writeReport`), `LogSender.java` apagado, menu "Gerar relatório de erros" no lugar do link do Telegram.
 - **Android 17 (API 37):** `ServiceConnectionDelegate` ganhou `connected(..., IBinderSession, boolean)` (o sistema mudou a assinatura; sem isso os apps fechavam com AbstractMethodError) e stub `android/app/IBinderSession.java` só para compilar.
+- Opções removidas da tela: ocultar root, rede VPN, permitir captura de tela (agora sempre desligados no loader), localização falsa e link de código aberto no menu.
+- Identidade própria: `applicationId "com.vcloud.app"` e APK `Vcloud_*.apk` (classes internas continuam em `top.niunaijun.*`).
 Motivo: regras do projeto (não enganar verificações de segurança; nada de enviar dados para fora).

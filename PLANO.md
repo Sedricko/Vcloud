@@ -72,6 +72,12 @@ Foco: **o root funcionar lá dentro** e **o que estiver lá dentro rodar bem**. 
 - Ícones por enquanto com a letra do app (sem cor); trocar pelos ícones reais só se o usuário pedir.
 - A tela só é programada depois do motor e do root funcionando; cada tela nova ganha prévia antes.
 
+## Limpeza feita (01/11)
+- Tela inicial no conceito Windows 12; opção "Mostrar apps do sistema" (desligada por padrão) na lista de adicionar.
+- Removidas opções antigas: ocultar root, VPN, permitir captura de tela, localização falsa, link de código aberto.
+- Identidade própria: pacote `com.vcloud.app` (o app antigo `top.niunaijun.blackbox` precisa ser desinstalado; os
+  apps de dentro precisam ser adicionados de novo).
+
 ## Próxima tarefa (para uma conversa nova): ferramenta de diagnóstico para ver erros
 - Objetivo: ver os erros do Vcloud sem ler 14 mil linhas. **Só o Vcloud e os apps de dentro dele**; nada sai do celular.
 - Resumo em português no **topo do relatório** (`Download/Vcloud/relatorio-*.txt`): quais apps caíram, a hora, o erro e a

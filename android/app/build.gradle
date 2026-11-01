@@ -9,7 +9,7 @@ android {
     compileSdk rootProject.ext.compileSdkVersion
     ndkVersion rootProject.ext.ndkVersion
     defaultConfig {
-        applicationId "top.niunaijun.blackbox"
+        applicationId "com.vcloud.app" // Vcloud: identidade própria (as classes internas continuam em top.niunaijun.*)
         minSdk rootProject.ext.minSdk
         targetSdk rootProject.ext.targetSdkVersion
         versionCode rootProject.ext.versionCode
@@ -55,7 +55,7 @@ android {
     }
     applicationVariants.configureEach { variant ->
         variant.outputs.configureEach { output ->
-            output.outputFileName = "BlackBox_${variant.versionName}_${output.baseName}.apk"
+            output.outputFileName = "Vcloud_${variant.versionName}_${output.baseName}.apk"
         }
     }
 }
