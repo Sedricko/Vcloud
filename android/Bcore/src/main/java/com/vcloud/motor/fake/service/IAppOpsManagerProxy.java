@@ -55,7 +55,7 @@ public class IAppOpsManagerProxy extends BinderInvocationStub {
             }
             if (modo != AppOpsManager.MODE_ALLOWED) {
                 // noteOperation devolve tipos diferentes conforme o Android; com o modo negado, usa a resposta real
-                args[1] = android.os.Process.myUid();
+                args[1] = VcloudCore.getHostUid();
                 if (args[2] instanceof String) args[2] = VcloudCore.getHostPkg();
                 try { return method.invoke(getBase(), args); } catch (Throwable ignored) { }
             }
@@ -100,10 +100,10 @@ public class IAppOpsManagerProxy extends BinderInvocationStub {
     private int modoSobreposicaoDoVcloud() {
         try {
             Method m = getBase().getClass().getMethod("checkOperation", int.class, int.class, String.class);
-            int modo = (Integer) m.invoke(getBase(), 24, android.os.Process.myUid(), VcloudCore.getHostPkg());
+            int modo = (Integer) m.invoke(getBase(), 24, VcloudCore.getHostUid(), VcloudCore.getHostPkg());
             if (modo == AppOpsManager.MODE_DEFAULT) {
                 modo = VcloudCore.getContext().checkPermission(android.Manifest.permission.SYSTEM_ALERT_WINDOW,
-                        android.os.Process.myPid(), android.os.Process.myUid()) == android.content.pm.PackageManager.PERMISSION_GRANTED
+                        android.os.Process.myPid(), VcloudCore.getHostUid()) == android.content.pm.PackageManager.PERMISSION_GRANTED
                         ? AppOpsManager.MODE_ALLOWED : AppOpsManager.MODE_ERRORED;
             }
             return modo;
