@@ -43,6 +43,8 @@ dentro, **sem root no celular**. O resto fica no celular normal.
   sem token); (b) Tinker caiu por ForegroundServiceDidNotStartInTime no ProxyService. Corrigidos no motor em 01/11 (aguardando teste).
   **Falta na F1:** ativar "Serviços do Google" no Vcloud e ver se o Orecraft roda e salva no S25.
 
+**Atualização 01/11 08:15:** estado completo, correções e problemas atuais em `docs/passagem.md` (ler primeiro).
+
 ## Fases
 Foco: **o root funcionar lá dentro** e **o que estiver lá dentro rodar bem**. O Unit é um dos apps de root.
 
