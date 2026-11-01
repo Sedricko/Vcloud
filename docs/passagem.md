@@ -249,3 +249,13 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
   `READ_GSERVICES` já está declarada; investigar o provedor `com.google.android.gsf.gservices` no hook `GetContentProvider`.
 - Pendente (aprovado pelo usuário): tela inicial em tela cheia (`docs/design/inicio-w12-tela-cheia.png`) e painel lateral no jogo
   (`docs/design/painel-lateral.png`, aguardando 3 respostas: lado da aba, captura de tela, confirmar ao fechar).
+
+## 01/11 noite — tema do sistema (claro/escuro) + root manager v3
+- Tema `Theme.Vcloud` agora é `Theme.MaterialComponents.DayNight.NoActionBar`; paleta em `res/values/colors.xml` (claro) e
+  `res/values-night/colors.xml` (escuro), mesmos nomes. Drawables `bg_glass`, `bg_tile`, `bg_waves`, `splash` usam `@color/...`;
+  `ic_empty` tem versão `drawable-night` (alpha .35). Barras do sistema transparentes com ícones pelo `@bool/tema_claro`.
+  Telas por código usam `util/UiTema.kt` (`textoTema`, `botaoTema`). Prévias aprovadas: `docs/design/tema-*.png`.
+- Corrigido bug antigo: `LoadingActivity` passava `R.color.primary` (ID) como se fosse cor.
+- Gerenciador de root: notificações Nenhuma/Mensagem/Notificação (`RootPolicy.Aviso`, `_aviso` = `toast`|`notif`), resposta para
+  todos (RadioGroup), botões "aplicar agora a todos" COM confirmação, e a janela de root tem "Usar a mesma resposta para todos".
+- Não verificado no aparelho: aparência real dos dois temas, `SwitchMaterial`/`MaterialButton` programáticos, notificação do root.
