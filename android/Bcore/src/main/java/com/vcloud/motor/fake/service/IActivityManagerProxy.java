@@ -802,6 +802,12 @@ public class IActivityManagerProxy extends ClassInvocationStub {
             // guest token makes Android 14+ reject the promotion even though ProxyService was
             // already promoted synchronously before guest dispatch. Keep the host's valid
             // placeholder foreground notification and acknowledge the guest call locally.
+            // Vcloud: o startForeground do próprio ProxyService (componente do Vcloud) passa por aqui também e
+            // precisa chegar ao Android; engolir derrubava o app de dentro com ForegroundServiceDidNotStartInTime.
+            if (args != null && args.length > 0 && args[0] instanceof android.content.ComponentName
+                    && VcloudCore.getHostPkg().equals(((android.content.ComponentName) args[0]).getPackageName())) {
+                return method.invoke(who, args);
+            }
             return null;
         }
     }

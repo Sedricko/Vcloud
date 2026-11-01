@@ -141,6 +141,12 @@ public class CrashMonitor {
                 @Override
                 public void uncaughtException(Thread thread, Throwable throwable) {
                     handleCrash("JavaException", thread, throwable);
+                    // Vcloud: erro na linha principal não tem como "recuperar": o app fica congelado e o Android
+                    // mostra "Vcloud não está respondendo". Fecha só este processo (o app de dentro) de vez.
+                    if (thread == android.os.Looper.getMainLooper().getThread()) {
+                        android.os.Process.killProcess(android.os.Process.myPid());
+                        System.exit(10);
+                    }
                 }
             });
             
