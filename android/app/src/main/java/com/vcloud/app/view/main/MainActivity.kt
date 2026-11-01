@@ -37,6 +37,7 @@ class MainActivity : LoadingActivity() {
 
     companion object {
         private const val TAG = "MainActivity"
+        private const val NOTIFICATION_PERMISSION_REQUEST_CODE = 1003
         private const val STORAGE_PERMISSION_REQUEST_CODE = 1001
         private const val VPN_PERMISSION_REQUEST_CODE = 1002
 
@@ -109,6 +110,16 @@ class MainActivity : LoadingActivity() {
         } catch (e: Exception) {
             Log.e(TAG, "Error checking storage permission: ${e.message}")
         }
+        pedirNotificacoes()
+    }
+
+    /** Vcloud: Android 13+ só mostra notificações (as dos apps de dentro e a do motor) se o usuário permitir. */
+    private fun pedirNotificacoes() {
+        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.TIRAMISU) return
+        if (androidx.core.content.ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS)
+                == android.content.pm.PackageManager.PERMISSION_GRANTED) return
+        androidx.core.app.ActivityCompat.requestPermissions(
+                this, arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), NOTIFICATION_PERMISSION_REQUEST_CODE)
     }
 
     private fun requestLegacyStoragePermission() {
