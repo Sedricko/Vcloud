@@ -341,7 +341,7 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Não testado no aparelho. Incógnitas: checkin do GMS de dentro como app comum, login de conta, licenças (não se burla). Teste: ligar, abrir a Play Store de dentro, Central > Testar Google > Copiar.
 
 ## Regra: versão do app
-- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.6 (406).
+- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.7 (407).
 
 ## Play Store de dentro: erro de uid no provedor (4.0.2)
 - Relatório 19:33: `PROVEDOR erro engolido (query) em gms: Calling uid: 10014 doesn't match source uid: 10454` (modo Google completo ligado, caminho de dentro ativo).
@@ -365,3 +365,6 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Relatório 20:02 (4.0.5): a Play Store de dentro ABRE (tela "Fazer login"); Cronet não derruba mais.
 - Uid do provedor: `callingBUid` é gravado só quando o processo nasce, então o "uid de quem chamou" fica velho (`10015 != 10014`). Agora a origem leva o uid do celular e `NativeCore.getCallingUid` devolve o uid do celular quando a pilha está em `AttributionSource`/`ContentProvider$Transport`. Não testado.
 - ABERTO (grande): "Fazer login" → `BAccountManagerService.bindToAuthenticator` faz `bindService` no processo `:black` direto no AMS real, que recusa (`Not allowed to bind ... GoogleAccountAuthenticatorService`). Precisa ligar o bind pelo AMS virtual (intent de proxy). Decisão pendente do usuário.
+
+## 4.0.7
+- Relatório 20:20 (4.0.6): sem erros de uid; só o login falha (`Not allowed to bind ... GoogleAccountAuthenticatorService`). O logcat do relatório não traz o processo `:black`, e `BindServiceCommon` engole a falha do bind virtual e cai no AMS real. 4.0.7 só registra o motivo no histórico (`BIND virtual falhou ...` / `BIND sem serviço de dentro ...`). Correção do login vem depois de ler isso.

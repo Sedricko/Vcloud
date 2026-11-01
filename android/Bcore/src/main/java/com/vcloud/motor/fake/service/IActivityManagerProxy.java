@@ -379,6 +379,10 @@ public class IActivityManagerProxy extends ClassInvocationStub {
             int userId = intent.getIntExtra("_B_|_UserId", -1);
             userId = userId == -1 ? BActivityThread.getUserId() : userId;
             ResolveInfo resolveInfo = VcloudCore.getBPackageManager().resolveService(intent, 0, resolvedType, userId);
+            if (resolveInfo == null && intent.getComponent() != null && com.vcloud.motor.utils.GoogleModo.completoDentro()) {
+                com.vcloud.motor.utils.Diagnostico.eventoLimitado("bindnull|" + intent.getComponent(), 30_000,
+                        "BIND sem serviço de dentro para " + intent.getComponent().flattenToShortString() + " (userId " + userId + ")");
+            }
             if (resolveInfo != null || AppSystemEnv.isOpenPackage(intent.getComponent())) {
                 Intent proxyIntent = VcloudCore.getBActivityManager().bindService(intent,
                         connection == null ? null : connection.asBinder(),
@@ -417,6 +421,9 @@ public class IActivityManagerProxy extends ClassInvocationStub {
             return method.invoke(who, args);
         } catch (Exception e) {
             Slog.e(TAG, "BindServiceCommon: Unexpected error", e);
+            Throwable c = e instanceof java.lang.reflect.InvocationTargetException && e.getCause() != null ? e.getCause() : e;
+            com.vcloud.motor.utils.Diagnostico.eventoLimitado("bind|" + c.getClass().getName(), 30_000,
+                    "BIND virtual falhou (tentando pelo Android real): " + c);
             return method.invoke(who, args);
         }
     }
