@@ -28,7 +28,8 @@ dentro, **sem root no celular**. O resto fica no celular normal.
   (minSdk 21, targetSdk 36), última mudança 25/08/2026. Copiado para `android/` (origem e mudanças em
   `android/NOTICE-VCLOUD.md`). Tirado: envio de registros para servidor de terceiros, esconder root, pular verificações,
   falsificar aparelho (Pixel 6/Android 12).
-- **Falta na F1:** compilar (precisa de permissão do usuário para rodar o build nesta máquina) e o usuário testar o APK.
+- **Compilação pelo GitHub:** `.github/workflows/android.yml` gera o APK a cada mudança em `android/` (aba Actions,
+  artefato `vcloud-debug-apk`). **Falta na F1:** o build passar e o usuário testar o APK.
 
 ## Fases
 Foco: **o root funcionar lá dentro** e **o que estiver lá dentro rodar bem**. O Unit é um dos apps de root.
