@@ -41,6 +41,13 @@ public class IConnectivityManagerProxy extends BinderInvocationStub {
     }
 
     @Override
+    protected void onBindMethod() {
+        super.onBindMethod();
+        // Vcloud: o Cronet (HttpEngine) do Google pede a rede com o uid virtual e o Android aborta o processo (SecurityException)
+        addMethodHook(new com.vcloud.motor.fake.service.base.UidMethodProxy("getNetworkInfoForUid", 1));
+    }
+
+    @Override
     public boolean isBadEnv() {
         return false;
     }

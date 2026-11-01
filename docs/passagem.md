@@ -341,7 +341,7 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Não testado no aparelho. Incógnitas: checkin do GMS de dentro como app comum, login de conta, licenças (não se burla). Teste: ligar, abrir a Play Store de dentro, Central > Testar Google > Copiar.
 
 ## Regra: versão do app
-- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.4 (404).
+- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.5 (405).
 
 ## Play Store de dentro: erro de uid no provedor (4.0.2)
 - Relatório 19:33: `PROVEDOR erro engolido (query) em gms: Calling uid: 10014 doesn't match source uid: 10454` (modo Google completo ligado, caminho de dentro ativo).
@@ -355,3 +355,8 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 ## 4.0.4
 - Relatório 19:47: `AssetBrowserActivity` = ClassNotFoundException mesmo com base+splits no loader → é um `activity-alias` (sem classe). `AppInstrumentation.newActivity` agora abre o `targetActivity` do alias (histórico: `ATIVIDADE alias X -> Y`). Não testado.
 - No mesmo relatório o modo "Google completo" aparecia desligado (a chave pode ter sido desligada). `android_id=null` até no Google do celular real pelo Gservices (sonda pode estar sem permissão efetiva); `android-id = 0` no Finsky segue aberto — não vou inventar um id falso.
+
+## 4.0.5
+- Relatório 19:55 (modo ligado): sem mais `AssetBrowserActivity` nem erro de uid nos provedores; provedores do Google resolvem "cópia de dentro" (gservices, chimera, fonts, appdoctor).
+- Queda do gms/vending: `Cronet(HttpEngine) -> ConnectivityManager.getNetworkInfoForUid` com uid virtual → `SecurityException` (precisa ACCESS_DOWNLOAD_MANAGER/NETWORK_STACK) → abort. Correção: `UidMethodProxy("getNetworkInfoForUid", 1)` em `IConnectivityManagerProxy` (uid virtual → uid do celular). Não testado.
+- Segue aberto: `android-id = 0` (checkin do GMS de dentro).
