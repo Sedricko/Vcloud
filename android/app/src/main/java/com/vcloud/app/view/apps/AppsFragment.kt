@@ -81,7 +81,7 @@ class AppsFragment : Fragment() {
             viewBinding.recyclerView.adapter = mAdapter
             
             
-            val layoutManager = GridLayoutManager(requireContext(), 4)
+            val layoutManager = GridLayoutManager(requireContext(), 5) // Vcloud: 5 colunas aproveitam melhor a tela do celular
             layoutManager.isItemPrefetchEnabled = true
             layoutManager.initialPrefetchItemCount = 8
             viewBinding.recyclerView.layoutManager = layoutManager
