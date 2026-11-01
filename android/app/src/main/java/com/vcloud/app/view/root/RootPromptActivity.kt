@@ -21,20 +21,35 @@ class RootPromptActivity : AppCompatActivity() {
                 ?.loadLabel(VcloudCore.getPackageManager())?.toString() ?: pacote
         } catch (e: Exception) { pacote }
 
+        val todos = android.widget.CheckBox(this).apply {
+            text = "Usar a mesma resposta para todos os apps"
+            setPadding(0, 0, 0, 0)
+        }
+        val caixa = android.widget.FrameLayout(this).apply {
+            val m = (24 * resources.displayMetrics.density).toInt()
+            setPadding(m, 0, m, 0)
+            addView(todos)
+        }
         MaterialAlertDialogBuilder(this)
             .setTitle("Permitir root?")
+            .setView(caixa)
             .setMessage("$nome quer usar root dentro do Vcloud.\n\nComando: $comando\n\nVale só dentro do Vcloud, não no celular. " +
                 "Você muda isso depois em Configurações > Gerenciador de root.")
             .setCancelable(false)
-            .setPositiveButton("Permitir sempre") { _, _ -> responder("allow") }
-            .setNeutralButton("Só desta vez") { _, _ -> responder("once") }
-            .setNegativeButton("Negar") { _, _ -> responder("deny") }
+            .setPositiveButton("Permitir sempre") { _, _ -> responder("allow", todos.isChecked) }
+            .setNeutralButton("Só desta vez") { _, _ -> responder("once", false) }
+            .setNegativeButton("Negar") { _, _ -> responder("deny", todos.isChecked) }
             .show()
     }
 
-    private fun responder(r: String) {
+    private fun responder(r: String, paraTodos: Boolean) {
         respondeu = true
-        try { RootPolicy.padrao().responder(pacote, r) } catch (e: Exception) { /* servidor já desistiu */ }
+        try {
+            val p = RootPolicy.padrao()
+            p.responder(pacote, r)
+            // "mesma resposta para todos": vira a resposta automática dos apps sem decisão própria
+            if (paraTodos) p.definirModoAutomatico(if (r == "allow") RootPolicy.Estado.PERMITIDO else RootPolicy.Estado.NEGADO)
+        } catch (e: Exception) { /* servidor já desistiu */ }
         finish()
     }
 

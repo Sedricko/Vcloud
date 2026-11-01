@@ -166,7 +166,7 @@
                     android:src="@drawable/ic_add"
                     app:backgroundTint="@color/primary"
                     app:fabSize="mini"
-                    app:tint="@color/white" />
+                    app:tint="@color/on_primary" />
         </FrameLayout>
     </LinearLayout>
 

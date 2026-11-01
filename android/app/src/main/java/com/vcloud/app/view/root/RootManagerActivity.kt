@@ -1,74 +1,90 @@
 package com.vcloud.app.view.root
 
-import android.graphics.Typeface
+import android.Manifest
 import android.graphics.drawable.Drawable
+import android.os.Build
 import android.os.Bundle
 import android.view.Gravity
-import android.widget.Button
+import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.RadioButton
+import android.widget.RadioGroup
 import android.widget.ScrollView
-import android.widget.Switch
 import android.widget.TextView
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.switchmaterial.SwitchMaterial
+import com.vcloud.app.R
+import com.vcloud.app.util.botaoTema
+import com.vcloud.app.util.textoTema
 import com.vcloud.app.view.base.BaseActivity
 import com.vcloud.motor.VcloudCore
 import com.vcloud.motor.core.root.RootPolicy
+import com.vcloud.motor.core.root.RootPolicy.Aviso
 import com.vcloud.motor.core.root.RootPolicy.Estado
 
 /**
- * Gerenciador de root do Vcloud: chave geral, resposta automática (responder todos da mesma maneira), aviso na tela,
- * quem pode usar (chave por app; tocar no app dá as 3 opções) e o registro dos pedidos.
+ * Gerenciador de root do Vcloud (segue o tema do sistema): chave geral, notificações, resposta para todos os apps,
+ * chave por app (tocar no app dá as 3 opções) e o registro dos pedidos.
  * O root só existe dentro do Vcloud; aqui você decide quem usa.
  */
 class RootManagerActivity : BaseActivity() {
     private class AppRoot(val nome: String, val pacote: String, val icone: Drawable?)
 
     private val politica by lazy { RootPolicy.padrao() }
+    private var apps: List<AppRoot> = emptyList()
     private lateinit var lista: LinearLayout
     private lateinit var registro: TextView
-    private lateinit var automatico: TextView
+    private lateinit var grupoAviso: RadioGroup
+    private lateinit var grupoAuto: RadioGroup
+
+    private val pedirNotificacao =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { concedida ->
+            if (!concedida) {
+                politica.definirAviso(Aviso.NENHUM); marcarGrupos()
+                android.widget.Toast.makeText(this, "Sem a permissão de notificações o aviso fica em Nenhuma.", android.widget.Toast.LENGTH_LONG).show()
+            }
+        }
 
     private fun px(v: Int) = (v * resources.displayMetrics.density).toInt()
-
-    private fun texto(t: String, tamanho: Float, negrito: Boolean = false) = TextView(this).apply {
-        text = t; textSize = tamanho; if (negrito) setTypeface(typeface, Typeface.BOLD)
-    }
-
-    private fun secao(t: String) = texto(t, 16f, true).apply { setPadding(0, px(18), 0, px(4)) }
+    private fun secao(t: String) = textoTema(t, 16f, negrito = true).apply { setPadding(0, px(18), 0, px(4)) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val aviso = texto("O root vale só dentro do Vcloud, não no celular. Depois de mudar, feche e abra o app de novo.", 13f)
-            .apply { setPadding(0, px(4), 0, px(8)) }
 
-        val geral = Switch(this).apply {
+        val geral = SwitchMaterial(this).apply {
             text = "Root do Vcloud (chave geral)"
+            setTextColor(ContextCompat.getColor(context, R.color.on_surface))
             isChecked = politica.geralLigado()
             setOnCheckedChangeListener { _, ligado -> politica.ligarGeral(ligado) }
         }
-        val avisoTela = Switch(this).apply {
-            text = "Avisar na tela quando um app usar root"
-            isChecked = politica.avisoLigado()
-            setPadding(0, px(10), 0, 0)
-            setOnCheckedChangeListener { _, ligado -> politica.ligarAviso(ligado) }
+
+        grupoAviso = grupo(listOf("Nenhuma", "Mensagem na tela", "Notificação")) { i ->
+            val novo = Aviso.values()[i]
+            politica.definirAviso(novo)
+            if (novo == Aviso.NOTIFICACAO && Build.VERSION.SDK_INT >= 33 &&
+                ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                pedirNotificacao.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
+        grupoAuto = grupo(listOf("Perguntar a cada app", "Permitir todos", "Negar todos")) { i ->
+            politica.definirModoAutomatico(arrayOf(Estado.PERGUNTAR, Estado.PERMITIDO, Estado.NEGADO)[i]); carregar()
         }
 
-        automatico = texto("", 14f).apply { setPadding(0, px(4), 0, px(4)) }
-        val trocarAuto = Button(this).apply {
-            text = "Resposta automática"; isAllCaps = false
-            setOnClickListener { escolherAutomatico() }
+        val emMassa = LinearLayout(this).apply {
+            fun b(nome: String, e: Estado) = botaoTema(nome) { confirmarEmMassa(e) }.apply {
+                layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply { rightMargin = px(6) }
+            }
+            addView(b("Permitir todos", Estado.PERMITIDO)); addView(b("Negar todos", Estado.NEGADO)); addView(b("Perguntar", Estado.PERGUNTAR))
         }
 
         lista = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
-        registro = TextView(this).apply { typeface = Typeface.MONOSPACE; textSize = 12f; setTextIsSelectable(true) }
-        fun botao(nome: String, acao: () -> Unit) = Button(this).apply {
-            text = nome; isAllCaps = false; setOnClickListener { acao() }
-            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
-        }
+        registro = textoTema("", 12f).apply { typeface = android.graphics.Typeface.MONOSPACE; setTextIsSelectable(true) }
         val barra = LinearLayout(this).apply {
-            addView(botao("Atualizar") { carregar() })
-            addView(botao("Limpar registro") { politica.limparRegistro(); carregar() })
+            addView(botaoTema("Atualizar") { carregar() }.apply { layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply { rightMargin = px(8) } })
+            addView(botaoTema("Limpar registro") { politica.limparRegistro(); carregar() }.apply { layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f) })
         }
 
         val pad = px(16)
@@ -76,12 +92,19 @@ class RootManagerActivity : BaseActivity() {
             addView(LinearLayout(this@RootManagerActivity).apply {
                 orientation = LinearLayout.VERTICAL
                 setPadding(pad, pad, pad, pad)
-                addView(texto("Gerenciador de root", 20f, true)); addView(aviso); addView(geral); addView(avisoTela)
-                addView(secao("Responder todos da mesma maneira")); addView(automatico); addView(trocarAuto)
+                addView(textoTema("Gerenciador de root", 20f, negrito = true))
+                addView(textoTema("O root vale só dentro do Vcloud, não no celular. Depois de mudar, feche e abra o app de novo.", 13f, secundario = true)
+                    .apply { setPadding(0, px(4), 0, px(8)) })
+                addView(geral)
+                addView(secao("Notificações")); addView(grupoAviso)
+                addView(secao("Responder todos da mesma maneira")); addView(grupoAuto)
+                addView(textoTema("Aplicar agora a todos os apps da lista:", 12f, secundario = true).apply { setPadding(0, px(8), 0, px(4)) })
+                addView(emMassa)
                 addView(secao("Apps")); addView(lista)
                 addView(secao("Pedidos recentes")); addView(barra); addView(registro)
             })
         })
+        marcarGrupos()
     }
 
     override fun onResume() {
@@ -89,32 +112,46 @@ class RootManagerActivity : BaseActivity() {
         carregar()
     }
 
-    private fun rotuloAuto(e: Estado) = when (e) {
-        Estado.PERMITIDO -> "Permitir todos os apps (que não tenham decisão própria)"
-        Estado.NEGADO -> "Negar todos os apps (que não tenham decisão própria)"
-        Estado.PERGUNTAR -> "Perguntar a cada app (padrão)"
+    /** Grupo de opções (uma só marcada). O listener entra depois de marcar, para não disparar na montagem. */
+    private fun grupo(opcoes: List<String>, aoEscolher: (Int) -> Unit) = RadioGroup(this).apply {
+        opcoes.forEach { t ->
+            addView(RadioButton(context).apply {
+                id = View.generateViewId(); text = t; textSize = 14f
+                setTextColor(ContextCompat.getColor(context, R.color.on_surface))
+            })
+        }
+        tag = aoEscolher
     }
 
-    private fun escolherAutomatico() {
-        val opcoes = arrayOf("Perguntar a cada app (padrão)", "Permitir todos", "Negar todos")
-        val estados = arrayOf(Estado.PERGUNTAR, Estado.PERMITIDO, Estado.NEGADO)
+    private fun marcarGrupos() {
+        fun ligar(g: RadioGroup, i: Int) {
+            g.setOnCheckedChangeListener(null)
+            (g.getChildAt(i) as RadioButton).isChecked = true
+            @Suppress("UNCHECKED_CAST") val acao = g.tag as (Int) -> Unit
+            g.setOnCheckedChangeListener { grp, id -> acao(grp.indexOfChild(grp.findViewById(id))) }
+        }
+        ligar(grupoAviso, politica.aviso().ordinal)
+        ligar(grupoAuto, listOf(Estado.PERGUNTAR, Estado.PERMITIDO, Estado.NEGADO).indexOf(politica.modoAutomatico()))
+    }
+
+    private fun confirmarEmMassa(estado: Estado) {
+        if (apps.isEmpty()) return
+        val que = when (estado) { Estado.PERMITIDO -> "Permitir root"; Estado.NEGADO -> "Negar root"; Estado.PERGUNTAR -> "Voltar a perguntar" }
         MaterialAlertDialogBuilder(this)
-            .setTitle("Resposta automática")
-            .setMessage("Vale para os apps sem decisão própria na lista. A escolha de um app sempre vence.")
-            .setSingleChoiceItems(opcoes, estados.indexOf(politica.modoAutomatico())) { d, i ->
-                politica.definirModoAutomatico(estados[i]); d.dismiss(); carregar()
-            }
+            .setTitle("$que para todos?")
+            .setMessage("Isso muda a decisão de ${apps.size} apps, inclusive dos que você ajustou um a um.")
+            .setPositiveButton("Aplicar") { _, _ -> apps.forEach { politica.definir(it.pacote, estado) }; carregar() }
             .setNegativeButton("Cancelar", null)
             .show()
     }
 
     private fun carregar() {
-        automatico.text = rotuloAuto(politica.modoAutomatico())
+        marcarGrupos()
         registro.text = politica.lerRegistro().lines().filter { it.isNotBlank() }.takeLast(40).reversed()
             .joinToString("\n").ifEmpty { "Nenhum pedido ainda." }
         Thread {
             val pm = VcloudCore.getPackageManager()
-            val apps = try {
+            val achados = try {
                 VcloudCore.get().getInstalledApplications(0, 0).orEmpty()
                     .filterNot { it.packageName.startsWith("com.google.android.") || it.packageName == "com.android.vending" }
                     .filter { RootPolicy.pacoteValido(it.packageName) }
@@ -126,14 +163,14 @@ class RootManagerActivity : BaseActivity() {
             } catch (e: Exception) {
                 emptyList()
             }
-            runOnUiThread { mostrar(apps) }
+            runOnUiThread { apps = achados; mostrar() }
         }.start()
     }
 
-    private fun mostrar(apps: List<AppRoot>) {
+    private fun mostrar() {
         lista.removeAllViews()
         if (apps.isEmpty()) {
-            lista.addView(texto("Nenhum app dentro do Vcloud ainda.", 14f))
+            lista.addView(textoTema("Nenhum app dentro do Vcloud ainda.", 14f))
             return
         }
         for (app in apps) {
@@ -149,16 +186,16 @@ class RootManagerActivity : BaseActivity() {
             val textos = LinearLayout(this).apply {
                 orientation = LinearLayout.VERTICAL
                 layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
-                addView(texto(app.nome, 15f))
-                addView(texto(app.pacote, 11f).apply { alpha = 0.65f })
-                addView(texto(when (estado) {
+                addView(textoTema(app.nome, 15f))
+                addView(textoTema(app.pacote, 11f, secundario = true))
+                addView(textoTema(when (estado) {
                     Estado.PERMITIDO -> "Permitido"
                     Estado.NEGADO -> "Negado"
-                    Estado.PERGUNTAR -> "Segue a resposta automática"
-                }, 12f, true))
+                    Estado.PERGUNTAR -> "Automático"
+                }, 12f, negrito = true))
             }
-            // chave rápida: ligada = permitido; desligada = negado. Tocar no app abre as 3 opções (inclui "perguntar").
-            val chave = Switch(this).apply {
+            // chave rápida: ligada = permitido; desligada = negado. Tocar no app abre as 3 opções (inclui "automático").
+            val chave = SwitchMaterial(this).apply {
                 isChecked = estado == Estado.PERMITIDO
                 setOnCheckedChangeListener { _, ligado ->
                     politica.definir(app.pacote, if (ligado) Estado.PERMITIDO else Estado.NEGADO); carregar()
@@ -170,7 +207,7 @@ class RootManagerActivity : BaseActivity() {
     }
 
     private fun escolher(app: AppRoot) {
-        val opcoes = arrayOf("Seguir a resposta automática / perguntar", "Permitir", "Negar")
+        val opcoes = arrayOf("Automático (segue a resposta para todos)", "Permitir", "Negar")
         val estados = arrayOf(Estado.PERGUNTAR, Estado.PERMITIDO, Estado.NEGADO)
         MaterialAlertDialogBuilder(this)
             .setTitle("Root para ${app.nome}")

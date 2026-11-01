@@ -26,7 +26,7 @@
                 app:position="left_top"
                 app:side_length="22dp"
                 app:text="XP"
-                app:text_color="@color/white"
+                app:text_color="@color/on_primary"
                 app:text_size="8sp" />
     </FrameLayout>
 

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Vcloud: paleta ESCURA (tema escuro do sistema). Mesmos nomes de values/colors.xml. -->
+<resources>
+    <color name="primary">#7F9FE0</color>
+    <color name="primary_dark">#0D1322</color>
+    <color name="primary_light">#A9C1F2</color>
+    <color name="primary_text">#EEF3FF</color>
+    <color name="secondary_text">#A9B5D2</color>
+    <color name="on_primary">#0D1322</color>
+
+    <color name="surface">#FF12172A</color>
+    <color name="on_surface">#EEF3FF</color>
+    <color name="surface_line">#1FFFFFFF</color>
+
+    <color name="glass_start">#CC1A223A</color>
+    <color name="glass_end">#CC121A30</color>
+    <color name="glass_stroke">#1AFFFFFF</color>
+    <color name="tile_bg">#80080C1A</color>
+    <color name="tile_stroke">#14FFFFFF</color>
+    <color name="glass_text">#EEF3FF</color>
+    <color name="glass_text_dim">#A9B5D2</color>
+    <color name="glass_dot">#7F9FE0</color>
+
+    <color name="wave_bg_start">#FF0D1322</color>
+    <color name="wave_bg_end">#FF1A2644</color>
+    <color name="wave_a_start">#FF35508F</color>
+    <color name="wave_a_end">#FF1B2D5E</color>
+    <color name="wave_b">#33405A99</color>
+    <color name="wave_c_start">#E62E4A8A</color>
+    <color name="wave_c_end">#CC1A2C5C</color>
+    <color name="wave_d">#33314C85</color>
+</resources>

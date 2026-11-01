@@ -15,7 +15,7 @@ import com.vcloud.motor.core.env.BEnvironment;
  * Política do root interno do Vcloud, guardada em arquivos (a Central e o servidor rodam em processos diferentes).
  *   _off            existe = root desligado para todos os apps (chave geral do painel)
  *   _auto           "allow" ou "deny" = resposta automática para apps sem decisão própria; sem arquivo = perguntar
- *   _aviso          existe = mostra uma mensagem na tela quando um app usa o root
+ *   _aviso          "toast" = mensagem na tela, "notif" = notificação; sem arquivo = nenhum (arquivo vazio = "toast", versão antiga)
  *   <pacote>        "allow" ou "deny"; sem arquivo = perguntar ao usuário (arquivo vazio = "allow", versão antiga)
  *   <pacote>.reply  resposta da janela "Permitir root?": allow | once | deny
  *   log.txt         registro dos pedidos
@@ -23,6 +23,9 @@ import com.vcloud.motor.core.env.BEnvironment;
  */
 public final class RootPolicy {
     public enum Estado { PERGUNTAR, PERMITIDO, NEGADO }
+
+    /** Como avisar que um app usou o root: nada (padrão), mensagem na tela ou notificação. */
+    public enum Aviso { NENHUM, MENSAGEM, NOTIFICACAO }
 
     private static final Pattern PACOTE = Pattern.compile("[A-Za-z0-9._]{1,200}");
     private static final long MAX_LOG = 100 * 1024;
@@ -85,14 +88,23 @@ public final class RootPolicy {
         }
     }
 
-    public boolean avisoLigado() {
-        return new File(dir, "_aviso").exists();
+    public Aviso aviso() {
+        File f = new File(dir, "_aviso");
+        if (!f.isFile()) return Aviso.NENHUM;
+        try {
+            String s = new String(Files.readAllBytes(f.toPath()), StandardCharsets.UTF_8).trim();
+            if (s.equals("notif")) return Aviso.NOTIFICACAO;
+        } catch (Exception e) {
+            // na dúvida, mensagem
+        }
+        return Aviso.MENSAGEM;
     }
 
-    public void ligarAviso(boolean ligado) {
+    public void definirAviso(Aviso a) {
         File f = new File(dir, "_aviso");
         try {
-            if (ligado) f.createNewFile(); else f.delete();
+            if (a == Aviso.NENHUM) { f.delete(); return; }
+            try (FileWriter w = new FileWriter(f, false)) { w.write(a == Aviso.NOTIFICACAO ? "notif" : "toast"); }
         } catch (java.io.IOException e) {
             throw new IllegalStateException(e);
         }

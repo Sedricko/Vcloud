@@ -40,7 +40,7 @@
                 android:id="@+id/name"
                 android:layout_width="match_parent"
                 android:textSize="16sp"
-                android:textColor="@color/primary_text"
+                android:textColor="@color/on_surface"
                 android:layout_height="wrap_content" />
 
         <TextView

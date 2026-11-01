@@ -163,12 +163,20 @@ public class RootDecisorTest {
         assertEquals(Estado.PERGUNTAR, p.modoAutomatico());
     }
 
-    @Test public void avisoLigaEDesliga() throws Exception {
+    @Test public void avisoTemTresModosEComecaEmNenhum() throws Exception {
         RootPolicy p = nova();
-        assertFalse(p.avisoLigado());
-        p.ligarAviso(true);
-        assertTrue(p.avisoLigado());
-        p.ligarAviso(false);
-        assertFalse(p.avisoLigado());
+        assertEquals(RootPolicy.Aviso.NENHUM, p.aviso());
+        p.definirAviso(RootPolicy.Aviso.MENSAGEM);
+        assertEquals(RootPolicy.Aviso.MENSAGEM, p.aviso());
+        p.definirAviso(RootPolicy.Aviso.NOTIFICACAO);
+        assertEquals(RootPolicy.Aviso.NOTIFICACAO, p.aviso());
+        p.definirAviso(RootPolicy.Aviso.NENHUM);
+        assertEquals(RootPolicy.Aviso.NENHUM, p.aviso());
+    }
+
+    @Test public void arquivoDeAvisoVazioDaVersaoAntigaContaComoMensagem() throws Exception {
+        File dir = Files.createTempDirectory("vroot").toFile();
+        assertTrue(new File(dir, "_aviso").createNewFile());
+        assertEquals(RootPolicy.Aviso.MENSAGEM, new RootPolicy(dir).aviso());
     }
 }

@@ -4,10 +4,11 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.graphics.Typeface
 import android.os.Bundle
-import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
+import com.vcloud.app.util.botaoTema
+import com.vcloud.app.util.textoTema
 import com.vcloud.app.view.base.BaseActivity
 import com.vcloud.motor.VcloudCore
 import com.vcloud.motor.utils.Diagnostico
@@ -26,13 +27,12 @@ class DiagnosticoActivity : BaseActivity() {
         val dp = resources.displayMetrics.density
         fun px(v: Int) = (v * dp).toInt()
 
-        val titulo = TextView(this).apply { text = "Central de diagnóstico"; textSize = 20f; setTypeface(typeface, Typeface.BOLD) }
-        resumo = TextView(this).apply { textSize = 13f; setPadding(0, px(4), 0, px(8)) }
-        texto = TextView(this).apply { typeface = Typeface.MONOSPACE; textSize = 12f; setTextIsSelectable(true) }
+        val titulo = textoTema("Central de diagnóstico", 20f, negrito = true)
+        resumo = textoTema("", 13f, secundario = true).apply { setPadding(0, px(4), 0, px(8)) }
+        texto = textoTema("", 12f).apply { typeface = Typeface.MONOSPACE; setTextIsSelectable(true) }
 
-        fun botao(nome: String, acao: () -> Unit) = Button(this).apply {
-            text = nome; isAllCaps = false; setOnClickListener { acao() }
-            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+        fun botao(nome: String, acao: () -> Unit) = botaoTema(nome, acao = acao).apply {
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply { rightMargin = px(6) }
         }
         val linha1 = LinearLayout(this).apply {
             addView(botao("Atualizar") { mostrar() })

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- claro: ícones escuros nas barras do sistema (values-night/bools.xml inverte) -->
+    <bool name="tema_claro">true</bool>
+</resources>

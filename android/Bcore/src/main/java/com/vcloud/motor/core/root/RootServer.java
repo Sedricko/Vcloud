@@ -74,7 +74,7 @@ public final class RootServer {
             o.write((resposta + "\n").getBytes(StandardCharsets.UTF_8));
             o.flush();
             Diagnostico.evento("ROOT " + pkg + ": " + resposta + " (" + pedido.comando + ")");
-            if (RootPolicy.padrao().avisoLigado()) avisar(pkg, resposta);
+            avisar(RootPolicy.padrao().aviso(), pkg, resposta);
         } catch (Throwable e) {
             Diagnostico.evento("ROOT pedido falhou: " + e);
         }
@@ -94,15 +94,34 @@ public final class RootServer {
         return null;
     }
 
-    private static void avisar(String pkg, String resposta) {
+    private static void avisar(RootPolicy.Aviso modo, String pkg, String resposta) {
+        if (modo == RootPolicy.Aviso.NENHUM) return;
         final String texto = (pkg == null ? "App desconhecido" : pkg) + (resposta.startsWith("ALLOW") ? " usou root" : " teve o root negado");
-        new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> {
-            try {
-                android.widget.Toast.makeText(VcloudCore.getContext(), texto, android.widget.Toast.LENGTH_SHORT).show();
-            } catch (Throwable ignored) {
-                // sem tela para mostrar: o registro já tem o pedido
+        if (modo == RootPolicy.Aviso.MENSAGEM) {
+            new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> {
+                try {
+                    android.widget.Toast.makeText(VcloudCore.getContext(), texto, android.widget.Toast.LENGTH_SHORT).show();
+                } catch (Throwable ignored) {
+                    // sem tela para mostrar: o registro já tem o pedido
+                }
+            });
+            return;
+        }
+        try { // NOTIFICACAO (precisa da permissão de notificações; sem ela o Android só não mostra)
+            Context c = VcloudCore.getContext();
+            android.app.NotificationManager nm = (android.app.NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
+            android.app.Notification.Builder b = android.os.Build.VERSION.SDK_INT >= 26
+                    ? new android.app.Notification.Builder(c, "vcloud_root") : new android.app.Notification.Builder(c);
+            if (android.os.Build.VERSION.SDK_INT >= 26) {
+                nm.createNotificationChannel(new android.app.NotificationChannel("vcloud_root", "Pedidos de root",
+                        android.app.NotificationManager.IMPORTANCE_LOW));
             }
-        });
+            b.setSmallIcon(android.R.drawable.stat_notify_sync_noanim).setContentTitle("Root do Vcloud")
+                    .setContentText(texto).setAutoCancel(true);
+            nm.notify(0x52000000 | (pkg == null ? 0 : pkg.hashCode() & 0xFFFF), b.build());
+        } catch (Throwable e) {
+            Diagnostico.evento("ROOT não consegui mostrar a notificação: " + e);
+        }
     }
 
     private static String perguntar(String pkg, String comando) {

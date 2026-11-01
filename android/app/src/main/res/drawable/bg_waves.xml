@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Vcloud: fundo de ondas azuis (conceito Windows 12, docs/design/inicio-w12.png) -->
+<!-- Vcloud: fundo de ondas azuis (conceito Windows 12; claro e escuro em values/colors.xml e values-night/colors.xml) -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:aapt="http://schemas.android.com/aapt"
     android:width="412dp" android:height="892dp"
@@ -7,23 +7,23 @@
     <path android:pathData="M0,0h412v892h-412z">
         <aapt:attr name="android:fillColor">
             <gradient android:type="linear" android:startX="0" android:startY="0" android:endX="412" android:endY="892"
-                android:startColor="#FFE4E8F5" android:endColor="#FFB9C6E6"/>
+                android:startColor="@color/wave_bg_start" android:endColor="@color/wave_bg_end"/>
         </aapt:attr>
     </path>
     <path android:pathData="M-40,120 C90,60 160,260 120,420 S30,700 180,900 L-40,900 Z" android:fillAlpha="0.85">
         <aapt:attr name="android:fillColor">
             <gradient android:type="linear" android:startX="0" android:startY="100" android:endX="200" android:endY="900"
-                android:startColor="#FF7F9FE0" android:endColor="#FF2F56B8"/>
+                android:startColor="@color/wave_a_start" android:endColor="@color/wave_a_end"/>
         </aapt:attr>
     </path>
     <path android:pathData="M-40,200 C60,160 120,330 80,480 S40,760 140,900 L-40,900 Z"
-        android:fillColor="#73DFE7FB"/>
+        android:fillColor="@color/wave_b"/>
     <path android:pathData="M460,300 C330,340 300,520 360,640 S330,860 260,900 L460,900 Z">
         <aapt:attr name="android:fillColor">
             <gradient android:type="linear" android:startX="412" android:startY="300" android:endX="260" android:endY="900"
-                android:startColor="#E6A9C1F2" android:endColor="#CC4C74CF"/>
+                android:startColor="@color/wave_c_start" android:endColor="@color/wave_c_end"/>
         </aapt:attr>
     </path>
     <path android:pathData="M460,380 C360,420 350,560 390,660 S380,850 320,900 L460,900 Z"
-        android:fillColor="#66E8EEFC"/>
+        android:fillColor="@color/wave_d"/>
 </vector>
