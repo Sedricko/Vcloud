@@ -224,3 +224,28 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
   (linhas `ROOT ...`: `servidor pronto`, `su pronto para <app>`, `<app>: ALLOW/DENY`).
 - Se `su` falhar no aparelho, olhar: `ROOT indisponível` (libvsu.so ausente), `su: o Vcloud nao esta respondendo` (servidor não
   subiu ou SELinux bloqueou o socket), `Permission denied` ao executar (SELinux no exec).
+
+
+## 01/11 noite — root nativo CONFIRMADO no S25 + auditoria
+- **Root nativo funciona no Android 17** (relatório 15:59): `ROOT servidor pronto`, `ROOT dev.unit.app: ALLOW ((shell interativo))`,
+  janela "Permitir root?" apareceu, Unit ficou "Permitido (sempre)" no Gerenciador. Exec do `libvsu.so` e socket abstrato OK.
+  Ainda não confirmado no aparelho: `uid=0` via `libfakeuid.so` (`su -c id`) e o aviso na tela.
+- Gerenciador de root agora: chave geral, **resposta automática** (perguntar / permitir todos / negar todos; decisão do app vence),
+  aviso na tela (toast, sem notificação por causa da permissão POST_NOTIFICATIONS), lista com ícone e chave por app, sem a
+  infraestrutura do Google. Referência de UI do usuário: tela "SuperUsuário" do Magisk/KernelSU.
+- **Relatórios unificados** (só a Central gera relatório, `VcloudCore.writeReport`): removidos `startLogcat()` (gravava logcat
+  contínuo em `Download/logs/<pacote>_logcat.txt` e dava `logcat -c` na abertura), `sendLogs` + `LogSendListener` e o arquivo
+  por queda de `CrashMonitor.writeCrashLog` (agora uma linha no histórico: `Diagnostico.evento`).
+- **Auditoria de código morto**: 14 arquivos sem referência apagados (JarManagerTest, XiaomiPermissionManager, BResourcesManager,
+  BrowserEngineProxy, IInputMethodManagerProxy, IWebViewUpdateServiceProxy, StubHelper, WebViewFactoryProxy, WebViewProxy,
+  QQUtils, ReflectionClass, SystemHookManager, XpModuleInfo, MathUtil), 19 métodos privados sem chamador e `newBindingViewHolder`.
+  Lição: contar referências só FORA do arquivo apagou `inflateBinding`, usado por dentro; o build pegou e foi restaurado.
+  Falsos positivos do script (não apagar): `ToastEx.kt`, `ResUtil.kt`, `ViewBindingEx.kt` (funções soltas) e `AppsSortCompon.kt`
+  (arquivo com nome diferente da classe `AppsSortComparator`). Total: -3400 linhas.
+- Auditoria de segurança do root: o socket `vcloud_su` só atende o próprio uid (`RootServer`); nome de pacote validado
+  (`[A-Za-z0-9._]`) porque vira nome de arquivo; pedido sem app identificado é negado; sem resposta em 30 s = nega.
+- **Pista nova da Play Store de dentro**: `Unexpected android-id = 0 in Event Logger Factory` (Finsky lê o `android_id` do
+  Gservices e recebe 0) + `ClassCastException spl->avru` + Cronet abortando por exceção Java não tratada. Permissão
+  `READ_GSERVICES` já está declarada; investigar o provedor `com.google.android.gsf.gservices` no hook `GetContentProvider`.
+- Pendente (aprovado pelo usuário): tela inicial em tela cheia (`docs/design/inicio-w12-tela-cheia.png`) e painel lateral no jogo
+  (`docs/design/painel-lateral.png`, aguardando 3 respostas: lado da aba, captura de tela, confirmar ao fechar).
