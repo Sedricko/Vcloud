@@ -366,8 +366,16 @@ class AppsFragment : Fragment() {
                 startActivity(android.content.Intent(android.provider.Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
                         android.net.Uri.parse("package:" + ctx.packageName)))
             }
+            // Vcloud: "Sobrepor a outros apps" (rodar sobre outros) é especial: o Android só libera pela tela própria.
+            val precisaSobrepor = android.Manifest.permission.SYSTEM_ALERT_WINDOW in doApp &&
+                    android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M &&
+                    !android.provider.Settings.canDrawOverlays(ctx)
+            if (precisaSobrepor) {
+                startActivity(android.content.Intent(android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                        android.net.Uri.parse("package:" + ctx.packageName)))
+            }
             if (faltando.isEmpty()) {
-                if (!precisaArquivos) toast("Este app já tem as permissões que precisa")
+                if (!precisaArquivos && !precisaSobrepor) toast("Este app já tem as permissões que precisa")
                 return
             }
             pedirPermissoes.launch(faltando.toTypedArray())

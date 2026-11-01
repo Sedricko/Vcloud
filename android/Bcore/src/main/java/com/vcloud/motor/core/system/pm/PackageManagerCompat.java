@@ -212,6 +212,12 @@ public class PackageManagerCompat {
                 }
             }
         }
+        if ("com.android.vending".equals(p.packageName) || "com.google.android.gms".equals(p.packageName)) {
+            // Vcloud: registra a assinatura entregue (jogos pagos conferem se a Play Store é original)
+            android.util.Log.i("VcloudAssinatura", p.packageName + " flags=" + flags + " doCelular=" + (base != null)
+                    + " signatures=" + (pi.signatures == null ? "null" : pi.signatures.length)
+                    + " signingInfo=" + (BuildCompat.isPie() ? (pi.signingInfo != null) : "n/a"));
+        }
         return pi;
     }
 
