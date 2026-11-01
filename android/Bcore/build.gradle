@@ -57,6 +57,11 @@ android {
             useLegacyPackaging true
         }
     }
+    sourceSets {
+        main {
+            jniLibs.srcDir(layout.buildDirectory.dir("generated/vsuJniLibs"))
+        }
+    }
     lintOptions {
 
         checkReleaseBuilds false
@@ -110,4 +115,35 @@ dependencies {
 
 
     
+}
+
+// Vcloud: copia o executável "vsu" (su do root interno) como libvsu.so para dentro do APK.
+// Falha o build se não achar, para não entregar um APK sem root sem ninguém perceber.
+tasks.register("copyVsu") {
+    def saida = layout.buildDirectory.dir("generated/vsuJniLibs").get().asFile
+    def raiz = layout.buildDirectory.get().asFile
+    def cxx = file(".cxx")
+    doLast {
+        ["arm64-v8a", "armeabi-v7a"].each { abi ->
+            def achados = [raiz, cxx].findAll { it.exists() }.collectMany { base ->
+                fileTree(dir: base, include: "**/${abi}/vsu").files.findAll { it.isFile() && it.length() > 0 }
+            }
+            if (achados.isEmpty()) {
+                throw new GradleException("copyVsu: o executável vsu (${abi}) não foi gerado pelo ndk-build")
+            }
+            def destino = new File(saida, "${abi}/libvsu.so")
+            destino.parentFile.mkdirs()
+            java.nio.file.Files.copy(achados.first().toPath(), destino.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING)
+            logger.lifecycle("copyVsu: ${achados.first()} -> ${destino}")
+        }
+    }
+}
+
+afterEvaluate {
+    tasks.named("copyVsu") {
+        dependsOn { tasks.matching { it.name.startsWith("buildNdkBuild") }.toList() }
+    }
+    tasks.matching { it.name.startsWith("merge") && it.name.endsWith("JniLibFolders") }.configureEach {
+        dependsOn "copyVsu"
+    }
 }
