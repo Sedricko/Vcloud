@@ -387,31 +387,12 @@ class AppsFragment : Fragment() {
         }
     }
 
-    private fun alternarRoot(pacote: String, nome: String) {
-        val chave = com.vcloud.motor.core.env.BEnvironment.getRootFlag(pacote)
-        val ligado = chave.exists()
-        androidx.appcompat.app.AlertDialog.Builder(requireContext())
-            .setTitle("Root interno")
-            .setMessage(
-                if (ligado) "Desligar o root interno de $nome?"
-                else "Permitir que $nome use root interno? Só vale dentro do Vcloud, não no celular de verdade."
-            )
-            .setPositiveButton(if (ligado) "Desligar" else "Permitir") { _, _ ->
-                if (ligado) chave.delete() else { chave.parentFile?.mkdirs(); chave.createNewFile() }
-                toast("Root ${if (ligado) "desligado" else "ligado"}. Feche e abra $nome de novo.")
-            }
-            .setNegativeButton("Cancelar", null)
-            .show()
-    }
-
     private fun setOnLongClick() {
         try {
             mAdapter.setItemLongClickListener { view, data, _ ->
                 try {
                     popupMenu = PopupMenu(requireContext(),view).also {
                         it.inflate(R.menu.app_menu)
-                        val rootLigado = com.vcloud.motor.core.env.BEnvironment.getRootFlag(data.packageName).exists()
-                        it.menu.findItem(R.id.app_root).title = if (rootLigado) "Root interno: ligado" else "Root interno: desligado"
                         it.setOnMenuItemClickListener { item ->
                             try {
                                 when (item.itemId) {
@@ -440,7 +421,7 @@ class AppsFragment : Fragment() {
                                     }
 
                                     R.id.app_root -> {
-                                        alternarRoot(data.packageName, data.name)
+                                        startActivity(android.content.Intent(requireContext(), com.vcloud.app.view.root.RootManagerActivity::class.java))
                                     }
                                 }
                                 return@setOnMenuItemClickListener true

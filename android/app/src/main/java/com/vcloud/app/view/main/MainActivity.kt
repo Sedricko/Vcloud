@@ -454,6 +454,9 @@ class MainActivity : LoadingActivity() {
                 R.id.main_setting -> {
                     SettingActivity.start(this)
                 }
+                R.id.main_root -> {
+                    startActivity(android.content.Intent(this, com.vcloud.app.view.root.RootManagerActivity::class.java))
+                }
                 R.id.main_diagnostico -> {
                     startActivity(android.content.Intent(this, com.vcloud.app.view.setting.DiagnosticoActivity::class.java))
                 }

@@ -23,11 +23,6 @@ public class BEnvironment {
         FileUtils.mkdirs(getProcDir());
     }
 
-    // Existe = o usuário liberou o root interno para este app (chave por app).
-    public static File getRootFlag(String packageName) {
-        return new File(sVirtualRoot, "root/" + packageName);
-    }
-
     public static File getVirtualRoot() {
         return sVirtualRoot;
     }

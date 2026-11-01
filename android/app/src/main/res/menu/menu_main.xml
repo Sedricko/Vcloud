@@ -9,6 +9,11 @@
             app:showAsAction="never" />
 
     <item
+            android:id="@+id/main_root"
+            android:title="Gerenciador de root"
+            app:showAsAction="never" />
+
+    <item
             android:id="@+id/main_diagnostico"
             android:title="Central de diagnóstico"
             app:showAsAction="never" />

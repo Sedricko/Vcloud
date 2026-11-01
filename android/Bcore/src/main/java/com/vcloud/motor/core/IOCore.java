@@ -169,22 +169,34 @@ public class IOCore {
         for (String p : SU_PATHS) rule.put(p, p + "-fake");
     }
 
-    // Root interno: "su" = atalho para o sh do sistema, só no PATH do app com a chave ligada.
-    // shortcut: não é uid 0 de verdade (id mostra o uid do app) e exec com caminho absoluto
-    // (/system/xbin/su) não é redirecionado; subir para um su nativo + hook de execve se algum app exigir.
+    // Root interno: "su" é um atalho para o libvsu.so do Vcloud, só no PATH dos apps de dentro. Quem pode usar é decidido
+    // pelo painel (RootPolicy) a cada pedido, dentro do próprio su. Não é root de verdade: vale só no Vcloud.
+    // shortcut: exec por caminho absoluto (/system/xbin/su) não é redirecionado; subir para hook de execve se algum app exigir.
     private void liberarRoot(Map<String, String> rule, String packageName) {
-        if (!BEnvironment.getRootFlag(packageName).exists()) return;
         try {
+            if (!com.vcloud.motor.core.root.RootPolicy.padrao().geralLigado()) return;
+            File lib = new File(VcloudCore.getContext().getApplicationInfo().nativeLibraryDir, "libvsu.so");
+            if (!lib.exists()) {
+                com.vcloud.motor.utils.Diagnostico.evento("ROOT indisponível: " + lib + " não está no APK");
+                return;
+            }
             File bin = new File(BEnvironment.getVirtualRoot(), "rootbin");
             FileUtils.mkdirs(bin.getAbsolutePath());
             File su = new File(bin, "su");
-            if (!su.exists()) Os.symlink("/system/bin/sh", su.getAbsolutePath());
+            // O caminho da pasta de bibliotecas muda a cada atualização do APK: refaz o atalho sempre.
+            su.delete();
+            try {
+                Os.symlink(lib.getAbsolutePath(), su.getAbsolutePath());
+            } catch (android.system.ErrnoException e) {
+                if (e.errno != android.system.OsConstants.EEXIST) throw e; // outro app abriu junto e já refez
+            }
             Os.setenv("PATH", bin.getAbsolutePath() + ":" + System.getenv("PATH"), true);
+            Os.setenv("VCLOUD_PKG", packageName, true); // só uma dica: o servidor identifica o app pelo processo
             for (String p : SU_PATHS) rule.put(p, su.getAbsolutePath());
-            Log.i("VcloudRoot", "root interno ligado para " + packageName);
-            com.vcloud.motor.utils.Diagnostico.evento("ROOT interno ligado para " + packageName + " (su em " + su + ")");
-        } catch (Exception e) {
-            Log.e("VcloudRoot", "falhou ao ligar o root interno", e);
+            Log.i("VcloudRoot", "su pronto para " + packageName);
+        } catch (Throwable e) {
+            Log.e("VcloudRoot", "falhou ao preparar o su", e);
+            com.vcloud.motor.utils.Diagnostico.evento("ROOT falhou ao preparar o su para " + packageName + ": " + e);
         }
     }
 

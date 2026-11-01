@@ -27,6 +27,10 @@ class SettingFragment : PreferenceFragmentCompat() {
 
 
         initSobrepor()
+        findPreference<Preference>("gerenciador_root")?.setOnPreferenceClickListener {
+            startActivity(android.content.Intent(requireContext(), com.vcloud.app.view.root.RootManagerActivity::class.java))
+            true
+        }
         findPreference<Preference>("diagnostico")?.setOnPreferenceClickListener {
             startActivity(android.content.Intent(requireContext(), DiagnosticoActivity::class.java))
             true

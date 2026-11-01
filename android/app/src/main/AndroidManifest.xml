@@ -32,6 +32,13 @@
         <activity android:name=".view.setting.SettingActivity" />
         <activity android:name=".view.gms.GmsManagerActivity" />
         <activity android:name=".view.setting.DiagnosticoActivity" />
+        <activity android:name=".view.root.RootManagerActivity" />
+        <activity
+            android:name=".view.root.RootPromptActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:taskAffinity=""
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
         <activity
             android:name=".view.main.WelcomeActivity"
             android:exported="true"

@@ -344,5 +344,6 @@ public class BProcessManagerService implements ISystemService {
     @Override
     public void systemReady() {
         FileUtils.deleteDir(BEnvironment.getProcDir());
+        com.vcloud.motor.core.root.RootServer.start();
     }
 }

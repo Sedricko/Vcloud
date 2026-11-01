@@ -52,3 +52,21 @@ LOCAL_CPP_FEATURES := exceptions
 LOCAL_STATIC_LIBRARIES := libdobby xdl
 LOCAL_LDLIBS := -llog -landroid -lz
 include $(BUILD_SHARED_LIBRARY)
+
+# Vcloud: "su" do root interno. Executável com nome de biblioteca (libvsu.so) para o Gradle empacotar na pasta
+# de bibliotecas nativas, a única de onde o Android deixa um app executar um arquivo.
+include $(CLEAR_VARS)
+LOCAL_MODULE := vsu
+LOCAL_MODULE_FILENAME := libvsu.so
+LOCAL_SRC_FILES := su/su.c
+LOCAL_CFLAGS += -Wall -fPIE
+LOCAL_LDFLAGS += -pie -Wl,-z,max-page-size=16384
+include $(BUILD_EXECUTABLE)
+
+# Vcloud: faz os programas que o su abre verem uid 0 (carregada por LD_PRELOAD pelo su).
+include $(CLEAR_VARS)
+LOCAL_MODULE := fakeuid
+LOCAL_SRC_FILES := su/fakeuid.c
+LOCAL_CFLAGS += -Wall -fPIC
+LOCAL_LDFLAGS += -Wl,-z,max-page-size=16384
+include $(BUILD_SHARED_LIBRARY)
