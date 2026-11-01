@@ -41,6 +41,8 @@ Foco: **o root funcionar lá dentro** e **o que estiver lá dentro rodar bem**. 
 | Lab | Google completo dentro do Vcloud (Play Store + Play Services) | Só se a ponte da F1b não servir para algum jogo |
 
 ## Como construir
+- **O Vcloud é nosso.** vPhoneOS, Virtual Master, BlackBox e as continuações dele (`docs/pesquisa.md`) são
+  **material de estudo**: aprendemos com eles; de código aberto só aproveitamos peças se a licença permitir.
 - **Cada parte é uma peça separada, com o seu próprio teste** (núcleo, Google, root, pastas, tela). Trocar ou ajustar
   uma peça não obriga a refazer as outras.
 - Google **de verdade, sem fingir**: jogo vem da loja, licença confirmada pela loja, login com a conta real.
