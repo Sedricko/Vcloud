@@ -255,7 +255,7 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
   `res/values-night/colors.xml` (escuro), mesmos nomes. Drawables `bg_glass`, `bg_tile`, `bg_waves`, `splash` usam `@color/...`;
   `ic_empty` tem versão `drawable-night` (alpha .35). Barras do sistema transparentes com ícones pelo `@bool/tema_claro`.
   Telas por código usam `util/UiTema.kt` (`textoTema`, `botaoTema`). Prévias aprovadas: `docs/design/tema-*.png`.
-- Corrigido bug antigo: `LoadingActivity` passava `R.color.primary` (ID) como se fosse cor.
+- (ERRADO, revertido às 16:45) `LoadingActivity` passava `R.color.primary` (ID) e NÃO era bug: `CatLoadingView.setBackgroundColor` espera o ID do recurso. Passar o valor da cor causou `Resources$NotFoundException: Resource ID #0xff12172a` (16x no relatório 16:39), que derrubava a pausa da MainActivity ao abrir um app. Lição: ler o código da biblioteca antes de "corrigir" uma chamada.
 - Gerenciador de root: notificações Nenhuma/Mensagem/Notificação (`RootPolicy.Aviso`, `_aviso` = `toast`|`notif`), resposta para
   todos (RadioGroup), botões "aplicar agora a todos" COM confirmação, e a janela de root tem "Usar a mesma resposta para todos".
 - Não verificado no aparelho: aparência real dos dois temas, `SwitchMaterial`/`MaterialButton` programáticos, notificação do root.
@@ -269,3 +269,8 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - As prévias `docs/design/tema-inicio.png` e `amostra-*.png` mostram o claro ANTIGO (vidro branco): estão superadas.
 - Pendente: layout em tela cheia aprovado (`inicio-w12-tela-cheia.png`: busca, Fixados, barra de baixo, usuário/desligar) NÃO foi
   programado; só o tema.
+
+## 01/11 16:45 — relatório 16:39
+- Root OK no Tinker (`ROOT dev.tinker.app: ALLOW`). Regressão minha corrigida (CatLoadingView, acima).
+- O histórico estava poluído por `ERRO JavaException em null` repetido: agora `Diagnostico.erroCapturado` junta o mesmo erro por 30 s e escreve
+  "(o próprio Vcloud)" quando não há pacote.

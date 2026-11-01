@@ -16,7 +16,7 @@ abstract class LoadingActivity : BaseActivity() {
         }
 
         if (!loadingView.isAdded) {
-            loadingView.setBackgroundColor(androidx.core.content.ContextCompat.getColor(this, R.color.surface))
+            loadingView.setBackgroundColor(R.color.surface) // a biblioteca espera o ID do recurso (não o valor da cor)
             loadingView.show(supportFragmentManager, "")
             supportFragmentManager.executePendingTransactions()
             loadingView.setClickCancelAble(false)

@@ -104,6 +104,21 @@ public final class Diagnostico {
                 + (st.length > 0 ? "\n      em " + st[0] : ""));
     }
 
+    private static final Map<String, Long> ULTIMO_ERRO = new ConcurrentHashMap<>();
+
+    /** Erro de Java visto e recuperado pelo motor. O mesmo erro (tipo + mensagem) só entra de novo depois de 30 s. */
+    public static void erroCapturado(String tipo, String pacote, boolean recuperado, String mensagem, String primeiraLinha) {
+        String msg = mensagem == null ? "" : mensagem;
+        String chave = tipo + "|" + (msg.length() > 80 ? msg.substring(0, 80) : msg);
+        long agora = System.currentTimeMillis();
+        Long antes = ULTIMO_ERRO.get(chave);
+        if (antes != null && agora - antes < 30_000) return;
+        ULTIMO_ERRO.put(chave, agora);
+        evento("ERRO  " + tipo + " em " + (pacote == null ? "(o próprio Vcloud)" : pacote)
+                + (recuperado ? " (recuperado)" : " (sem recuperação)")
+                + "\n    " + msg + (primeiraLinha == null || primeiraLinha.isEmpty() ? "" : "\n      " + primeiraLinha));
+    }
+
     public static void abrindo(String pacote, String processo) {
         INICIO.put(processo, System.currentTimeMillis());
         evento("ABRINDO  " + pacote + " (" + processo + ")");

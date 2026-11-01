@@ -341,9 +341,8 @@ public class CrashMonitor {
     // Vcloud: antes gravava um arquivo por queda em crash_logs; agora é uma linha no histórico da Central de diagnóstico.
     private static void writeCrashLog(CrashInfo crashInfo) {
         String primeira = crashInfo.stackTrace == null ? "" : crashInfo.stackTrace.split("\n", 3)[0];
-        Diagnostico.evento("ERRO  " + crashInfo.crashType + " em " + crashInfo.packageName
-                + (crashInfo.wasRecovered ? " (recuperado)" : " (sem recuperação)")
-                + "\n    " + crashInfo.errorMessage + (primeira.isEmpty() ? "" : "\n      " + primeira));
+        Diagnostico.erroCapturado(crashInfo.crashType, crashInfo.packageName, crashInfo.wasRecovered,
+                crashInfo.errorMessage, primeira);
     }
 
     private static void performHealthCheck() {
