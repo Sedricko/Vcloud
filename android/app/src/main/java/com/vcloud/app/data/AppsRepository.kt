@@ -9,6 +9,7 @@ import java.io.File
 import com.vcloud.motor.VcloudCore
 import com.vcloud.motor.utils.AbiUtils
 import com.vcloud.app.R
+import com.vcloud.app.app.App
 import com.vcloud.app.app.AppManager
 import com.vcloud.app.bean.AppInfo
 import com.vcloud.app.bean.InstalledAppBean
@@ -269,6 +270,21 @@ class AppsRepository {
                                 TAG,
                                 "getVmInstallList: Skipping null applicationInfo at index $index"
                         )
+                        return@forEachIndexed
+                    }
+
+                    // Vcloud: da parte do Google só a Play Store aparece; Play Services, ConfigUpdater etc. ficam escondidos
+                    val pkg = applicationInfo.packageName
+                    val mostrarLoja = androidx.preference.PreferenceManager
+                            .getDefaultSharedPreferences(App.getContext())
+                            .getBoolean("mostrar_play_store", false)
+                    if (com.vcloud.motor.core.GmsCore.isGoogleAppOrService(pkg) &&
+                            !(mostrarLoja && pkg == com.vcloud.motor.core.GmsCore.VENDING_PKG)) {
+                        return@forEachIndexed
+                    }
+                    // Vcloud: app sem tela para abrir (peça de sistema) não aparece
+                    if (com.vcloud.motor.fake.frameworks.BPackageManager.get()
+                                    .getLaunchIntentForPackage(pkg, userId) == null) {
                         return@forEachIndexed
                     }
 
