@@ -20,13 +20,13 @@ def bateria():
 <div class="pf"><b>Limite de processos fantasma</b><span>Não consegui verificar neste Android. Toque para ver como desativar.</span></div>
 </div><div class="scrim"></div>
 <div class="dlg" style="top:260px"><h3>Liberar a bateria?</h3><p>O Android vai perguntar se o Vcloud pode ficar sem restrição de bateria. Isso ajuda os jogos a continuarem abertos.</p><div class="act"><div>Cancelar</div><div>Continuar</div></div></div>{NAV}</div>'''
-def comandos():
+def dev():
     return f'''<div class="ph">{SB}<div class="tb">Manter apps vivos</div><div class="body">
 <div class="cat">Estado</div>
 <div class="pf"><b>Limite de processos fantasma</b><span>Toque para ver como desativar.</span></div>
 </div><div class="scrim"></div>
-<div class="dlg" style="top:190px"><h3>Desativar o limite</h3><p>Rode uma vez no computador, com o celular ligado por depuração USB ou sem fio:</p><div class="cmd">adb shell settings put global settings_enable_monitor_phantom_procs false</div><div class="cmd">adb shell device_config put activity_manager max_phantom_processes 2147483647</div><p class="dim" style="font-size:12.5px">O Vcloud não roda isso por você.</p><div class="act"><div>Fechar</div><div>Copiar os dois</div></div></div>{NAV}</div>'''
+<div class="dlg" style="top:170px"><h3>Desativar o limite</h3><p>1. Ative as Opções do desenvolvedor: Configurações &gt; Sobre o telefone &gt; Informações do software &gt; toque 7 vezes em Número da versão.</p><p>2. Em Opções do desenvolvedor, procure "Desativar restrições de processos secundários" (o nome varia) e ligue.</p><p class="dim" style="font-size:12.5px">Nem todo celular tem essa chave. Se o seu não tiver, este ajuste não está disponível nele.</p><div class="act"><div>Fechar</div><div>Opções do desenvolvedor</div></div></div>{NAV}</div>'''
 h=f'<!doctype html><html lang="pt-BR"><meta charset="utf-8"><style>{CSS}</style><body>'
 for txt,d in (("CLARO",claro),("ESCURO",escuro)):
-    h+=f'<div class="lin"><div class="lab">{txt}</div>'+''.join(f'<div style="{V(d)}">{f()}</div>' for f in (tela,bateria,comandos))+'</div>'
+    h+=f'<div class="lin"><div class="lab">{txt}</div>'+''.join(f'<div style="{V(d)}">{f()}</div>' for f in (tela,bateria,dev))+'</div>'
 open('vivos.html','w',encoding='utf-8').write(h); print("ok")

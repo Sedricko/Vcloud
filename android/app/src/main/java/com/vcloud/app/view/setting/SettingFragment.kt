@@ -29,6 +29,10 @@ class SettingFragment : PreferenceFragmentCompat() {
 
         initSobrepor()
         initPainel()
+        findPreference<Preference>("manter_vivos")?.setOnPreferenceClickListener {
+            startActivity(android.content.Intent(requireContext(), com.vcloud.app.view.vivos.VivosActivity::class.java))
+            true
+        }
         findPreference<Preference>("gerenciador_root")?.setOnPreferenceClickListener {
             startActivity(android.content.Intent(requireContext(), com.vcloud.app.view.root.RootManagerActivity::class.java))
             true

@@ -13,6 +13,7 @@
 
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
     <application
         android:name=".app.App"
@@ -35,6 +36,7 @@
         <activity android:name=".view.gms.GmsManagerActivity" />
         <activity android:name=".view.setting.DiagnosticoActivity" />
         <activity android:name=".view.root.RootManagerActivity" />
+        <activity android:name=".view.vivos.VivosActivity" />
         <activity
             android:name=".view.painel.CapturaActivity"
             android:exported="false"

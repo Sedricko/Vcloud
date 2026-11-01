@@ -72,4 +72,13 @@ public class CausaDeErroTest {
         assertTrue(com.vcloud.motor.utils.Diagnostico.emLaco(pkg));  // a 4ª pausa (o histórico falha em silêncio fora do Android)
         assertTrue(!com.vcloud.motor.utils.Diagnostico.emLaco("outro.pacote")); // só o pacote que cai
     }
+
+    @Test public void contaSoOsFechamentosCausadosPeloAndroid() {
+        String h = "01/11 14:38:14  FECHOU  a pid=1 depois de 540 s\n    Android: morto por pouca memória ()\n"
+                + "01/11 14:39:02  FECHOU  b pid=2 depois de 557 s\n    Android: parado pelo usuário ([REMOVE TASK])\n"
+                + "01/11 14:40:00  FECHOU  c pid=3 depois de 30 s\n    Android: uso excessivo de recursos ()\n";
+        assertTrue(CausaDeErro.contarEncerradosPeloAndroid(h) == 2);
+        assertTrue(CausaDeErro.contarEncerradosPeloAndroid(null) == 0);
+        assertTrue(CausaDeErro.contarEncerradosPeloAndroid("") == 0);
+    }
 }

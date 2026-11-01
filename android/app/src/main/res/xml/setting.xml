@@ -41,6 +41,11 @@
                 android:summary="Libera balões e janelas flutuantes dos apps de dentro (ex.: Unit)" />
 
         <Preference
+                android:key="manter_vivos"
+                android:title="Manter apps vivos"
+                android:summary="Bateria, limite de processos e apps encerrados pelo Android" />
+
+        <Preference
                 android:key="gerenciador_root"
                 android:title="Gerenciador de root"
                 android:summary="Chave geral do root do Vcloud, quem pode usar e o registro dos pedidos" />

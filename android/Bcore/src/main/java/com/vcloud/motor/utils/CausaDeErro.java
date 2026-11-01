@@ -91,6 +91,16 @@ public final class CausaDeErro {
         return r;
     }
 
+    /** Quantos fechamentos o PRÓPRIO Android causou (pouca memória ou limite de uso) no histórico da Central. */
+    public static int contarEncerradosPeloAndroid(String historico) {
+        if (historico == null) return 0;
+        int n = 0;
+        for (String l : historico.split("\n")) {
+            if (l.contains("Android: morto por pouca memória") || l.contains("Android: uso excessivo de recursos")) n++;
+        }
+        return n;
+    }
+
     private static String corta(String l) {
         return l.length() > 220 ? l.substring(0, 220) : l;
     }

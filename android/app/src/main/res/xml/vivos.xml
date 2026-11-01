@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <Preference
+            android:key="viv_intro"
+            android:selectable="false"
+            android:summary="O Android encerra apps em segundo plano para poupar memória e bateria. Aqui você vê o que pode estar fechando os seus jogos. Nada muda no celular sozinho." />
+
+    <PreferenceCategory app:title="Estado">
+
+        <Preference
+                android:key="viv_bateria"
+                android:title="Restrição de bateria" />
+
+        <Preference
+                android:key="viv_fantasma"
+                android:title="Limite de processos fantasma" />
+
+        <Preference
+                android:key="viv_encerrados"
+                android:title="Encerrados pelo Android" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="Relacionado">
+
+        <Preference
+                android:key="viv_segundo_plano"
+                android:title="Manter ativo em segundo plano"
+                android:summary="Fica em Configurações." />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>
