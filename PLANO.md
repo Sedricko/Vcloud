@@ -18,7 +18,10 @@ dentro, **sem root no celular**. O resto fica no celular normal.
 ## Onde estamos (01/11)
 - Analisados: vPhoneOS (`docs/vphone.md`) e Virtual Master (`docs/virtualmaster.md`). Os dois confirmam o princípio
   "mesmo usuário = lê a memória". Os dois são fechados: só servem para aprender.
-- **Próximo:** F0, o teste sem programar.
+- **F0 feita:** BlackBox 2.1.0 (64 bits, APK pronto das releases) rodando dentro de um emulador no celular
+  (qual emulador e versão do Android: a confirmar). O **Orecraft abriu, rodou liso e salvou** (Cobre ficou após reabrir).
+  Ainda não testado: jogo com login Google e outros apps.
+- **Próximo:** F1, compilar o BlackBox do código (conferir licença, ler o código, cortar o que não usamos).
 
 ## Fases
 Foco: **o root funcionar lá dentro** e **o que estiver lá dentro rodar bem**. O Unit é um dos apps de root.
