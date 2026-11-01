@@ -25,13 +25,21 @@ Foco: **o root funcionar lá dentro** e **o que estiver lá dentro rodar bem**. 
 
 | Fase | O que | Pronto quando |
 |---|---|---|
-| F0 | Testar o BlackBox pronto: o Orecraft e mais 2 ou 3 apps que o usuário quer usar dentro | Abrem, rodam e salvam |
+| F0 | Testar o BlackBox pronto: o Orecraft, um jogo com login Google e mais 2 ou 3 apps que o usuário quer usar dentro | Abrem, rodam e salvam |
 | F1 | Compilar o BlackBox e cortar o que não usamos (espaço mínimo) | O nosso build roda os mesmos apps |
+| F1b | Ponte para o Google do celular (login, Play Games, licença); jogos entram copiados dos instalados pela Play Store | Um jogo loga com a conta do usuário lá dentro |
 | F2 | Root do Vcloud (`su` interno com janela "permitir root?") | Um verificador de root dentro diz "tem root" |
 | F3 | Apps de root funcionando: o Unit (e outro app de root) lendo e mudando o Orecraft lá dentro | Achar, editar e congelar o Cobre |
 | F4 | Pastas: mesmas do celular + pasta dos saves visível; opção "isolado" | Backup do save pelo app Arquivos |
 | F5 | Testar em Android antigo e novo (vPhone, outro emulador, S25 se autorizar) | Funciona no 7 e no 16 |
 | Lab | Plano B: APK do jogo com uma pecinha nossa | Só se algum jogo não rodar no espaço |
+| Lab | Google completo dentro do Vcloud (Play Store + Play Services) | Só se a ponte da F1b não servir para algum jogo |
+
+## Como construir
+- **Cada parte é uma peça separada, com o seu próprio teste** (núcleo, Google, root, pastas, tela). Trocar ou ajustar
+  uma peça não obriga a refazer as outras.
+- Google **de verdade, sem fingir**: jogo vem da loja, licença confirmada pela loja, login com a conta real.
+  Play Integrity não é enganado; jogo que recusar fica no celular normal.
 
 ## Cuidados já conhecidos
 - Matador de processos do Android 12+ (os dois emuladores tratam dele). Testar na F0/F1.
