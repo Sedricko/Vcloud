@@ -1,65 +1,159 @@
-# Passagem de bastão — Vcloud (01/11/2026, 08:15 BRT)
+# Passagem de bastão — Vcloud (01/11/2026, 10:25 BRT)
 
-Leia também: `PLANO.md`, `android/NOTICE-VCLOUD.md`, `docs/analise-app.md`, `docs/pesquisa.md`.
+Leia também: `PLANO.md`, `.claude/skills/espaco-virtual/SKILL.md`, `android/NOTICE-VCLOUD.md`, `docs/analise-app.md`, `docs/pesquisa.md`.
+Responda ao usuário em **português**, frases simples, uma mudança por vez, APK testado por ele entre as mudanças.
 
 ## O que é
-App Android "espaço virtual" (sem Android inteiro): os apps/jogos rodam dentro do Vcloud, no Android do próprio celular.
-Motor = fork do NewBlackbox (LamPPKK, Apache 2.0) renomeado: `android/Bcore` (`com.vcloud.motor`, Java + C++) e
-`android/app` (telas, `com.vcloud.app`, Kotlin). Usuário fala português; testa no **Samsung S25 (SM-S938B), Android 17
-(API 37)**.
+App Android "espaço virtual" (sem Android inteiro): os apps/jogos rodam dentro do Vcloud, no Android do próprio celular,
+como processos do próprio Vcloud (`com.vcloud.app:pN`). Motor = fork do NewBlackbox (LamPPKK, Apache 2.0) renomeado:
+`android/Bcore` (`com.vcloud.motor`, Java + C++) e `android/app` (telas, `com.vcloud.app`, Kotlin).
+Celular de teste: **Samsung S25 (SM-S938B), Android 17 (API 37)**. Visual: conceito Windows 12.
 
 ## Como compilar e entregar
 - Repositório `Sedricko/Vcloud`, ramo **`claude/lucid-euler-fwkwoc`**.
-- Cada push em `android/**` dispara `.github/workflows/android.yml` (GitHub Actions) → artefato `vcloud-debug-apk`
-  (`Vcloud_4.0.0_arm64-v8a-debug.apk`). Compilar localmente costuma ser bloqueado na sessão; usar o Actions.
-- **Chave fixa** de teste: `android/vcloud-debug.keystore` (senha `vcloud-debug`, alias `vcloud`). Todo APK novo
-  **instala por cima** (não mudar a chave, senão o usuário perde os dados).
-- Relatório de erros: no app, menu ⋮ ou Configurações > "Gerar relatório de erros" → `Download/Vcloud/relatorio-*.txt`
-  (logcat do Vcloud e dos apps de dentro; nada sai do celular). O usuário manda o arquivo na conversa.
+- Cada push em `android/**` dispara `.github/workflows/android.yml` (GitHub Actions, ~3,5 min) → artefato
+  `vcloud-debug-apk` (`Vcloud_4.0.0_arm64-v8a-debug.apk`). Baixar pelo `download_workflow_run_artifact` (link temporário),
+  descompactar e mandar ao usuário. Compilar localmente não funciona na sessão.
+- **Chave fixa**: `android/vcloud-debug.keystore` (senha `vcloud-debug`, alias `vcloud`). Todo APK instala por cima.
+  Não trocar a chave.
+- Relatório de erros: Vcloud > Configurações (ou menu ⋮) > "Gerar relatório de erros" → `Download/Vcloud/relatorio-*.txt`
+  (logcat do Vcloud e dos apps de dentro; nada sai do celular). O usuário manda os arquivos na conversa (às vezes reenvia
+  antigos junto: olhe a hora no nome).
+- Tags de log úteis: `VcloudOrientacao`, `AppInstrumentation` ("Orientação:"), `VcloudSobrepor`, `VcloudAssinatura`,
+  `BActivityThread` ("O app trocou o Instrumentation"), `FATAL EXCEPTION`, `BProcessManager: initProcess`.
 
-## Última versão entregue (commit 8de7db2, build run 34 OK)
-Funciona no S25: abre, tela inicial Windows 12, ícone novo, Serviços do Google (ativar em Configurações), Orecraft,
-DYSMANTLE passa da checagem do Google.
+## Última versão entregue: commit 3d1dd2f (build run 42 OK) — ainda não testada pelo usuário
+Pedido ao usuário: abrir o Vcloud e esperar "Serviços do Google prontos"; abrir o Orecraft (não deve pedir Play Services);
+ativar o balão do Unit e jogar alguns minutos (não deve aparecer "Vcloud não está respondendo"); mandar relatório.
 
-### Correções feitas nesta conversa (todas no ramo)
-| Problema | Causa | Correção |
+## Estado confirmado pelos relatórios
+| Item | Estado |
+|---|---|
+| Abre no S25 (Android 17), tela inicial W12, ícone, instala por cima | OK |
+| Orecraft roda e salva | OK |
+| **DYSMANTLE deitado** | **OK** (09:46: janela 2340x1080). Causa: o jogo troca o Instrumentation no `Application.onCreate`; correção recoloca o `AppInstrumentation` (BActivityThread.handleBindApplication) |
+| DYSMANTLE passa da checagem do Google | OK (Play Store verdadeira, não a falsa) |
+| **Balão do Unit (sobrepor)** | **OK** (10:11: `VcloudSobrepor ... -> 0` e balão na tela) |
+| Play Store de dentro abre | OK até a tela de login (`UnauthenticatedMainActivity`), sem conta Google ainda |
+| Unit: "Vcloud não está respondendo" com o balão | corrigido em f7eaa28, **aguardando teste** |
+| Serviços do Google por padrão | feito em 3d1dd2f, **aguardando teste** |
+
+## Correções desta conversa (todas no ramo)
+| Problema | Causa | Correção (arquivo) |
 |---|---|---|
 | Apps fechavam ao abrir no Android 17 | `IServiceConnection.connected` ganhou `IBinderSession` | `ServiceConnectionDelegate` + stub `android/app/IBinderSession.java` |
-| **Tela preta na abertura** (várias versões) | `res/drawable/splash.xml` usava `<bitmap src="@mipmap/ic_launcher">` e o ícone novo é adaptável | `<item android:drawable=...>` |
-| Tela inicial podia travar esperando o motor | `MainActivity.initViewPager` pedia usuários ao motor na linha da UI | pede em segundo plano (`montarViewPager`) |
-| DYSMANTLE "Something went wrong / assinatura inválida" | motor devolvia uma **Play Store falsa** (`createFakeGooglePlayServicesPackageInfo`) | removida; entrega a Play Store verdadeira |
-| Queda do Play Services | broadcast com usuário -1 (todos) recusado no Android 17 | último inteiro <0 vira o usuário do Vcloud (`IActivityManagerProxy.BroadcastIntent`) |
-| Serviço caía (Tinker) | `ForegroundServiceDidNotStartInTime` | `ProxyService` tenta `startForeground` sem tipo antes de parar |
-| Abrir outro app de dentro (Play Store) | proteção Intent Redirect (Android 16/17) | `removeLaunchSecurityProtection` em `ActivityManagerCommonProxy` |
+| Tela preta na abertura | `splash.xml` usava `<bitmap>` com ícone adaptável | `<item android:drawable=...>` |
+| Tela inicial travava esperando o motor | usuários pedidos na linha da UI | `MainActivity.initViewPager` em segundo plano |
+| DYSMANTLE "assinatura inválida" | Play Store falsa sem assinatura | removida (`IPackageManagerProxy`) |
+| Queda do Play Services | broadcast com usuário -1 | `IActivityManagerProxy.BroadcastIntent` |
+| Abrir outro app de dentro | Intent Redirect (16/17) | `removeLaunchSecurityProtection` (`ActivityManagerCommonProxy`) |
+| DYSMANTLE em pé | jogo troca o Instrumentation | `BActivityThread.handleBindApplication` chama `checkEnv(AppInstrumentation)` depois do onCreate; `AppInstrumentation` lê a orientação do APK e reaplica no resume |
+| Play Store caía (ClassCastException) | Android 17: `getInstalledPackages` devolve `PackageInfoList` | `IPackageManagerProxy.embrulharLista` monta o tipo pedido (se não souber, usa a resposta do sistema) |
+| Play Store caía (idioma) | `LocaleManager` recusa app de dentro | novo `ILocaleManagerProxy` (API 33+) |
+| Balão do Unit recusado | AppOps dizia sempre "permitido" e depois consultava com uid virtual | `IAppOpsManagerProxy`: op 24 consulta o modo real com `VcloudCore.getHostUid()`/pacote do Vcloud (MODE_DEFAULT → permissão) |
+| Unit caía/ANR com balão | hook `setServiceForeground` engolia o `startForeground` do próprio ProxyService | passa adiante quando o componente é do Vcloud (`IActivityManagerProxy`) |
+| App congelado em vez de fechar | `CrashMonitor` "recuperava" erro da linha principal | mata só o processo do app de dentro (`CrashMonitor`) |
+| Permissões dos apps de dentro | — | segurar o app > **Permissões**; Configurações > **Sobrepor a outros apps** |
 | Peças do Google na tela | — | escondidas; Play Store só com a chave "Mostrar a Play Store" |
-| Permissões dos apps de dentro | — | segurar o app > **Permissões** (pede as perigosas que o app usa; abre "Acesso a todos os arquivos" e "Sobrepor a outros apps" quando precisa) |
+| Serviços do Google | usuário quer de fábrica | `MainActivity.ativarServicosGooglePadrao` (4 s depois da tela, thread, pref `gms_padrao_v2`, refaz se falhar) |
 
-Também: nome Vcloud em tudo (pacotes `com.vcloud.*`), português, opções antigas removidas (VPN, ocultar root,
-localização falsa, Xposed, captura de tela), telemetria do autor original removida, falsificação de aparelho removida.
+## Problemas atuais / próximos passos
+1. **Testar a versão 3d1dd2f** (acima).
+2. **Login Google dentro do Vcloud** (Play Store de dentro, compra/licença do DYSMANTLE pago). Ainda não testado.
+3. **Touch Macro Pro** fecha em 30 s: checagem de licença não acha a Play Store ("Phonesky is not installed"). Regra:
+   não burlar; caminho certo é a Play Store de dentro com conta. Ver se o app enxerga a Play Store depois do login.
+4. Play Store em segundo plano: `ClassCastException` no `SecurityHubContentProvider` (não derruba a tela principal);
+   segunda abertura rápida caiu num processo novo antes de ficar pronto (`AssetBrowserActivity` ClassNotFound). Investigar depois.
+5. Play Games (DYSMANTLE): `NullBinder ... appshortcuts ... TransactionTooLarge` a cada 5 s. Não impede o jogo.
+6. Pendências do usuário: tela inicial W12 aproveitando a tela toda (prévia base `docs/design/inicio-w12.png`);
+   ferramenta de diagnóstico (resumo no topo do relatório, aviso quando app de dentro fecha — ver `PLANO.md`);
+   pedidos de notificação/bateria (código antigo no commit 27aa9d3, sem trabalho pesado na abertura).
+7. `docs/analise-app.md`: código faltando e ~138 `catch` que escondem erros.
 
-## Problemas atuais (para continuar)
-1. **DYSMANTLE (Unity) abre em pé/cortado** — deveria ser deitado. A tela `com.the10tons.MainActivity` abre em janela
-   1080x2340 e o log "Orientação:" do `AppInstrumentation.checkActivity` **não aparece** para ela. A última versão
-   (8de7db2) reaplica a orientação lida do APK em `callActivityOnResume` e registra, com a tag `VcloudOrientacao`,
-   os pedidos `setRequestedOrientation` (hook em `IActivityClientProxy`). **Próximo passo:** usuário abre o DYSMANTLE,
-   espera ~10 s, gera relatório → ver `VcloudOrientacao` e "Orientação (retomada)".
-2. **Play Store de dentro cai em segundo plano** (`ClassCastException` interno, `com.android.vending:background`) e
-   "Unable to bind to service ProxyService$P1"; Play Services `CronetInit`. Não impede jogos; investigar depois.
-3. **Compra/login do jogo pago** dentro do Vcloud ainda não verificado (depende da conta Google nos Serviços do Google).
-4. `docs/analise-app.md`: código faltando (aviso de permissão de arquivos sem receptor; `requestInstallPackage` sempre
-   false) e 138 `catch` que escondem erros.
+## Não feito (recusado nesta conversa)
+Root interno / `su` (apps de root mostram "Cannot run program su"), painel lateral sobreposto, ferramenta de
+autodiagnóstico, prévia em tela cheia. O próximo agente decide por conta própria com o usuário.
 
-## Pendências pedidas pelo usuário e ainda não feitas
-- Tela inicial no conceito Windows 12 **aproveitando a tela toda** (prévia aprovada base: `docs/design/inicio-w12.png`;
-  pedidos: busca no topo, Fixados em linha larga, blocos Espaço/Celular menores, Todos os apps ocupando o resto, barra embaixo).
-- Painel lateral escondido na borda para voltar/fechar jogo/relatório durante o jogo (alternativa sugerida: notificação
-  com botões; ou Painel Edge da Samsung com atalho do Vcloud).
-- Ferramenta de diagnóstico (resumo no topo do relatório + aviso quando app de dentro fecha) — ver `PLANO.md`.
-- Pedidos de notificações/bateria ao abrir (passo 5): o código anterior está no commit 27aa9d3; reaplicar com cuidado
-  (sem rodar nada pesado na abertura).
-- Root interno: **não implementado** (apps de root mostram "Cannot run program su").
+## Regras do projeto (PLANO.md)
+Unit e root só em jogos offline single-player; nada pago com dinheiro real; nada de anúncios com recompensa; nada contra
+anti-trapaça nem para esconder o Vcloud; Play Integrity e licenças não são enganados; não mexer no celular sem pedir;
+prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratório.
 
 ## Cuidados aprendidos
-- Nunca rodar trabalho pesado do motor na abertura (ativação automática dos Serviços do Google foi removida).
+- Nunca rodar trabalho pesado do motor na abertura.
 - Ícone adaptável: qualquer `<bitmap>` apontando para `@mipmap/ic_launcher` quebra.
-- Mudanças uma por vez, com APK testado pelo usuário entre elas; se quebrar, voltar ao último que abriu.
+- Dentro do processo de um app de dentro, `Process.myUid()` é virtual: para falar com o Android em nome do Vcloud use
+  `VcloudCore.getHostUid()` e `VcloudCore.getHostPkg()`.
+- Hooks que respondem "sempre permitido" enganam o app de dentro; prefira consultar o estado real do Vcloud.
+- Alguns apps trocam o `Instrumentation` no `onCreate`; o motor precisa recolocar o dele.
+- Mudanças uma por vez; se quebrar, voltar ao último APK que abriu.
+
+---
+
+# Detalhes (para quem continua)
+
+## Sobre o usuário e o jeito de trabalhar
+- Fala português, escreve rápido e com erros de digitação ("Play history" = Play Store; "Unitário" = Unit; "rosto nativo" = root nativo).
+- Testa tudo no S25 de verdade, manda **relatórios** (`relatorio-AAAAMMDD-HHMMSS.txt`, ~0,4–2,4 MB) e **prints**.
+  Costuma reenviar relatórios antigos junto com os novos: filtre pela hora do nome.
+- Quer resultado, não teoria: responder curto, dizer o que foi achado no relatório (com a hora), o que mudou e o que ele
+  deve testar, em passos numerados. Sempre avisar o que não foi testado.
+- Não gosta de opções do Android escondidas: prefere botões dentro do Vcloud que levam direto à tela certa.
+- Quer tudo "pronto de fábrica" (ex.: Serviços do Google já ativados).
+- Visual escolhido: **conceito Windows 12** (fundo claro com ondas azuis, painel de vidro, blocos). Antes de mudar tela,
+  mostrar prévia.
+
+## Apps que o usuário tem dentro do Vcloud (relatório 10:11)
+`com.evrika.miner.camp` (Orecraft, Unity), `com.the10tons.dysmantle` (DYSMANTLE, pago, Unity/GameActivity, `libpairipcore`),
+`dev.unit.app` (Unit, leitor de memória com balão flutuante `dev.unit.app.Balao`), `dev.tinker.app` e `dev.tinker.testgame`
+(app de root de teste), `com.jake.touchmacro.pro` (Touch Macro Pro, pago, checa licença), `com.slg.policewar`,
+`com.yoyo.snake.rush` (vPhoneOS disfarçado), `com.rhmsoft.edit.pro`, `bin.mt.plus` (MT Manager),
+`com.samsung.android.game.gamehome`, um webapk do Chrome. Serviços do Google (`com.google.android.gms`) e Play Store
+(`com.android.vending`) ficam dentro quando ativados; às 10:11 **não estavam** (por isso o Orecraft pediu Play Services).
+
+## Mapa do código que mais mexemos
+- `android/Bcore/src/main/java/com/vcloud/motor/`
+  - `app/BActivityThread.java` — liga o app de dentro (`handleBindApplication`). Depois do `Application.onCreate` agora faz
+    `HookManager.get().checkEnv(AppInstrumentation.class)` e registra "O app trocou o Instrumentation por …".
+  - `fake/delegate/AppInstrumentation.java` — `checkActivity` (aplica tema/orientação; lê a orientação do APK com
+    `orientacaoDoApk` quando o motor perde), `callActivityOnResume` reaplica a orientação.
+  - `fake/service/IActivityClientProxy.java` — registra `setRequestedOrientation` (tag `VcloudOrientacao`).
+  - `fake/service/IAppOpsManagerProxy.java` — no começo do `invoke`: op **24** (SYSTEM_ALERT_WINDOW) chama
+    `modoSobreposicaoDoVcloud()` → `checkOperation(24, getHostUid, hostPkg)` no serviço real; MODE_DEFAULT vira a checagem
+    da permissão. O resto das operações continua "permitido" (comportamento herdado do motor).
+  - `fake/service/IActivityManagerProxy.java` — `setServiceForeground`: deixa passar quando o componente é do Vcloud
+    (ProxyService); `BroadcastIntent`: usuário <0 vira o do Vcloud; `StartService` usa `requireForeground`.
+  - `proxy/ProxyService.java` (P0..P49) — serviço-ponte; com `EXTRA_REQUIRE_FOREGROUND` faz `startForeground`
+    (canal "Virtual foreground services", texto "Um app está rodando dentro do Vcloud"); se falhar com tipo, tenta sem tipo.
+  - `fake/service/IPackageManagerProxy.java` — `GetInstalledPackages/Applications` usam `embrulharLista` (Android 17
+    `PackageInfoList`). Play Store/Play Services: devolve o pacote verdadeiro (a falsa foi removida).
+  - `fake/service/ILocaleManagerProxy.java` (novo) — `setApplicationLocales` não faz nada; `getApplicationLocales` vazio.
+  - `fake/hook/HookManager.java` — onde cada proxy é registrado (`addInjector`).
+  - `utils/CrashMonitor.java` — erro na linha principal agora mata o processo do app de dentro (antes congelava → ANR).
+  - `fake/service/ActivityManagerCommonProxy.java` — troca `package:<app de dentro>` por `package:com.vcloud.app` nas
+    telas de configuração do Android (ex.: "Aparecer sobre outros apps").
+- `android/app/src/main/java/com/vcloud/app/`
+  - `view/main/MainActivity.kt` — tela inicial; `initViewPager` em segundo plano; `ativarServicosGooglePadrao()`.
+  - `view/apps/AppsFragment.kt` — segurar o app > menu (inclui **Permissões**: pede as perigosas que o app declara e que o
+    Vcloud também declara; abre "Acesso a todos os arquivos" e "Sobrepor a outros apps").
+  - `view/setting/SettingFragment.kt` + `res/xml/setting.xml` — Configurações: Serviços do Google, Mostrar a Play Store,
+    Manter ativo em segundo plano, **Sobrepor a outros apps** (mostra Ligado/Desligado), Gerar relatório de erros.
+  - `res/layout/activity_main.xml` — tela inicial W12 (painel de vidro, blocos Espaço Vcloud/Celular, Todos os apps).
+  - `res/drawable/splash.xml` — não usar `<bitmap>` com o ícone adaptável.
+
+## Como entregar um APK (passo a passo que funcionou)
+1. Commit + `git push -u origin claude/lucid-euler-fwkwoc` (só mudanças em `android/**` disparam a compilação).
+2. Esperar ~4 min (`sleep` em segundo plano) e ver o run em `actions_list list_workflow_runs` (branch acima).
+3. `actions_list list_workflow_run_artifacts <run_id>` → id do artefato → `actions_get download_workflow_run_artifact`.
+4. `curl` no link (expira em ~10 min), `unzip`, renomear para algo claro em `apk-teste/` (ex.: `Vcloud-balao2-arm64.apk`),
+   mandar com `SendUserFile`. `apk-teste/` não vai para o git.
+
+## Linha do tempo resumida do dia 01/11
+- 08:33 relatório: orientação não aplicada no DYSMANTLE → achado que o jogo troca o Instrumentation.
+- 08:50: DYSMANTLE deitado OK. Unit caía: balão recusado (permission denied 2038) + `ForegroundServiceDidNotStartInTime`.
+- 09:00: Play Store passou da lista de apps e caiu no idioma → `ILocaleManagerProxy`.
+- 09:27: Play Store abre até o login; Unit pedia a permissão mas o Vcloud continuava "sem".
+- 09:29 (print): chave "Aparecer sobre outros apps" do Vcloud **ligada** → problema era do motor.
+- 09:50: `VcloudSobrepor ... -> 1` (uid virtual) → corrigido para o uid real.
+- 10:11: `-> 0`, balão aparece; Unit travou 30 s depois (startForeground engolido) → ANR; Orecraft sem Play Services.
+- 10:20: Serviços do Google por padrão. Versão 3d1dd2f entregue.
