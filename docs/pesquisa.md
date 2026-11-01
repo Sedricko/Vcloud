@@ -30,3 +30,21 @@ Links: github.com/twoyi/twoyi · github.com/althafvly/twoyi · github.com/androi
 - Só jogos offline single-player; nada pago com dinheiro real; nada de pular anúncio com recompensa.
 - Nada para jogos online nem para passar por proteção anti-trapaça.
 - Não mexer no celular de verdade do usuário sem ele pedir.
+
+## Continuações mais novas do BlackBox (01/11) — opções guardadas, decidir depois
+O BlackBox original (FBlackBox) parou em 2022 (feito até o Android 12). Na F0 ele rodou o Orecraft dentro do Virtual
+Master, mas o Android de dentro do Virtual Master é mais antigo. Achadas pela busca; **não conferidas** (é o que cada
+projeto diz de si; ler código e licença antes de usar):
+
+| Projeto | O que diz | Observação |
+|---|---|---|
+| github.com/ALEX5402/NewBlackbox | BlackBox com Android 14 e 15 | a mais conhecida; pode estar parada há mais de 1 ano |
+| github.com/LamPPKK/NewBlackbox | base Android 14–16, SDK 36 | continuação da de cima |
+| github.com/maiittmaitt-bit/Maitham-CloneEngine (BlackBox Reborn) | "mantida", Android 14/15/16 | a própria tabela marca ArtMethodFix quebrado no 15/16 |
+| github.com/Black00Z/Blacks-BlackBox | Android 14+, ajustes para o 16 | VPN desligada no 14+ |
+| github.com/ZiTanIOI/BlackBox | Android 5–16 (em chinês) | diz ter corrigido travamentos do 16 |
+| github.com/ZENINXOP/BlackBox | Android 5–17 | tabela se contradiz; tem "esconder Xposed" |
+| github.com/Asdasd7117/VirtualSpace | motor próprio, Android 9–16 | não é BlackBox; atividade desconhecida |
+
+Não serve: **Shelter / Insular / Island** (perfil de trabalho: os apps não ficam com o mesmo usuário, então o root
+interno e o Unit não funcionam). SpaceCore e forks do VirtualApp parecem parados.
