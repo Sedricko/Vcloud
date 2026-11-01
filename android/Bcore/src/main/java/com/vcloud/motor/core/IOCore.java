@@ -6,6 +6,8 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Environment;
 import android.os.Process;
+import android.system.Os;
+import android.util.Log;
 import android.text.TextUtils;
 
 import java.io.File;
@@ -144,6 +146,7 @@ public class IOCore {
             if (VcloudCore.get().isHideRoot()) {
                 hideRoot(rule);
             }
+            liberarRoot(rule, packageName);
             proc(rule);
         } catch (Exception e) {
             e.printStackTrace();
@@ -157,17 +160,31 @@ public class IOCore {
         NativeCore.enableIO();
     }
 
+    private static final String[] SU_PATHS = {"/sbin/su", "/system/bin/su", "/system/xbin/su",
+            "/data/local/xbin/su", "/data/local/bin/su", "/system/sd/xbin/su",
+            "/system/bin/failsafe/su", "/data/local/su", "/su/bin/su"};
+
     private void hideRoot(Map<String, String> rule) {
         rule.put("/system/app/Superuser.apk", "/system/app/Superuser.apk-fake");
-        rule.put("/sbin/su", "/sbin/su-fake");
-        rule.put("/system/bin/su", "/system/bin/su-fake");
-        rule.put("/system/xbin/su", "/system/xbin/su-fake");
-        rule.put("/data/local/xbin/su", "/data/local/xbin/su-fake");
-        rule.put("/data/local/bin/su", "/data/local/bin/su-fake");
-        rule.put("/system/sd/xbin/su", "/system/sd/xbin/su-fake");
-        rule.put("/system/bin/failsafe/su", "/system/bin/failsafe/su-fake");
-        rule.put("/data/local/su", "/data/local/su-fake");
-        rule.put("/su/bin/su", "/su/bin/su-fake");
+        for (String p : SU_PATHS) rule.put(p, p + "-fake");
+    }
+
+    // Root interno: "su" = atalho para o sh do sistema, só no PATH do app com a chave ligada.
+    // shortcut: não é uid 0 de verdade (id mostra o uid do app) e exec com caminho absoluto
+    // (/system/xbin/su) não é redirecionado; subir para um su nativo + hook de execve se algum app exigir.
+    private void liberarRoot(Map<String, String> rule, String packageName) {
+        if (!BEnvironment.getRootFlag(packageName).exists()) return;
+        try {
+            File bin = new File(BEnvironment.getVirtualRoot(), "rootbin");
+            FileUtils.mkdirs(bin.getAbsolutePath());
+            File su = new File(bin, "su");
+            if (!su.exists()) Os.symlink("/system/bin/sh", su.getAbsolutePath());
+            Os.setenv("PATH", bin.getAbsolutePath() + ":" + System.getenv("PATH"), true);
+            for (String p : SU_PATHS) rule.put(p, su.getAbsolutePath());
+            Log.i("VcloudRoot", "root interno ligado para " + packageName);
+        } catch (Exception e) {
+            Log.e("VcloudRoot", "falhou ao ligar o root interno", e);
+        }
     }
 
     private void proc(Map<String, String> rule) {
