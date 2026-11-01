@@ -13,4 +13,5 @@ github.com/LamPPKK/NewBlackbox, commit `6e6d90137213148af5a19df3f3ffd60cbf2700f3
 - Removida a automação do autor que mandava os builds para o Telegram (`.github`).
 - Tirado o pedido de permissão de VPN ao abrir o app (a VPN do motor não encaminha tráfego; só liga no "modo VPN").
 - Relatório de erros agora fica **no próprio celular** (`Download/Vcloud/relatorio-*.txt`): o envio automático foi trocado por gravação local (`BlackBoxCore.sendLogs/writeReport`), `LogSender.java` apagado, menu "Gerar relatório de erros" no lugar do link do Telegram.
+- **Android 17 (API 37):** `ServiceConnectionDelegate` ganhou `connected(..., IBinderSession, boolean)` (o sistema mudou a assinatura; sem isso os apps fechavam com AbstractMethodError) e stub `android/app/IBinderSession.java` só para compilar.
 Motivo: regras do projeto (não enganar verificações de segurança; nada de enviar dados para fora).

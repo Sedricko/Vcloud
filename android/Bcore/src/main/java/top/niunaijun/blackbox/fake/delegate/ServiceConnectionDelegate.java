@@ -53,6 +53,23 @@ public class ServiceConnectionDelegate extends IServiceConnection.Stub {
         connected(name, service, false);
     }
 
+    /** Android 17 (API 37): o sistema chama esta versão com IBinderSession. Sem ela o app fecha (AbstractMethodError). */
+    public void connected(ComponentName name, IBinder service, android.app.IBinderSession session, boolean dead) throws RemoteException {
+        try {
+            java.lang.reflect.Method m = mConn.getClass().getMethod("connected",
+                    ComponentName.class, IBinder.class, android.app.IBinderSession.class, boolean.class);
+            m.invoke(mConn, mComponentName, service, session, dead);
+        } catch (NoSuchMethodException e) {
+            connected(name, service, dead);
+        } catch (java.lang.reflect.InvocationTargetException e) {
+            Throwable c = e.getCause();
+            if (c instanceof RemoteException) throw (RemoteException) c;
+            throw new RuntimeException(c);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public void connected(ComponentName name, IBinder service, boolean dead) throws RemoteException {
         if (BuildCompat.isOreo()) {
             BRIServiceConnectionO.get(mConn).connected(mComponentName, service, dead);

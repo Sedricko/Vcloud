@@ -35,8 +35,10 @@ dentro, **sem root no celular**. O resto fica no celular normal.
   root interno, é a F2). Tirado o pedido de VPN ao abrir.
   **Relatório de erros local:** quando algo trava, ou pelo menu "Gerar relatório de erros", grava
   `Download/Vcloud/relatorio-AAAAMMDD-HHMMSS.txt` (aparelho + logcat do Vcloud e dos apps de dentro); o usuário manda o
-  arquivo na conversa. Nada sai do celular sozinho. **Falta na F1:** Orecraft (abre, liso, salva) e a versão do
-  Android do S25.
+  arquivo na conversa. Nada sai do celular sozinho. **S25 = Android 17 (API 37), confirmado pelo relatório** (SM-S938B, patch 2026-10-05).
+  Primeiro relatório: o jogo `com.evrika.miner.camp` fechava ao abrir por uma mudança do Android 17
+  (`IServiceConnection.connected` ganhou um parâmetro `IBinderSession`). Corrigido no motor; aguardando novo teste.
+  **Falta na F1:** Orecraft (abre, liso, salva) no S25 com a correção.
 
 ## Fases
 Foco: **o root funcionar lá dentro** e **o que estiver lá dentro rodar bem**. O Unit é um dos apps de root.
