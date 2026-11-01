@@ -635,6 +635,14 @@ public class IActivityManagerProxy extends ClassInvocationStub {
                     args[i] = null;
                 }
             }
+            // Vcloud: o último inteiro é o usuário. Apps de dentro (ex.: Google Play Services) mandam -1 ("todos os
+            // usuários"), que o Android 17 recusa para apps comuns (SecurityException INTERACT_ACROSS_USERS).
+            for (int i = args.length - 1; i >= 0; i--) {
+                if (args[i] instanceof Integer) {
+                    if ((Integer) args[i] < 0) args[i] = android.os.Process.myUid() / 100000;
+                    break;
+                }
+            }
             return method.invoke(who, args);
         }
 

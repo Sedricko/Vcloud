@@ -112,9 +112,41 @@ public final class AppInstrumentation extends BaseInstrumentationDelegate implem
         if (info.theme != 0) {
             activity.getTheme().applyStyle(info.theme, true);
         }
-        // Vcloud: registra a orientação pedida pelo app (para investigar jogos deitados que abrem em pé)
-        Log.i(TAG, "Orientação: " + activity.getClass().getName() + " pede screenOrientation=" + info.screenOrientation);
-        ActivityManagerCompat.setActivityOrientation(activity, info.screenOrientation);
+        int orientacao = info.screenOrientation;
+        if (orientacao == ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) {
+            // Vcloud: o motor perde a orientação de alguns jogos (ex.: DYSMANTLE pedia deitado e chegava -1).
+            // Lê direto do APK do jogo o que a tela pede.
+            orientacao = orientacaoDoApk(activity, info.name);
+        }
+        Log.i(TAG, "Orientação: " + activity.getClass().getName() + " pede screenOrientation=" + info.screenOrientation
+                + " usada=" + orientacao);
+        ActivityManagerCompat.setActivityOrientation(activity, orientacao);
+    }
+
+    private static final java.util.Map<String, Integer> sOrientacaoDoApk = new java.util.concurrent.ConcurrentHashMap<>();
+
+    private static int orientacaoDoApk(Activity activity, String nomeTela) {
+        if (nomeTela == null) nomeTela = activity.getClass().getName();
+        Integer guardada = sOrientacaoDoApk.get(nomeTela);
+        if (guardada != null) return guardada;
+        int resultado = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+        try {
+            String apk = activity.getApplicationInfo().sourceDir;
+            android.content.pm.PackageInfo pi = activity.getPackageManager()
+                    .getPackageArchiveInfo(apk, android.content.pm.PackageManager.GET_ACTIVITIES);
+            if (pi != null && pi.activities != null) {
+                for (ActivityInfo a : pi.activities) {
+                    if (nomeTela.equals(a.name)) {
+                        resultado = a.screenOrientation;
+                        break;
+                    }
+                }
+            }
+        } catch (Throwable e) {
+            Log.w(TAG, "Não consegui ler a orientação do APK: " + e);
+        }
+        sOrientacaoDoApk.put(nomeTela, resultado);
+        return resultado;
     }
 
     @Override
