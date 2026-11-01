@@ -88,6 +88,7 @@ public final class Diagnostico {
             StringBuilder erros = new StringBuilder();
             String causa = causaDoLogcat(pid, erros);
             sb.append("\n    Causa provável: ").append(causa).append(erros);
+            if (codigo == ApplicationExitInfo.REASON_ANR) sb.append(pilhaDoAnr(pid));
             evento(sb.toString());
             if (anormal(codigo, seg)) avisar(pacote);
         }, "diagnostico").start();
@@ -113,6 +114,24 @@ public final class Diagnostico {
             return l.isEmpty() ? null : l.get(0);
         } catch (Exception e) {
             return null;
+        }
+    }
+
+    // ANR: o Android guarda o trace; mostra onde a linha principal do app estava presa.
+    private static String pilhaDoAnr(int pid) {
+        ApplicationExitInfo e = saida(pid);
+        if (e == null) return "";
+        try (java.io.InputStream in = e.getTraceInputStream()) {
+            if (in == null) return "\n    (o Android não guardou o trace deste ANR)";
+            java.io.ByteArrayOutputStream bo = new java.io.ByteArrayOutputStream();
+            byte[] b = new byte[8192];
+            int n;
+            while ((n = in.read(b)) > 0 && bo.size() < 2 * 1024 * 1024) bo.write(b, 0, n);
+            StringBuilder sb = new StringBuilder("\n    Onde a linha principal estava presa:");
+            for (String l : CausaDeErro.pilhaMain(bo.toString("UTF-8"), 25)) sb.append("\n      ").append(l);
+            return sb.toString();
+        } catch (Exception ex) {
+            return "\n    (não consegui ler o trace do ANR: " + ex.getMessage() + ")";
         }
     }
 

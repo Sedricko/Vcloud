@@ -410,6 +410,8 @@ class AppsFragment : Fragment() {
                 try {
                     popupMenu = PopupMenu(requireContext(),view).also {
                         it.inflate(R.menu.app_menu)
+                        val rootLigado = com.vcloud.motor.core.env.BEnvironment.getRootFlag(data.packageName).exists()
+                        it.menu.findItem(R.id.app_root).title = if (rootLigado) "Root interno: ligado" else "Root interno: desligado"
                         it.setOnMenuItemClickListener { item ->
                             try {
                                 when (item.itemId) {

@@ -11,7 +11,11 @@ public final class CausaDeErro {
             {"ForegroundServiceDidNotStartInTime", "Serviço em primeiro plano não iniciou a tempo"},
             {"UnsatisfiedLinkError", "Biblioteca nativa não carregou (arquitetura/ABI do app?)"},
             {"OutOfMemoryError", "Sem memória"},
-            {"Cannot run program", "Programa não encontrado (ex.: su; ligue o Root interno do app)"},
+            {"Cannot run program \"su\"", "O app pediu root (su): ligue o Root interno dele (segurar o app > Root interno)"},
+            {"error=13, Permission denied", "O app tentou executar um arquivo da própria pasta e o Android bloqueou (error=13)"},
+            {"Cannot run program", "Programa não encontrado"},
+            {"Not allowed to bind to service", "O app tentou usar um serviço do Google que não está dentro do Vcloud (permissão negada)"},
+            {"Permission Denial: opening provider", "O app tentou abrir um provedor do Google que não está dentro do Vcloud (permissão negada)"},
             {"ClassNotFoundException", "Classe não encontrada (o motor não achou código do app)"},
             {"SecurityException", "Permissão negada pelo Android"},
             {"Permission Denial", "Permissão negada pelo Android"},
@@ -19,7 +23,12 @@ public final class CausaDeErro {
     // No log inteiro só vale o que não costuma aparecer como ruído em apps que seguem vivos.
     private static final String[][] NO_LOG_TODO = {
             {"ForegroundServiceDidNotStartInTime", "Serviço em primeiro plano não iniciou a tempo"},
-            {"Cannot run program", "Programa não encontrado (ex.: su; ligue o Root interno do app)"},
+            {"JNI DETECTED ERROR", "O app tem proteção que detecta espaço virtual (erro de JNI no próprio app); não é consertável sem burlar a proteção"},
+            {"Cannot run program \"su\"", "O app pediu root (su): ligue o Root interno dele (segurar o app > Root interno)"},
+            {"error=13, Permission denied", "O app tentou executar um arquivo da própria pasta e o Android bloqueou (error=13)"},
+            {"Cannot run program", "Programa não encontrado"},
+            {"Not allowed to bind to service", "O app tentou usar um serviço do Google que não está dentro do Vcloud (permissão negada)"},
+            {"Permission Denial: opening provider", "O app tentou abrir um provedor do Google que não está dentro do Vcloud (permissão negada)"},
             {"UnsatisfiedLinkError", "Biblioteca nativa não carregou (arquitetura/ABI do app?)"},
             {"Fatal signal", "Queda nativa (código C/C++ do app ou do motor)"},
             {"ANR in", "O app não respondeu (ANR)"},
@@ -65,6 +74,19 @@ public final class CausaDeErro {
             boolean ruido = false;
             for (String n : RUIDO) if (l.contains(n)) ruido = true;
             if (!ruido) r.add(corta(l));
+        }
+        return r;
+    }
+
+    /** Do trace de um ANR, devolve até 'max' linhas da thread "main" (onde a linha principal estava presa). */
+    public static List<String> pilhaMain(String trace, int max) {
+        List<String> r = new ArrayList<>();
+        if (trace == null) return r;
+        boolean dentro = false;
+        for (String l : trace.split("\n")) {
+            if (!dentro) { dentro = l.startsWith("\"main\" prio="); }
+            else if (l.trim().isEmpty()) break;
+            if (dentro && r.size() < max) r.add(corta(l.trim()));
         }
         return r;
     }

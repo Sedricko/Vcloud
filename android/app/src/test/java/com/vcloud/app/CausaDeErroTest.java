@@ -48,4 +48,18 @@ public class CausaDeErroTest {
         assertTrue(CausaDeErro.de(log).startsWith("não identificada"));
         assertTrue(CausaDeErro.linhas("W BootstrapClass: Caused by: java.lang.NoSuchMethodException\n").isEmpty()); // ruído conhecido
     }
+
+    @Test public void causasNovas() {
+        assertTrue(CausaDeErro.de("java.io.IOException: Cannot run program \"su\": error=2").contains("Root interno"));
+        assertTrue(CausaDeErro.de("Cannot run program \"/data/x/lib02.so\": error=13, Permission denied").contains("error=13"));
+        assertTrue(CausaDeErro.de("F m.vcloud.app:p8: JNI DETECTED ERROR IN APPLICATION: x").contains("proteção"));
+        assertTrue(CausaDeErro.de("E AndroidRuntime: FATAL EXCEPTION\nSecurityException: Not allowed to bind to service Intent").contains("serviço do Google"));
+    }
+
+    @Test public void pilhaDaLinhaPrincipalNoAnr() {
+        String trace = "\"Signal Catcher\" daemon prio=10\n  at x\n\n\"main\" prio=5 tid=1 Blocked\n  at a.B.c(B.java:1)\n  at d.E.f(E.java:2)\n\n\"Other\" prio=5\n  at z\n";
+        java.util.List<String> p = CausaDeErro.pilhaMain(trace, 25);
+        assertTrue(p.size() == 3 && p.get(0).startsWith("\"main\"") && p.get(2).contains("E.f"));
+        assertTrue(CausaDeErro.pilhaMain(null, 5).isEmpty());
+    }
 }

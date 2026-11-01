@@ -186,3 +186,18 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Diagnóstico corrigido: classifica pelo bloco `FATAL EXCEPTION` (antes pegava ruído `BootstrapClass`/`setHiddenApiExemptions`),
   espera 1,5 s o `ApplicationExitInfo`, `ABRIU` mostra o pid, novas causas (`System.exit`, fechamento normal, notificação ruim).
   Testado com o relatório real (`R.java` em scratchpad) e `CausaDeErroTest`.
+
+## Relatórios de 01/11 14:49-14:55 (APK notificacao) — resultado
+- **Corrigido e confirmado:** Unit e Tinker abrem e ficam abertos; balão do Unit aparece por cima do jogo de teste.
+- **GameGuardian** (`com.yibkvhaekx`, nome disfarçado) abre dentro do Vcloud. Falha: `Cannot run program .../GG-xxxx/lib02.so: error=13`
+  (o Android bloqueia executar arquivo da pasta do app; host com targetSdk 36). Decisão pendente com o usuário: baixar o
+  targetSdk do Vcloud (ex.: 28) como outros espaços virtuais fazem, com custos (aviso do Android, risco no Android 17).
+- **Unit** mostrou `Cannot run program "su": error=2`: o Root interno estava DESLIGADO para ele (nenhuma linha `ROOT interno
+  ligado` nos relatórios). Menu do app agora mostra "Root interno: ligado/desligado".
+- **Touch Macro Pro**: "Versão oficial necessária" (pairip LicenseClient) e `System.exit`. Licença da Play Store; não burlar.
+- **MT Manager** (`bin.mt.plus`): `libmtprotect.so` provoca `JNI DETECTED ERROR ... IPackageManager.getApplicationInfo` e SIGABRT.
+  É proteção contra espaço virtual; não contornar.
+- **Orecraft**: ANR (processo mudo ~40 s com o painel do Unit aberto; `Skipped 611 frames`). O diagnóstico agora salva a pilha
+  da linha principal do trace do ANR (`CausaDeErro.pilhaMain`).
+- **Play Store/GMS de dentro**: laço continua (`Permission Denial: opening provider ...AppDoctorProvider`, `Not allowed to bind
+  to service ...AccountAuthenticator`, `ClassNotFound AssetBrowserActivity`). Pista: o provider do GMS cai no sistema real.
