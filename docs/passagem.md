@@ -211,3 +211,16 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
   (código ofuscado do Vending; não resolvido).
 - Freio de laço: `Diagnostico.emLaco` (4 mortes < 10 s em 30 s) faz `startProcessLocked` devolver `null` só para vending/gms/gsf.
   Histórico mostra `PAUSADO`. Possível efeito: bindService do jogo a esses pacotes recebe erro durante a pausa.
+
+
+## Root nativo (01/11, noite) — substitui o "Root interno v1"
+- Arquivos: `cpp/su/su.c`, `cpp/su/fakeuid.c`, `Android.mk` (`vsu`, `fakeuid`, `LOCAL_REQUIRED_MODULES`), `Bcore/build.gradle`
+  (`copyVsu`, falha o build se o `vsu` não for gerado), `core/root/{RootPolicy,RootDecisor,RootServer}.java`, `IOCore.liberarRoot`
+  (atalho `blackbox/rootbin/su` -> `nativeLibraryDir/libvsu.so`, `PATH`, `VCLOUD_PKG`), `BProcessManagerService.systemReady`
+  inicia o servidor, `view/root/{RootManagerActivity,RootPromptActivity}.kt`.
+- O NDK não aceita `.so` em `LOCAL_MODULE`/`LOCAL_MODULE_FILENAME` de executável: por isso o `copyVsu`.
+- Política em `blackbox/root/` (`_off`, `<pacote>`, `<pacote>.reply`, `log.txt`). Pacote só aceita `[A-Za-z0-9._]` (vira nome de arquivo).
+- Pedir ao usuário: abrir o Unit/Tinker, ver a janela "Permitir root?", conferir o painel e mandar a Central de diagnóstico
+  (linhas `ROOT ...`: `servidor pronto`, `su pronto para <app>`, `<app>: ALLOW/DENY`).
+- Se `su` falhar no aparelho, olhar: `ROOT indisponível` (libvsu.so ausente), `su: o Vcloud nao esta respondendo` (servidor não
+  subiu ou SELinux bloqueou o socket), `Permission denied` ao executar (SELinux no exec).

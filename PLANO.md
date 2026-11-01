@@ -63,6 +63,18 @@ a tela Diagnóstico) e o relatório AUTOMÁTICO a cada queda (`SimpleCrashFix`, 
 Atualizar, Copiar, Gerar relatório (mostra o caminho) e Limpar. Quedas viram uma linha no histórico (`Diagnostico.erro`). Telas agora respeitam as barras do sistema (Android 15+, targetSdk 36
 desenha por baixo): a Central herda de `BaseActivity` e a tela inicial não aplica mais o inset duas vezes.
 
+**Root nativo do Vcloud (01/11, noite) — F2 feita, aguardando teste no S25:** o root é dentro do Vcloud e o usuário controla
+quem usa pelo painel. Peças: `su` em C (`cpp/su/su.c`, executável `vsu` copiado como `libvsu.so` pelo Gradle, tarefa `copyVsu`)
+fala por socket abstrato `vcloud_su` com o `RootServer` (processo `:black`), que identifica o app pelo processo (sobe os PPid
+até um `ProcessRecord`), aplica a política (`RootPolicy`: chave geral `_off`, por app `allow`/`deny`/perguntar) e, se for
+"perguntar", abre a janela `RootPromptActivity` (Permitir sempre / Só desta vez / Negar; sem resposta em 30 s = nega).
+Painel: **Gerenciador de root** (Configurações, menu ⋮ e segurar o app): chave geral, lista de apps, registro dos pedidos.
+uid 0 de mentira: `libfakeuid.so` por `LD_PRELOAD`, só usada se um sh de teste rodar com ela (senão o su abre sem ela).
+Testado aqui: o su em C com servidor falso (protocolo, negar, sem servidor, uid 0 como usuário comum), `RootDecisorTest`
+(12 testes) e o conteúdo do APK (ELF arm64/arm). NÃO testado no aparelho: exec do `su` no Android 17 (SELinux), `LD_PRELOAD`
+para o `sh` do sistema e a janela aberta de segundo plano. Limite: exec por caminho absoluto (`/system/xbin/su`) não é
+redirecionado.
+
 ## Fases
 Foco: **o root funcionar lá dentro** e **o que estiver lá dentro rodar bem**. O Unit é um dos apps de root.
 
