@@ -82,11 +82,15 @@ public class ContentProviderStub extends ClassInvocationStub implements BContent
                 Throwable cause = e.getCause();
                 if (isUidMismatchError(cause)) {
                     Slog.w(TAG, "UID mismatch in ContentProvider call, returning safe default: " + cause.getMessage());
+                    com.vcloud.motor.utils.Diagnostico.eventoLimitado("prov|" + methodName + "|" + mAppPkg, 60_000,
+                            "PROVEDOR erro engolido (" + methodName + ") em " + mAppPkg + ": " + com.vcloud.motor.utils.CausaDeErro.resumirMensagem(cause.getMessage(), 140));
                     return getSafeDefaultValue(methodName, method.getReturnType());
                 } else if (cause instanceof RuntimeException) {
                     String message = cause.getMessage();
                     if (message != null && (message.contains("uid") || message.contains("permission"))) {
                         Slog.w(TAG, "Permission/UID error in ContentProvider call, returning safe default: " + message);
+                        com.vcloud.motor.utils.Diagnostico.eventoLimitado("prov|" + methodName + "|" + mAppPkg, 60_000,
+                                "PROVEDOR erro engolido (" + methodName + ") em " + mAppPkg + ": " + com.vcloud.motor.utils.CausaDeErro.resumirMensagem(message, 140));
                         return getSafeDefaultValue(methodName, method.getReturnType());
                     }
                 }

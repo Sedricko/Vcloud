@@ -43,6 +43,7 @@ class DiagnosticoActivity : BaseActivity() {
             })
         }
         val linha2 = LinearLayout(this).apply {
+            addView(botao("Testar Google") { testarGoogle() })
             addView(botao("Gerar relatório") { gerarRelatorio() })
             addView(botao("Limpar histórico") { Diagnostico.limpar(); mostrar() })
         }
@@ -59,6 +60,15 @@ class DiagnosticoActivity : BaseActivity() {
     override fun onResume() {
         super.onResume()
         mostrar()
+    }
+
+    private fun testarGoogle() {
+        resumo.text = "Testando o Google..."
+        Thread {
+            val txt = try { com.vcloud.motor.utils.ProbeGoogle.relatorio(applicationContext) } catch (e: Throwable) { "Falhou: $e" }
+            com.vcloud.motor.utils.Diagnostico.evento("GOOGLE teste do Vcloud:\n" + txt.trimEnd().lines().joinToString("\n") { "    $it" })
+            runOnUiThread { mostrar(); resumo.text = "Teste do Google salvo no histórico." }
+        }.start()
     }
 
     private fun gerarRelatorio() {

@@ -479,6 +479,9 @@ public class BActivityThread extends IBActivityThread.Stub {
             HookManager.get().checkEnv(HCallbackProxy.class);
             // Vcloud: janelas flutuantes do app não podem aparecer fora do Vcloud
             try { com.vcloud.motor.utils.GuardaSobreposicao.iniciar(); } catch (Throwable ignored) { /* sem a guarda o app abre igual */ }
+            if (packageName.equals("com.android.vending") || packageName.equals("com.google.android.gms")) {
+                com.vcloud.motor.utils.ProbeGoogle.medirDentro(mInitialApplication, packageName + " (" + processName + ")");
+            }
         } catch (Exception e) {
             Slog.e(TAG, "Critical error in handleBindApplication", e);
             throw new RuntimeException("Unable to makeApplication", e);

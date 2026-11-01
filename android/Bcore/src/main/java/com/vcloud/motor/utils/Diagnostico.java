@@ -81,6 +81,17 @@ public final class Diagnostico {
         }
     }
 
+    private static final Map<String, Long> ULTIMO_LIMITADO = new ConcurrentHashMap<>();
+
+    /** Como evento(), mas o mesmo assunto (chave) só entra de novo depois de 'janelaMs'. */
+    public static void eventoLimitado(String chave, long janelaMs, String texto) {
+        long agora = System.currentTimeMillis();
+        Long antes = ULTIMO_LIMITADO.get(chave);
+        if (antes != null && agora - antes < janelaMs) return;
+        ULTIMO_LIMITADO.put(chave, agora);
+        evento(texto);
+    }
+
     public static synchronized String ler() {
         try {
             File f = arquivo();
