@@ -317,3 +317,12 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
   `:settings:fragment_args_key` = `disable_phantom_process_monitor` (chave do AOSP, lida do código-fonte via WebFetch; não confirmada
   no One UI). Se as Opções do desenvolvedor estão desligadas, abre "Sobre o telefone" (`ACTION_DEVICE_INFO_SETTINGS`).
 - Regra de design reforçada: telas novas seguem o padrão nativo das Configurações (linhas título+resumo, sem ícones/cartões coloridos).
+
+## 01/11 18:34 — histórico do usuário (Central)
+- Confirmado no aparelho: root (`ROOT dev.unit.app/dev.tinker.app: ALLOW`), guarda de sobreposição (`SOBREPOSIÇÃO escondida/liberada`),
+  freio de laço (`PAUSADO com.android.vending`).
+- Play Store de dentro: `Unexpected android-id = 0 in Event Logger Factory` + `Unable to fetch checkin consistency token: empty token`
+  (relatórios anteriores) => o Google Play Services de dentro não faz o "checkin" e a Play Store fica sem identificador; o erro em
+  `libhttpengine.so` (HttpEngine do Android) é consequência. Resolver = fazer o GMS de dentro registrar o aparelho (grande e incerto).
+  Decisão pendente do usuário: perseguir isso ou deixar a Play Store de dentro desativada.
+- Histórico: erros agora em UMA linha (`CausaDeErro.resumirMensagem`) e erros repetidos de pacotes do Google no máximo 1x/5 min.
