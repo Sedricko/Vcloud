@@ -119,9 +119,10 @@ public class ContentProviderStub extends ClassInvocationStub implements BContent
     
     // Vcloud: o provedor de dentro compara o uid de quem chama (virtual, pelo gancho do Binder) com o uid da origem;
     // o antigo ajuste punha o uid do celular e dava "Calling uid doesn't match source uid".
-    private static void fixarOrigem(Object[] args) {
+    private void fixarOrigem(Object[] args) {
         AttributionSourceUtils.fixAttributionSourceInArgs(args);
-        if (args == null) return;
+        // provedor do próprio Vcloud (processo real): o Binder mostra o uid do celular, então vale o uid do celular
+        if (args == null || VcloudCore.getHostPkg().equals(mAppPkg)) return;
         int uid = BActivityThread.getBUid();
         for (Object a : args) {
             if (a != null && a.getClass().getName().endsWith("AttributionSource")) {

@@ -201,7 +201,13 @@ public final class AppInstrumentation extends BaseInstrumentationDelegate implem
         try {
             return super.newActivity(cl, className, intent);
         } catch (ClassNotFoundException e) {
-            return mBaseInstrumentation.newActivity(cl, className, intent);
+            try {
+                return mBaseInstrumentation.newActivity(cl, className, intent);
+            } catch (Throwable t) {
+                com.vcloud.motor.utils.Diagnostico.eventoLimitado("newact|" + className, 60_000,
+                        "ATIVIDADE não instanciou: " + className + " | " + t + " | loader=" + cl);
+                throw t;
+            }
         }
     }
 }
