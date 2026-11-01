@@ -250,6 +250,25 @@ class MainActivity : LoadingActivity() {
         viewBinding.toolbarLayout.toolbar.setBackgroundColor(android.graphics.Color.TRANSPARENT)
         viewBinding.tileDeviceModel.text = android.os.Build.MODEL
         viewBinding.tileDeviceAndroid.text = "Android ${android.os.Build.VERSION.RELEASE}"
+        ativarServicosGooglePadrao()
+    }
+
+    /** Vcloud: Serviços do Google vêm ativados de fábrica, só na primeira vez; se o usuário desativar depois, fica desativado. */
+    private fun ativarServicosGooglePadrao() {
+        val prefs = getSharedPreferences("vcloud", Context.MODE_PRIVATE)
+        if (prefs.getBoolean("gms_padrao_feito", false)) return
+        Thread {
+            try {
+                val core = VcloudCore.get()
+                if (core.isSupportGms() && !core.isInstallGms(0)) {
+                    val r = core.installGms(0)
+                    Log.i(TAG, "Serviços do Google ativados por padrão: ${r.success} ${r.msg ?: ""}")
+                }
+                prefs.edit { putBoolean("gms_padrao_feito", true) }
+            } catch (e: Exception) {
+                Log.e(TAG, "Falha ao ativar os Serviços do Google por padrão: ${e.message}")
+            }
+        }.start()
     }
 
     private fun initToolbarSubTitle() {

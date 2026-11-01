@@ -28,6 +28,16 @@ android {
         }
     }
 
+    // Vcloud: chave fixa (só de teste) para que cada APK novo instale por cima do anterior.
+    // Sem isso o GitHub gera uma chave diferente a cada compilação e o Android recusa atualizar.
+    signingConfigs {
+        debug {
+            storeFile rootProject.file('vcloud-debug.keystore')
+            storePassword 'vcloud-debug'
+            keyAlias 'vcloud'
+            keyPassword 'vcloud-debug'
+        }
+    }
     buildTypes {
         release {
             signingConfig signingConfigs.debug
