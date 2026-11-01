@@ -28,13 +28,8 @@
 
         <Preference
                 android:key="diagnostico"
-                android:title="Diagnóstico"
-                android:summary="Ver o que abriu, o que não abriu e por que fechou" />
-
-        <Preference
-                android:key="send_logs"
-                android:title="Gerar relatório de erros"
-                android:summary="Salva em Download/Vcloud, no próprio celular" />
+                android:title="Central de diagnóstico"
+                android:summary="Erros, histórico dos apps (abriu, não abriu, fechou e por quê) e relatório para enviar" />
 
     </PreferenceCategory>
 

@@ -8,46 +8,69 @@ import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
+import com.vcloud.app.view.base.BaseActivity
 import com.vcloud.motor.VcloudCore
 import com.vcloud.motor.utils.Diagnostico
 
-/** Diário interno: o que abriu, o que não abriu e por que fechou (mais novo em cima). */
-class DiagnosticoActivity : AppCompatActivity() {
+/**
+ * Central de diagnóstico: o único lugar de erros e relatório do Vcloud.
+ * Mostra o histórico dos apps (abriu / não abriu / fechou e por quê, mais novo em cima) e gera o relatório.
+ * Herda de BaseActivity para respeitar as barras do sistema (Android 15+ desenha por baixo delas).
+ */
+class DiagnosticoActivity : BaseActivity() {
+    private lateinit var resumo: TextView
     private lateinit var texto: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        title = "Diagnóstico"
+        val dp = resources.displayMetrics.density
+        fun px(v: Int) = (v * dp).toInt()
+
+        val titulo = TextView(this).apply { text = "Central de diagnóstico"; textSize = 20f; setTypeface(typeface, Typeface.BOLD) }
+        resumo = TextView(this).apply { textSize = 13f; setPadding(0, px(4), 0, px(8)) }
         texto = TextView(this).apply { typeface = Typeface.MONOSPACE; textSize = 12f; setTextIsSelectable(true) }
+
         fun botao(nome: String, acao: () -> Unit) = Button(this).apply {
-            text = nome; setOnClickListener { acao() }
+            text = nome; isAllCaps = false; setOnClickListener { acao() }
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
         }
-        val barra = LinearLayout(this).apply {
+        val linha1 = LinearLayout(this).apply {
             addView(botao("Atualizar") { mostrar() })
             addView(botao("Copiar") {
                 (getSystemService(CLIPBOARD_SERVICE) as ClipboardManager)
                     .setPrimaryClip(ClipData.newPlainText("diagnostico", Diagnostico.ler()))
+                resumo.text = "Histórico copiado."
             })
-            addView(botao("Relatório") {
-                VcloudCore.get().sendLogs("Pedido na tela Diagnóstico", true)
-                texto.text = "Gerando relatório em Download/Vcloud...\n\n" + texto.text
-            })
-            addView(botao("Limpar") { Diagnostico.limpar(); mostrar() })
         }
-        val pad = (16 * resources.displayMetrics.density).toInt()
+        val linha2 = LinearLayout(this).apply {
+            addView(botao("Gerar relatório") { gerarRelatorio() })
+            addView(botao("Limpar histórico") { Diagnostico.limpar(); mostrar() })
+        }
+        val pad = px(16)
         setContentView(LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(pad, pad, pad, pad)
-            addView(barra)
-            addView(ScrollView(this@DiagnosticoActivity).apply { addView(texto) })
+            addView(titulo); addView(resumo); addView(linha1); addView(linha2)
+            addView(ScrollView(this@DiagnosticoActivity).apply { addView(texto) },
+                LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f))
         })
     }
 
     override fun onResume() {
         super.onResume()
         mostrar()
+    }
+
+    private fun gerarRelatorio() {
+        resumo.text = "Gerando relatório..."
+        Thread {
+            val msg = try {
+                "Relatório salvo em " + VcloudCore.get().writeReport("gerado na Central de diagnóstico").absolutePath
+            } catch (e: Exception) {
+                "Não consegui salvar o relatório: ${e.message}"
+            }
+            runOnUiThread { resumo.text = msg }
+        }.start()
     }
 
     private fun mostrar() {
@@ -57,7 +80,10 @@ class DiagnosticoActivity : AppCompatActivity() {
             if (l.startsWith(" ") && eventos.isNotEmpty()) eventos[eventos.size - 1] += "\n$l"
             else if (l.isNotBlank()) eventos.add(l)
         }
-        texto.text = if (eventos.isEmpty()) "Nada registrado ainda. Abra um app dentro do Vcloud e volte aqui."
+        val quedas = eventos.count { it.contains("  FECHOU  ") || it.contains("  NÃO ABRIU  ") }
+        resumo.text = if (eventos.isEmpty()) "Nenhum registro ainda."
+        else "${eventos.size} registros, $quedas fechamentos ou falhas. Relatórios ficam em Download/Vcloud."
+        texto.text = if (eventos.isEmpty()) "Abra um app dentro do Vcloud e volte aqui."
         else eventos.reversed().joinToString("\n\n")
     }
 }

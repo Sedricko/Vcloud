@@ -26,7 +26,6 @@ class SettingFragment : PreferenceFragmentCompat() {
 
 
 
-        initSendLogs()
         initSobrepor()
         findPreference<Preference>("diagnostico")?.setOnPreferenceClickListener {
             startActivity(android.content.Intent(requireContext(), DiagnosticoActivity::class.java))
@@ -87,28 +86,6 @@ class SettingFragment : PreferenceFragmentCompat() {
 
             toast(R.string.restart_module)
             return@setOnPreferenceChangeListener true
-        }
-    }
-    private fun initSendLogs() {
-        val sendLogsPreference: Preference? = findPreference("send_logs")
-        sendLogsPreference?.setOnPreferenceClickListener {
-            it.isEnabled = false
-            VcloudCore.get()
-                    .sendLogs(
-                            "Manual Log Upload from Settings",
-                            true,
-                            object : VcloudCore.LogSendListener {
-                                override fun onSuccess() {
-                                    activity?.runOnUiThread { sendLogsPreference.isEnabled = true }
-                                }
-
-                                override fun onFailure(error: String?) {
-                                    activity?.runOnUiThread { sendLogsPreference.isEnabled = true }
-                                }
-                            }
-                    )
-            toast("Gerando relatório em Download/Vcloud...")
-            true
         }
     }
 }

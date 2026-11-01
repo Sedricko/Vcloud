@@ -9,7 +9,7 @@
             app:showAsAction="never" />
 
     <item
-            android:id="@+id/main_report"
-            android:title="Gerar relatório de erros"
+            android:id="@+id/main_diagnostico"
+            android:title="Central de diagnóstico"
             app:showAsAction="never" />
 </menu>
