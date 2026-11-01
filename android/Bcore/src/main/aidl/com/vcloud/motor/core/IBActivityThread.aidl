@@ -24,4 +24,7 @@ interface IBActivityThread {
     void handleNewIntent(IBinder token, in Intent intent);
 
     void scheduleReceiver(in ReceiverData data);
+
+    // Vcloud: comando do painel lateral para a tela que está na frente deste app (ver ComandoDoPainel)
+    void executarComando(int comando);
 }

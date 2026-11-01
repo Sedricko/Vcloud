@@ -163,8 +163,15 @@ public final class AppInstrumentation extends BaseInstrumentationDelegate implem
     }
 
     @Override
+    public void callActivityOnPause(Activity activity) {
+        com.vcloud.motor.utils.ComandoDoPainel.limparTopo(activity);
+        super.callActivityOnPause(activity);
+    }
+
+    @Override
     public void callActivityOnResume(Activity activity) {
         super.callActivityOnResume(activity);
+        com.vcloud.motor.utils.ComandoDoPainel.definirTopo(activity); // o painel lateral manda Voltar/Girar para esta tela
         // Vcloud: reaplica a orientação lida do APK sempre que a tela volta à frente (jogos deitados)
         try {
             int o = orientacaoDoApk(activity, activity.getClass().getName());

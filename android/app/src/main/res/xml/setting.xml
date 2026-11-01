@@ -4,6 +4,20 @@
 
 
 
+    <PreferenceCategory app:title="Painel lateral">
+
+        <SwitchPreferenceCompat
+                app:key="painel_ativo"
+                app:persistent="false"
+                app:title="Mostrar o painel nos apps"
+                app:summary="Aba na borda, só com um app do Vcloud na frente: voltar, girar, apps recentes, captura e atalhos" />
+
+        <Preference
+                android:key="painel_opacidade"
+                android:title="Opacidade da aba" />
+
+    </PreferenceCategory>
+
     <PreferenceCategory app:title="@string/other">
 
         <Preference

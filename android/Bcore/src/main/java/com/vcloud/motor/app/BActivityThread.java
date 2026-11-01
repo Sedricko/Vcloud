@@ -826,6 +826,17 @@ public class BActivityThread extends IBActivityThread.Stub {
     }
 
     @Override
+    public void executarComando(final int comando) {
+        mH.post(() -> {
+            try {
+                com.vcloud.motor.utils.ComandoDoPainel.executar(comando);
+            } catch (Throwable e) {
+                Slog.w(TAG, "Comando do painel falhou: " + e);
+            }
+        });
+    }
+
+    @Override
     public IBinder peekService(Intent intent) {
         return AppServiceDispatcher.get().peekService(intent);
     }

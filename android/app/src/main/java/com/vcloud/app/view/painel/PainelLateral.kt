@@ -17,6 +17,8 @@ import android.view.ViewConfiguration
 import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.LinearLayout
+import android.widget.Switch
+import android.widget.Toast
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import com.vcloud.app.R
@@ -25,7 +27,10 @@ import com.vcloud.app.view.root.RootManagerActivity
 import com.vcloud.app.view.setting.DiagnosticoActivity
 import com.vcloud.app.view.setting.SettingActivity
 import com.vcloud.motor.VcloudCore
+import com.vcloud.motor.core.root.RootPolicy
 import com.vcloud.motor.core.system.BProcessManagerService
+import com.vcloud.motor.core.system.ProcessRecord
+import com.vcloud.motor.utils.ComandoDoPainel
 import com.vcloud.motor.utils.Diagnostico
 import java.io.File
 import kotlin.math.hypot
@@ -36,7 +41,7 @@ import kotlin.math.hypot
  * root, Diagnóstico, Fechar app). Tudo leva a telas do próprio Vcloud: não sai do Vcloud. Roda no processo ":black".
  */
 object PainelLateral {
-    private class Frente(val pacote: String, val userId: Int)
+    private class Frente(val pacote: String, val userId: Int, val rec: ProcessRecord)
 
     private var iniciado = false
     private var pausadoAte = 0L
@@ -44,6 +49,7 @@ object PainelLateral {
     private var aba: View? = null
     private var painel: View? = null
     private var frente: Frente? = null
+    private var tocando = false
 
     /** Só o processo ":black" (o servidor do Vcloud, sempre vivo enquanto há app aberto) cuida do painel. */
     fun iniciarSeForServidor(ctx: Context) {
@@ -74,7 +80,7 @@ object PainelLateral {
         for (p in am.runningAppProcesses.orEmpty()) {
             if (p.processName.startsWith(app.packageName + ":p") && p.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
                 val rec = BProcessManagerService.get().findProcessByPid(p.pid) ?: continue
-                return Frente(rec.packageName, rec.userId)
+                return Frente(rec.packageName, rec.userId, rec)
             }
         }
         return null
@@ -102,13 +108,14 @@ object PainelLateral {
         // Os apps de dentro leem este sinal e escondem as janelas flutuantes deles enquanto o Vcloud não está à vista.
         com.vcloud.motor.utils.GuardaSobreposicao.sinalizar(!vcloudNaFrente(app))
         val agora = appEmFrente(app)
-        if (agora == null || SystemClock.elapsedRealtime() < pausadoAte) { esconderTudo(app); frente = null; return }
+        if (agora == null || PainelConfig.oculto() || SystemClock.elapsedRealtime() < pausadoAte) { esconderTudo(app); frente = null; return }
         if (!Settings.canDrawOverlays(app)) {
             if (!avisouPermissao) { avisouPermissao = true; Diagnostico.evento("PAINEL sem a permissão 'Sobrepor a outros apps'") }
             return
         }
         if (agora.pacote != frente?.pacote) { frente = agora; fecharPainel(app) } // trocou de app: o painel aberto era de outro
         if (aba == null) mostrarAba(app)
+        else if (!tocando) (aba as? FrameLayout)?.getChildAt(0)?.alpha = PainelConfig.opacidade().alfa // mudou em Configurações
     }
 
     // ---------- janelas ----------
@@ -138,6 +145,7 @@ object PainelLateral {
     private fun mostrarAba(app: Context) {
         val dir = direita(app)
         val pilula = View(app).apply {
+            alpha = PainelConfig.opacidade().alfa // discreta por padrão; destaca ao tocar
             background = GradientDrawable().apply {
                 setColor(0xA6DCE4F5.toInt()); setStroke(dp(app, 1), 0x66FFFFFF)
                 cornerRadii = cantos(app, dir, 8)
@@ -157,15 +165,33 @@ object PainelLateral {
         aba = v
     }
 
-    /** Arrastar muda a altura (e o lado, se soltar na outra metade da tela); só tocar abre o painel. */
+    /**
+     * Arrastar muda a altura (e o lado, se soltar na outra metade da tela). Gestos: 1 toque abre o painel, 2 toques = Voltar
+     * (só dentro do app), 3 toques = Apps recentes, segurar = Início do Vcloud. Espera 300 ms para saber quantos toques foram.
+     */
     private fun arraste(app: Context, lp: WindowManager.LayoutParams): View.OnTouchListener {
-        var x0 = 0f; var y0 = 0f; var yIni = 0; var moveu = false
+        var x0 = 0f; var y0 = 0f; var yIni = 0; var moveu = false; var longo = false; var toques = 0
         val folga = ViewConfiguration.get(app).scaledTouchSlop
+        val h = Handler(Looper.getMainLooper())
+        val decidir = Runnable {
+            val n = toques; toques = 0
+            when {
+                n == 1 -> abrirPainel(app, false)
+                n == 2 -> frente?.let { enviar(it, ComandoDoPainel.VOLTAR) }
+                n >= 3 -> abrirPainel(app, true)
+            }
+        }
+        val segurar = Runnable { longo = true; toques = 0; voltarAoVcloud(app) }
         return View.OnTouchListener { v, e ->
             when (e.actionMasked) {
-                MotionEvent.ACTION_DOWN -> { x0 = e.rawX; y0 = e.rawY; yIni = lp.y; moveu = false; true }
+                MotionEvent.ACTION_DOWN -> {
+                    x0 = e.rawX; y0 = e.rawY; yIni = lp.y; moveu = false; longo = false; tocando = true
+                    (v as? FrameLayout)?.getChildAt(0)?.alpha = 1f
+                    h.postDelayed(segurar, ViewConfiguration.getLongPressTimeout().toLong())
+                    true
+                }
                 MotionEvent.ACTION_MOVE -> {
-                    if (!moveu && hypot(e.rawX - x0, e.rawY - y0) > folga) moveu = true
+                    if (!moveu && hypot(e.rawX - x0, e.rawY - y0) > folga) { moveu = true; h.removeCallbacks(segurar); toques = 0; h.removeCallbacks(decidir) }
                     if (moveu) {
                         val max = app.resources.displayMetrics.heightPixels - lp.height
                         lp.y = (yIni + (e.rawY - y0)).toInt().coerceIn(0, max.coerceAtLeast(0))
@@ -173,11 +199,16 @@ object PainelLateral {
                     }
                     true
                 }
-                MotionEvent.ACTION_UP -> {
-                    if (!moveu) abrirPainel(app)
-                    else {
-                        prefs(app).edit().putInt("y", lp.y).putBoolean("direita", e.rawX > app.resources.displayMetrics.widthPixels / 2f).apply()
-                        esconderTudo(app) // volta no próximo tique, já do lado certo
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    h.removeCallbacks(segurar); tocando = false
+                    (v as? FrameLayout)?.getChildAt(0)?.alpha = PainelConfig.opacidade().alfa
+                    if (e.actionMasked == MotionEvent.ACTION_UP) {
+                        if (moveu) {
+                            prefs(app).edit().putInt("y", lp.y).putBoolean("direita", e.rawX > app.resources.displayMetrics.widthPixels / 2f).apply()
+                            esconderTudo(app) // volta no próximo tique, já do lado certo
+                        } else if (!longo) {
+                            toques++; h.removeCallbacks(decidir); h.postDelayed(decidir, 300)
+                        }
                     }
                     true
                 }
@@ -194,7 +225,7 @@ object PainelLateral {
         aba?.visibility = View.VISIBLE
     }
 
-    private fun abrirPainel(app: Context) {
+    private fun abrirPainel(app: Context, recentes: Boolean) {
         val f = frente ?: return
         if (painel != null) return
         val dir = direita(app)
@@ -216,7 +247,7 @@ object PainelLateral {
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS))
         painel = raiz
         aba?.visibility = View.GONE
-        menu(app, caixa, f)
+        if (recentes) trocar(app, caixa, f) else menu(app, caixa, f)
     }
 
     private fun texto(app: Context, t: String, sp: Float, negrito: Boolean = false, dim: Boolean = false) = TextView(app).apply {
@@ -245,25 +276,55 @@ object PainelLateral {
             ?.loadLabel(VcloudCore.getPackageManager())?.toString() ?: pacote
     } catch (e: Exception) { pacote }
 
+    private fun linhaChave(app: Context, glifo: String, rotulo: String, sub: String, ligado: Boolean, aoMudar: (Boolean) -> Unit): LinearLayout {
+        val linha = linha(app, glifo, rotulo) { }
+        linha.removeViewAt(1) // troca o texto simples por texto + subtítulo
+        linha.addView(LinearLayout(app).apply {
+            orientation = LinearLayout.VERTICAL
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+            addView(texto(app, rotulo, 14f)); addView(texto(app, sub, 11f, dim = true))
+        })
+        linha.addView(Switch(app).apply { isChecked = ligado; setOnCheckedChangeListener { _, on -> aoMudar(on) } })
+        linha.setOnClickListener(null)
+        return linha
+    }
+
+    private fun separador(app: Context) = View(app).apply {
+        setBackgroundColor(cor(app, R.color.glass_stroke))
+        layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(app, 1)).apply { topMargin = dp(app, 6); bottomMargin = dp(app, 6) }
+    }
+
     private fun menu(app: Context, caixa: LinearLayout, f: Frente) {
         caixa.removeAllViews()
-        val cab = LinearLayout(app).apply {
+        caixa.addView(LinearLayout(app).apply {
             setPadding(dp(app, 6), 0, dp(app, 6), dp(app, 8))
             addView(texto(app, "Vcloud", 15f, negrito = true).apply { layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f) })
             addView(texto(app, nomeDoApp(f.pacote, f.userId), 12f, dim = true).apply { maxLines = 1 })
-        }
-        caixa.addView(cab)
-        caixa.addView(linha(app, "—", "Minimizar") { voltarAoVcloud(app) })
+        })
+        // Voltar e Girar agem SÓ dentro do app (a tela dele); nada disso vai para o celular de verdade.
+        caixa.addView(linha(app, "‹", "Voltar") { enviar(f, ComandoDoPainel.VOLTAR) })
+        caixa.addView(linha(app, "⟳", "Girar a tela") { enviar(f, ComandoDoPainel.GIRAR) })
+        caixa.addView(linha(app, "⌂", "Início do Vcloud") { voltarAoVcloud(app) })
+        caixa.addView(linha(app, "▤", "Apps recentes") { trocar(app, caixa, f) })
         caixa.addView(linha(app, "▢", "Capturar tela") { capturar(app) })
-        caixa.addView(linha(app, "⇄", "Trocar de app") { trocar(app, caixa, f) })
+        caixa.addView(separador(app))
+        caixa.addView(linhaChave(app, "#", "Root do Vcloud", "chave geral", RootPolicy.padrao().geralLigado()) { RootPolicy.padrao().ligarGeral(it) })
         caixa.addView(linha(app, "⚙", "Configurações") { abrirTela(app, SettingActivity::class.java) })
-        caixa.addView(linha(app, "#", "Gerenciador de root") { abrirTela(app, RootManagerActivity::class.java) })
+        caixa.addView(linha(app, "☰", "Gerenciador de root") { abrirTela(app, RootManagerActivity::class.java) })
         caixa.addView(linha(app, "!", "Diagnóstico") { abrirTela(app, DiagnosticoActivity::class.java) })
-        caixa.addView(View(app).apply {
-            setBackgroundColor(cor(app, R.color.glass_stroke))
-            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(app, 1)).apply { topMargin = dp(app, 6); bottomMargin = dp(app, 6) }
+        caixa.addView(separador(app))
+        caixa.addView(linha(app, "◌", "Ocultar painel") {
+            PainelConfig.definirOculto(true); fecharPainel(app)
+            Toast.makeText(app, "Painel oculto. Reative em Configurações > Painel lateral.", Toast.LENGTH_LONG).show()
         })
         caixa.addView(linha(app, "✕", "Fechar app") { confirmarFechar(app, caixa, f) })
+    }
+
+    /** Fala com o app (processo dele) pelo canal do Vcloud; fora da linha principal porque é uma chamada entre processos. */
+    private fun enviar(f: Frente, comando: Int) {
+        Thread {
+            try { f.rec.bActivityThread?.executarComando(comando) } catch (e: Throwable) { Diagnostico.evento("PAINEL comando $comando falhou: $e") }
+        }.start()
     }
 
     private fun trocar(app: Context, caixa: LinearLayout, f: Frente) {

@@ -8,6 +8,7 @@ import com.vcloud.app.R
 import com.vcloud.app.app.AppManager
 import com.vcloud.app.util.toast
 import com.vcloud.app.view.gms.GmsManagerActivity
+import com.vcloud.app.view.painel.PainelConfig
 
 class SettingFragment : PreferenceFragmentCompat() {
 
@@ -27,6 +28,7 @@ class SettingFragment : PreferenceFragmentCompat() {
 
 
         initSobrepor()
+        initPainel()
         findPreference<Preference>("gerenciador_root")?.setOnPreferenceClickListener {
             startActivity(android.content.Intent(requireContext(), com.vcloud.app.view.root.RootManagerActivity::class.java))
             true
@@ -90,6 +92,28 @@ class SettingFragment : PreferenceFragmentCompat() {
 
             toast(R.string.restart_module)
             return@setOnPreferenceChangeListener true
+        }
+    }
+
+    // Painel lateral: as opções ficam em arquivos (PainelConfig) porque o painel roda em outro processo.
+    private fun initPainel() {
+        val ativo = findPreference<androidx.preference.SwitchPreferenceCompat>("painel_ativo")
+        ativo?.isChecked = !PainelConfig.oculto()
+        ativo?.setOnPreferenceChangeListener { _, novo -> PainelConfig.definirOculto(!(novo as Boolean)); true }
+
+        val opacidade = findPreference<Preference>("painel_opacidade")
+        fun resumo() { opacidade?.summary = PainelConfig.opacidade().rotulo }
+        resumo()
+        opacidade?.setOnPreferenceClickListener {
+            val todas = PainelConfig.Opacidade.values()
+            com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Opacidade da aba")
+                .setSingleChoiceItems(todas.map { it.rotulo }.toTypedArray(), todas.indexOf(PainelConfig.opacidade())) { d, i ->
+                    PainelConfig.definirOpacidade(todas[i]); resumo(); d.dismiss()
+                }
+                .setNegativeButton("Cancelar", null)
+                .show()
+            true
         }
     }
 }
