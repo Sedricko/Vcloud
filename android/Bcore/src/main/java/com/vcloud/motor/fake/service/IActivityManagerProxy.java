@@ -158,7 +158,17 @@ public class IActivityManagerProxy extends ClassInvocationStub {
                         || auth.equals("com.google.android.gms.chimera")
                         || auth.equals("com.huawei.android.launcher.settings")
                         || auth.equals("com.hihonor.android.launcher.settings")) {
-                    content = method.invoke(who, args);
+                    try {
+                        content = method.invoke(who, args);
+                    } catch (java.lang.reflect.InvocationTargetException e) {
+                        // Vcloud: provedor do Google do celular que o Android não exporta (ex.: AppDoctorProvider) vira
+                        // "indisponível"; antes a SecurityException subia e a Play Store de dentro abortava em laço.
+                        if (e.getCause() instanceof SecurityException) {
+                            Slog.w("IActivityManagerProxy", "provedor negado pelo Android, tratado como indisponível: " + auth);
+                            return null;
+                        }
+                        throw e;
+                    }
                     ContentProviderDelegate.update(content, (String) auth);
                     return content;
                 } else {

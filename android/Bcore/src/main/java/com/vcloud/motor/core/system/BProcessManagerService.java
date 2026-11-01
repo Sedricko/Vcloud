@@ -53,6 +53,11 @@ public class BProcessManagerService implements ISystemService {
             Diagnostico.naoAbriu(packageName, "pacote não está instalado no Vcloud");
             return null;
         }
+        // Vcloud: Play Store/Play Services de dentro caem em laço e gastam CPU; pausa os novos inícios enquanto caem.
+        if ((packageName.equals("com.android.vending") || packageName.startsWith("com.google.android.gms")
+                || packageName.equals("com.google.android.gsf")) && Diagnostico.emLaco(packageName)) {
+            return null;
+        }
         ProcessRecord app;
         int buid = BUserHandle.getUid(userId, BPackageManagerService.get().getAppId(packageName));
         synchronized (mProcessLock) {

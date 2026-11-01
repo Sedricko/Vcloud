@@ -27,7 +27,41 @@ public final class Diagnostico {
     private static final long MAX_BYTES = 200 * 1024;
     private static final Map<String, Long> INICIO = new ConcurrentHashMap<>();
 
+    // Freio de laço de quedas: 4 mortes rápidas (< 10 s) do mesmo pacote em 30 s pausam novos inícios dele.
+    private static final Map<String, List<Long>> MORTES_RAPIDAS = new java.util.HashMap<>();
+    private static final java.util.Set<String> PAUSADOS = new java.util.HashSet<>();
+    private static final long JANELA_MS = 30_000;
+    private static final int MORTES_PARA_PAUSAR = 4;
+
     private Diagnostico() {}
+
+    public static void registrarMorteRapida(String pacote) {
+        synchronized (MORTES_RAPIDAS) {
+            List<Long> l = MORTES_RAPIDAS.get(pacote);
+            if (l == null) MORTES_RAPIDAS.put(pacote, l = new java.util.ArrayList<>());
+            l.add(System.currentTimeMillis());
+        }
+    }
+
+    /** true enquanto o pacote está caindo em laço (só nos últimos 30 s). Anota no histórico quando a pausa começa. */
+    public static boolean emLaco(String pacote) {
+        long agora = System.currentTimeMillis();
+        boolean laco;
+        synchronized (MORTES_RAPIDAS) {
+            List<Long> l = MORTES_RAPIDAS.get(pacote);
+            int n = 0;
+            if (l != null) {
+                for (java.util.Iterator<Long> it = l.iterator(); it.hasNext(); ) {
+                    if (agora - it.next() > JANELA_MS) it.remove(); else n++;
+                }
+            }
+            laco = n >= MORTES_PARA_PAUSAR;
+            if (!laco) { PAUSADOS.remove(pacote); return false; }
+            if (!PAUSADOS.add(pacote)) return true;
+        }
+        evento("PAUSADO  " + pacote + ": caiu " + MORTES_PARA_PAUSAR + " vezes em 30 s; novos inícios ficam parados até parar de cair");
+        return true;
+    }
 
     private static File arquivo() {
         return new File(BEnvironment.getVirtualRoot(), "diagnostico.log");
@@ -87,6 +121,7 @@ public final class Diagnostico {
     public static void morreu(final String pacote, final String processo, final int pid) {
         final Long ini = INICIO.remove(processo);
         if (ini == null) return; // já registrado
+        if (System.currentTimeMillis() - ini < 10_000) registrarMorteRapida(pacote);
         new Thread(() -> {
             long seg = (System.currentTimeMillis() - ini) / 1000;
             StringBuilder sb = new StringBuilder("FECHOU  " + pacote + " pid=" + pid + " depois de " + seg + " s");

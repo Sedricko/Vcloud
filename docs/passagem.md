@@ -201,3 +201,13 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
   da linha principal do trace do ANR (`CausaDeErro.pilhaMain`).
 - **Play Store/GMS de dentro**: laço continua (`Permission Denial: opening provider ...AppDoctorProvider`, `Not allowed to bind
   to service ...AccountAuthenticator`, `ClassNotFound AssetBrowserActivity`). Pista: o provider do GMS cai no sistema real.
+
+## Relatório 15:27 (APK central) — laço da Play Store
+- Unit, Tinker e jogo de teste abrem sem queda. Ainda sem linha `ROOT interno ligado` (o usuário não ligou o Root interno).
+- **Laço `com.android.vending:background`**: a cada 1-3 s um processo novo morre, sempre que um jogo abre. Duas causas vistas:
+  (1) `SecurityException: Permission Denial: opening provider ...gms.common.appdoctor.AppDoctorProvider`: o hook
+  `IActivityManagerProxy.GetContentProvider` manda todo provedor `com.google.android.gms*` ao Android de verdade, que nega o
+  não exportado; agora vira `null` (provedor indisponível). (2) `ClassCastException: Cannot cast spl to avru` no `bgExecutor`
+  (código ofuscado do Vending; não resolvido).
+- Freio de laço: `Diagnostico.emLaco` (4 mortes < 10 s em 30 s) faz `startProcessLocked` devolver `null` só para vending/gms/gsf.
+  Histórico mostra `PAUSADO`. Possível efeito: bindService do jogo a esses pacotes recebe erro durante a pausa.

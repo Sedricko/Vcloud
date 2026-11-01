@@ -62,4 +62,14 @@ public class CausaDeErroTest {
         assertTrue(p.size() == 3 && p.get(0).startsWith("\"main\"") && p.get(2).contains("E.f"));
         assertTrue(CausaDeErro.pilhaMain(null, 5).isEmpty());
     }
+
+    @Test public void freioDeLacoDeQuedas() {
+        String pkg = "teste.laco";
+        assertTrue(!com.vcloud.motor.utils.Diagnostico.emLaco(pkg));
+        for (int i = 0; i < 3; i++) com.vcloud.motor.utils.Diagnostico.registrarMorteRapida(pkg);
+        assertTrue(!com.vcloud.motor.utils.Diagnostico.emLaco(pkg)); // 3 ainda não pausa
+        com.vcloud.motor.utils.Diagnostico.registrarMorteRapida(pkg);
+        assertTrue(com.vcloud.motor.utils.Diagnostico.emLaco(pkg));  // a 4ª pausa (o histórico falha em silêncio fora do Android)
+        assertTrue(!com.vcloud.motor.utils.Diagnostico.emLaco("outro.pacote")); // só o pacote que cai
+    }
 }
