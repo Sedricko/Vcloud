@@ -49,6 +49,14 @@ public class NativeCore {
                 return origCallingUid;
 
             if (origCallingUid == VcloudCore.getHostUid()) {
+                // Vcloud: checagem da origem do provedor (AttributionSource) compara com o uid do celular
+                StackTraceElement[] st = Thread.currentThread().getStackTrace();
+                for (int i = 0; i < st.length && i < 14; i++) {
+                    String cn = st[i].getClassName();
+                    if (cn.equals("android.content.AttributionSource") || cn.startsWith("android.content.ContentProvider$Transport")) {
+                        return origCallingUid;
+                    }
+                }
                 
                 String appPackageName = VcloudCore.getAppPackageName();
                 if (appPackageName != null && appPackageName.equals("com.google.android.gms")){

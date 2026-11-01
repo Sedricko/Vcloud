@@ -341,7 +341,7 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Não testado no aparelho. Incógnitas: checkin do GMS de dentro como app comum, login de conta, licenças (não se burla). Teste: ligar, abrir a Play Store de dentro, Central > Testar Google > Copiar.
 
 ## Regra: versão do app
-- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.5 (405).
+- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.6 (406).
 
 ## Play Store de dentro: erro de uid no provedor (4.0.2)
 - Relatório 19:33: `PROVEDOR erro engolido (query) em gms: Calling uid: 10014 doesn't match source uid: 10454` (modo Google completo ligado, caminho de dentro ativo).
@@ -360,3 +360,8 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Relatório 19:55 (modo ligado): sem mais `AssetBrowserActivity` nem erro de uid nos provedores; provedores do Google resolvem "cópia de dentro" (gservices, chimera, fonts, appdoctor).
 - Queda do gms/vending: `Cronet(HttpEngine) -> ConnectivityManager.getNetworkInfoForUid` com uid virtual → `SecurityException` (precisa ACCESS_DOWNLOAD_MANAGER/NETWORK_STACK) → abort. Correção: `UidMethodProxy("getNetworkInfoForUid", 1)` em `IConnectivityManagerProxy` (uid virtual → uid do celular). Não testado.
 - Segue aberto: `android-id = 0` (checkin do GMS de dentro).
+
+## 4.0.6
+- Relatório 20:02 (4.0.5): a Play Store de dentro ABRE (tela "Fazer login"); Cronet não derruba mais.
+- Uid do provedor: `callingBUid` é gravado só quando o processo nasce, então o "uid de quem chamou" fica velho (`10015 != 10014`). Agora a origem leva o uid do celular e `NativeCore.getCallingUid` devolve o uid do celular quando a pilha está em `AttributionSource`/`ContentProvider$Transport`. Não testado.
+- ABERTO (grande): "Fazer login" → `BAccountManagerService.bindToAuthenticator` faz `bindService` no processo `:black` direto no AMS real, que recusa (`Not allowed to bind ... GoogleAccountAuthenticatorService`). Precisa ligar o bind pelo AMS virtual (intent de proxy). Decisão pendente do usuário.
