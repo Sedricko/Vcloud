@@ -339,3 +339,6 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Chave em Ajustes: "Google completo dentro do Vcloud" (arquivo `blackbox/google_completo`; desligada = como antes).
 - Ligada: os provedores do Google (gms/gsf/vending) pedidos por apps de dentro usam a cópia de dentro quando ela existe; senão caem no celular (anotado no histórico: `GOOGLE provedor ...`).
 - Não testado no aparelho. Incógnitas: checkin do GMS de dentro como app comum, login de conta, licenças (não se burla). Teste: ligar, abrir a Play Store de dentro, Central > Testar Google > Copiar.
+
+## Regra: versão do app
+- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.1 (401).
