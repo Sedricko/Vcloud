@@ -286,3 +286,13 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Ações abrem a tela ANTES de fechar o painel: o Android só deixa serviço em segundo plano abrir tela com janela visível.
 - Riscos a verificar no S25: `IMPORTANCE_FOREGROUND` do processo guest com jogo na frente; abrir activity a partir do `:black`;
   a permissão de captura; Unity pausar com o painel aberto (a janela não toma foco, então não deveria).
+
+## 01/11 noite — janelas flutuantes não podem sair do Vcloud
+- Print do usuário: o painel do Unit (janela `TYPE_APPLICATION_OVERLAY` do app de dentro) aparecia sobre o app do Claude. Janela de
+  sistema aparece sobre qualquer app. Correção: `utils/GuardaSobreposicao.java`. O `:black` (`PainelLateral.tique`) escreve o sinal
+  `blackbox/fora_do_vcloud` (existe = nenhum processo `com.vcloud.app*` com `IMPORTANCE_FOREGROUND`); cada app de dentro
+  (iniciado em `BActivityThread.handleBindApplication`) lê o sinal a cada 1 s e põe `INVISIBLE` nas janelas tipo 2038/2002/2003 de
+  `WindowManagerGlobal.mViews` (reflexão; só devolve as que ele mesmo escondeu). Histórico mostra `SOBREPOSIÇÃO escondida/liberada`.
+- NÃO testado no aparelho. Risco: reflexão em `WindowManagerGlobal` no Android 17 (APK debuggable ignora a restrição de API oculta).
+- Pendente: os botões do painel lateral abrem OUTRAS telas (saem do jogo). Nos emuladores (vPhoneOS/Virtual Master) a barra é parte
+  da própria tela do emulador, por isso nunca sai. Os APKs deles não estão nesta sessão; aguardando decisão do usuário.
