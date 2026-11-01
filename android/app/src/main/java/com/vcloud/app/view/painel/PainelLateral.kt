@@ -90,7 +90,17 @@ object PainelLateral {
             .distinct()
     }
 
+    /** Qualquer tela do Vcloud em primeiro plano: a principal, a de um app de dentro (com.vcloud.app:pN) ou as do painel. */
+    private fun vcloudNaFrente(app: Context): Boolean {
+        val am = app.getSystemService(ActivityManager::class.java) ?: return true // sem informação: não esconde nada
+        return am.runningAppProcesses.orEmpty().any {
+            it.processName.startsWith(app.packageName) && it.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND
+        }
+    }
+
     private fun tique(app: Context) {
+        // Os apps de dentro leem este sinal e escondem as janelas flutuantes deles enquanto o Vcloud não está à vista.
+        com.vcloud.motor.utils.GuardaSobreposicao.sinalizar(!vcloudNaFrente(app))
         val agora = appEmFrente(app)
         if (agora == null || SystemClock.elapsedRealtime() < pausadoAte) { esconderTudo(app); frente = null; return }
         if (!Settings.canDrawOverlays(app)) {
