@@ -272,8 +272,15 @@ class AppsRepository {
                         return@forEachIndexed
                     }
 
-                    // Vcloud: peças dos Serviços do Google (Play Services, Play Store, ConfigUpdater...) não aparecem na tela
-                    if (com.vcloud.motor.core.GmsCore.isGoogleAppOrService(applicationInfo.packageName)) {
+                    // Vcloud: da parte do Google só a Play Store aparece; Play Services, ConfigUpdater etc. ficam escondidos
+                    val pkg = applicationInfo.packageName
+                    if (pkg != com.vcloud.motor.core.GmsCore.VENDING_PKG &&
+                            com.vcloud.motor.core.GmsCore.isGoogleAppOrService(pkg)) {
+                        return@forEachIndexed
+                    }
+                    // Vcloud: app sem tela para abrir (peça de sistema) não aparece
+                    if (com.vcloud.motor.fake.frameworks.BPackageManager.get()
+                                    .getLaunchIntentForPackage(pkg, userId) == null) {
                         return@forEachIndexed
                     }
 
