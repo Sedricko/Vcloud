@@ -341,7 +341,7 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Não testado no aparelho. Incógnitas: checkin do GMS de dentro como app comum, login de conta, licenças (não se burla). Teste: ligar, abrir a Play Store de dentro, Central > Testar Google > Copiar.
 
 ## Regra: versão do app
-- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.7 (407).
+- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.8 (408).
 
 ## Play Store de dentro: erro de uid no provedor (4.0.2)
 - Relatório 19:33: `PROVEDOR erro engolido (query) em gms: Calling uid: 10014 doesn't match source uid: 10454` (modo Google completo ligado, caminho de dentro ativo).
@@ -368,3 +368,6 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 
 ## 4.0.7
 - Relatório 20:20 (4.0.6): sem erros de uid; só o login falha (`Not allowed to bind ... GoogleAccountAuthenticatorService`). O logcat do relatório não traz o processo `:black`, e `BindServiceCommon` engole a falha do bind virtual e cai no AMS real. 4.0.7 só registra o motivo no histórico (`BIND virtual falhou ...` / `BIND sem serviço de dentro ...`). Correção do login vem depois de ler isso.
+
+## 4.0.8
+- Relatório 20:46 (4.0.7): nenhuma linha `BIND ...`. "Not allowed to bind to service" é o `ContextImpl.bindServiceCommon` quando o AMS devolve `res < 0` (não é exceção do AMS): o bind chegou ao Android e foi recusado, sem passar pelos casos já registrados. 4.0.8 registra todo bind do gms no `:black` (`BIND pedido`), o resultado negativo (`BIND recusado ... proxy=`) e a falta de intent de proxy.

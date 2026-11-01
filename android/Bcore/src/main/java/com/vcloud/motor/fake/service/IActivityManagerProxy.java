@@ -383,6 +383,12 @@ public class IActivityManagerProxy extends ClassInvocationStub {
                 com.vcloud.motor.utils.Diagnostico.eventoLimitado("bindnull|" + intent.getComponent(), 30_000,
                         "BIND sem serviço de dentro para " + intent.getComponent().flattenToShortString() + " (userId " + userId + ")");
             }
+            if (intent.getComponent() != null && "com.google.android.gms".equals(intent.getComponent().getPackageName())
+                    && com.vcloud.motor.utils.GoogleModo.completoDentro()) {
+                com.vcloud.motor.utils.Diagnostico.eventoLimitado("bindin|" + intent.getComponent(), 30_000,
+                        "BIND pedido: " + intent.getComponent().flattenToShortString() + " | de dentro="
+                                + (resolveInfo != null) + " | userId=" + userId);
+            }
             if (resolveInfo != null || AppSystemEnv.isOpenPackage(intent.getComponent())) {
                 Intent proxyIntent = VcloudCore.getBActivityManager().bindService(intent,
                         connection == null ? null : connection.asBinder(),
@@ -415,8 +421,16 @@ public class IActivityManagerProxy extends ClassInvocationStub {
 
                 if (proxyIntent != null) {
                     args[2] = proxyIntent;
-                    return method.invoke(who, args);
+                    Object r = method.invoke(who, args);
+                    if (r instanceof Integer && ((Integer) r) < 0) {
+                        com.vcloud.motor.utils.Diagnostico.eventoLimitado("bindres|" + intent.getComponent(), 30_000,
+                                "BIND recusado pelo Android: resultado=" + r + " | serviço=" + intent.getComponent()
+                                        + " | proxy=" + proxyIntent.getComponent());
+                    }
+                    return r;
                 }
+                com.vcloud.motor.utils.Diagnostico.eventoLimitado("bindnoproxy|" + intent.getComponent(), 30_000,
+                        "BIND sem intent de proxy para " + intent.getComponent());
             }
             return method.invoke(who, args);
         } catch (Exception e) {
