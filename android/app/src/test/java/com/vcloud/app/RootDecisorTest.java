@@ -141,4 +141,34 @@ public class RootDecisorTest {
         p.limparRegistro();
         assertEquals("", p.lerRegistro());
     }
+
+    @Test public void respostaAutomaticaValeParaQuemNaoTemDecisaoPropria() throws Exception {
+        RootPolicy p = nova();
+        assertEquals(Estado.PERGUNTAR, p.modoAutomatico());
+        p.definirModoAutomatico(Estado.PERMITIDO);
+        assertEquals("ALLOW", RootDecisor.decidir(p, "a.b", "id", NUNCA)); // não pergunta
+        p.definirModoAutomatico(Estado.NEGADO);
+        assertTrue(RootDecisor.decidir(p, "a.b", "id", NUNCA).startsWith("DENY"));
+        // decisão própria do app vence a automática
+        p.definir("c.d", Estado.PERMITIDO);
+        assertEquals("ALLOW", RootDecisor.decidir(p, "c.d", "id", NUNCA));
+        p.definirModoAutomatico(Estado.PERMITIDO);
+        p.definir("e.f", Estado.NEGADO);
+        assertTrue(RootDecisor.decidir(p, "e.f", "id", NUNCA).startsWith("DENY"));
+        // chave geral desligada vence tudo
+        p.ligarGeral(false);
+        assertTrue(RootDecisor.decidir(p, "a.b", "id", NUNCA).startsWith("DENY"));
+        p.ligarGeral(true);
+        p.definirModoAutomatico(Estado.PERGUNTAR);
+        assertEquals(Estado.PERGUNTAR, p.modoAutomatico());
+    }
+
+    @Test public void avisoLigaEDesliga() throws Exception {
+        RootPolicy p = nova();
+        assertFalse(p.avisoLigado());
+        p.ligarAviso(true);
+        assertTrue(p.avisoLigado());
+        p.ligarAviso(false);
+        assertFalse(p.avisoLigado());
+    }
 }

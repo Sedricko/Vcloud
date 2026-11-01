@@ -59,6 +59,16 @@ public final class RootDecisor {
                 default:
                     break;
             }
+            switch (p.modoAutomatico()) { // "responder todos da mesma maneira" (painel); decisão própria do app vem antes
+                case PERMITIDO:
+                    p.registrar(pkg, "PERMITIDO (automático)", comando);
+                    return "ALLOW";
+                case NEGADO:
+                    p.registrar(pkg, "NEGADO (automático)", comando);
+                    return "DENY negado pela resposta automatica do painel";
+                default:
+                    break;
+            }
             p.limparResposta(pkg);
             String r = quem.perguntar(pkg, comando);
             if ("allow".equals(r)) { p.registrar(pkg, "PERMITIDO (sempre)", comando); return "ALLOW"; }

@@ -74,6 +74,7 @@ public final class RootServer {
             o.write((resposta + "\n").getBytes(StandardCharsets.UTF_8));
             o.flush();
             Diagnostico.evento("ROOT " + pkg + ": " + resposta + " (" + pedido.comando + ")");
+            if (RootPolicy.padrao().avisoLigado()) avisar(pkg, resposta);
         } catch (Throwable e) {
             Diagnostico.evento("ROOT pedido falhou: " + e);
         }
@@ -91,6 +92,17 @@ public final class RootServer {
             }
         }
         return null;
+    }
+
+    private static void avisar(String pkg, String resposta) {
+        final String texto = (pkg == null ? "App desconhecido" : pkg) + (resposta.startsWith("ALLOW") ? " usou root" : " teve o root negado");
+        new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> {
+            try {
+                android.widget.Toast.makeText(VcloudCore.getContext(), texto, android.widget.Toast.LENGTH_SHORT).show();
+            } catch (Throwable ignored) {
+                // sem tela para mostrar: o registro já tem o pedido
+            }
+        });
     }
 
     private static String perguntar(String pkg, String comando) {

@@ -14,6 +14,8 @@ import com.vcloud.motor.core.env.BEnvironment;
 /**
  * Política do root interno do Vcloud, guardada em arquivos (a Central e o servidor rodam em processos diferentes).
  *   _off            existe = root desligado para todos os apps (chave geral do painel)
+ *   _auto           "allow" ou "deny" = resposta automática para apps sem decisão própria; sem arquivo = perguntar
+ *   _aviso          existe = mostra uma mensagem na tela quando um app usa o root
  *   <pacote>        "allow" ou "deny"; sem arquivo = perguntar ao usuário (arquivo vazio = "allow", versão antiga)
  *   <pacote>.reply  resposta da janela "Permitir root?": allow | once | deny
  *   log.txt         registro dos pedidos
@@ -54,6 +56,43 @@ public final class RootPolicy {
         File f = new File(dir, "_off");
         try {
             if (ligado) f.delete(); else f.createNewFile();
+        } catch (java.io.IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    /** Resposta automática para app sem decisão própria: PERGUNTAR (padrão), PERMITIDO ou NEGADO para todos. */
+    public Estado modoAutomatico() {
+        File f = new File(dir, "_auto");
+        if (!f.isFile()) return Estado.PERGUNTAR;
+        try {
+            String s = new String(Files.readAllBytes(f.toPath()), StandardCharsets.UTF_8).trim();
+            if (s.equals("allow")) return Estado.PERMITIDO;
+            if (s.equals("deny")) return Estado.NEGADO;
+        } catch (Exception e) {
+            // na dúvida, pergunta
+        }
+        return Estado.PERGUNTAR;
+    }
+
+    public void definirModoAutomatico(Estado e) {
+        File f = new File(dir, "_auto");
+        try {
+            if (e == Estado.PERGUNTAR) { f.delete(); return; }
+            try (FileWriter w = new FileWriter(f, false)) { w.write(e == Estado.PERMITIDO ? "allow" : "deny"); }
+        } catch (java.io.IOException ex) {
+            throw new IllegalStateException(ex);
+        }
+    }
+
+    public boolean avisoLigado() {
+        return new File(dir, "_aviso").exists();
+    }
+
+    public void ligarAviso(boolean ligado) {
+        File f = new File(dir, "_aviso");
+        try {
+            if (ligado) f.createNewFile(); else f.delete();
         } catch (java.io.IOException e) {
             throw new IllegalStateException(e);
         }
