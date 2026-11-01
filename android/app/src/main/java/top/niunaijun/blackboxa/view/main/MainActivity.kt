@@ -66,8 +66,7 @@ class MainActivity : LoadingActivity() {
             
             checkStoragePermission()
 
-            
-            checkVpnPermission()
+            // Vcloud: não pedir VPN ao abrir (a VPN do motor só liga se o modo VPN estiver ativo)
 
             try {
                 BlackBoxCore.get().onAfterMainActivityOnCreate(this)

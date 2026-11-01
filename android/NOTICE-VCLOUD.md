@@ -11,4 +11,5 @@ github.com/LamPPKK/NewBlackbox, commit `6e6d90137213148af5a19df3f3ffd60cbf2700f3
 - Removidos do build `AntiDetection.cpp` (esconde Magisk/Xposed/su) e `VirtualSpoof.cpp` (fingia ser Pixel 6 /
   Android 12 com série falsa); apagado `AntiVirtualDetectProxy.java` (não era usado).
 - Removida a automação do autor que mandava os builds para o Telegram (`.github`).
+- Tirado o pedido de permissão de VPN ao abrir o app (a VPN do motor não encaminha tráfego; só liga no "modo VPN").
 Motivo: regras do projeto (não enganar verificações de segurança; nada de enviar dados para fora).

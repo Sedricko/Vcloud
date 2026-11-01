@@ -31,7 +31,9 @@ dentro, **sem root no celular**. O resto fica no celular normal.
 - **Compilação pelo GitHub:** `.github/workflows/android.yml` gera o APK a cada mudança em `android/` (aba Actions,
   artefato `vcloud-debug-apk`). **Build passou (01/11, run 2)**: APK arm64 de ~10 MB, pacote ainda
   `top.niunaijun.blackbox` (renomear para Vcloud depois). **Primeiro teste no S25 de verdade (instalado pelo usuário):** o nosso APK abriu
-  e o app "Tinker" abriu dentro dele. **Falta na F1:** Orecraft (abre, liso, salva) e a versão do Android do S25.
+  e o app "Tinker" abriu dentro dele. Prints: o app de root "Tinker" abre lá dentro e mostra "Cannot run program su" (esperado: ainda não há
+  root interno, é a F2). Tirado o pedido de VPN ao abrir. **Falta na F1:** Orecraft (abre, liso, salva) e a versão do
+  Android do S25.
 
 ## Fases
 Foco: **o root funcionar lá dentro** e **o que estiver lá dentro rodar bem**. O Unit é um dos apps de root.
