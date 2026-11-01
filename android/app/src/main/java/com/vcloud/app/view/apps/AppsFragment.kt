@@ -81,7 +81,9 @@ class AppsFragment : Fragment() {
             viewBinding.recyclerView.adapter = mAdapter
             
             
-            val layoutManager = GridLayoutManager(requireContext(), 4)
+            // Colunas pela largura da tela (a caixa de apps é ~90dp mais estreita que a janela): 4 no S25 em pé, mais deitado.
+            val larguraDp = resources.displayMetrics.widthPixels / resources.displayMetrics.density
+            val layoutManager = GridLayoutManager(requireContext(), ((larguraDp - 90) / 80).toInt().coerceAtLeast(3))
             layoutManager.isItemPrefetchEnabled = true
             layoutManager.initialPrefetchItemCount = 8
             viewBinding.recyclerView.layoutManager = layoutManager

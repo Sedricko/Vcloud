@@ -53,6 +53,11 @@ caminho absoluto não é redirecionado. Aguardando teste no Tinker. (2) **Diagn�
 anormal. **Próximo bloco do root (depende do teste do Tinker):** `su` nativo + janela "permitir root?" (Uma vez/Sempre/Negar),
 uid 0 de mentira (`LD_PRELOAD` com `libfakeuid.so` ou `su` que responde sozinho), tela Root (lista) e registro de pedidos.
 
+**Tela inicial W12 em tela cheia (01/11):** painel com margens de 12dp (antes deixava 96dp vazios embaixo), botão Adicionar
+dentro do painel (linha das bolinhas), barra do topo transparente (sem o azul sólido) e grade de apps com colunas pela
+largura da tela. Layout: `activity_main.xml`, `view_toolbar.xml`, `AppsFragment`. Falta: prévia em tela cheia (busca no topo,
+barra de baixo da prévia `docs/design/inicio-w12.png`) e o teste do usuário em pé e deitado.
+
 ## Fases
 Foco: **o root funcionar lá dentro** e **o que estiver lá dentro rodar bem**. O Unit é um dos apps de root.
 

@@ -6,9 +6,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:theme="@style/ToolBarColorStyle"
-        android:background="@color/primary"
+        android:background="@android:color/transparent"
         app:title="@string/app_name"
-        app:subtitleTextColor="@color/white"
-        app:titleTextColor="@color/white">
+        app:subtitleTextColor="@color/glass_text_dim"
+        app:titleTextColor="@color/glass_text">
 
 </com.google.android.material.appbar.MaterialToolbar>

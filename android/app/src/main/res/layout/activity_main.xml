@@ -14,10 +14,10 @@
             android:id="@+id/glass_panel"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_marginStart="14dp"
-            android:layout_marginTop="18dp"
-            android:layout_marginEnd="14dp"
-            android:layout_marginBottom="96dp"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="12dp"
+            android:layout_marginBottom="12dp"
             android:background="@drawable/bg_glass"
             android:orientation="vertical"
             android:padding="14dp"
@@ -139,32 +139,36 @@
                     android:layout_height="match_parent" />
         </FrameLayout>
 
-        <com.tbuonomo.viewpagerdotsindicator.WormDotsIndicator
-                android:id="@+id/dots_indicator"
-                android:layout_width="wrap_content"
+        <!-- Linha de baixo dentro do painel: bolinhas das páginas no centro e o botão Adicionar na ponta. -->
+        <FrameLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:paddingTop="8dp"
-                app:dotsColor="@color/glass_dot"
-                app:dotsCornerRadius="8dp"
-                app:dotsSize="8dp"
-                app:dotsSpacing="4dp"
-                app:dotsStrokeColor="@color/glass_dot"
-                app:dotsWidthFactor="2.5"
-                app:progressMode="true" />
-    </LinearLayout>
+                android:layout_marginTop="8dp">
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fab"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp"
-            android:contentDescription="Adicionar app"
-            android:src="@drawable/ic_add"
-            app:backgroundTint="@color/primary"
-            app:tint="@color/white"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+            <com.tbuonomo.viewpagerdotsindicator.WormDotsIndicator
+                    android:id="@+id/dots_indicator"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    app:dotsColor="@color/glass_dot"
+                    app:dotsCornerRadius="8dp"
+                    app:dotsSize="8dp"
+                    app:dotsSpacing="4dp"
+                    app:dotsStrokeColor="@color/glass_dot"
+                    app:dotsWidthFactor="2.5"
+                    app:progressMode="true" />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/fab"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end|center_vertical"
+                    android:contentDescription="Adicionar app"
+                    android:src="@drawable/ic_add"
+                    app:backgroundTint="@color/primary"
+                    app:fabSize="mini"
+                    app:tint="@color/white" />
+        </FrameLayout>
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
