@@ -29,6 +29,17 @@ class SettingFragment : PreferenceFragmentCompat() {
 
         initSobrepor()
         initPainel()
+        findPreference<androidx.preference.SwitchPreferenceCompat>("google_completo")?.let { sw ->
+            sw.isChecked = com.vcloud.motor.utils.GoogleModo.completoDentro()
+            sw.setOnPreferenceChangeListener { _, novo ->
+                com.vcloud.motor.utils.GoogleModo.definir(novo as Boolean)
+                // reinicia o Google de dentro para pegar o novo caminho
+                for (pkg in listOf("com.google.android.gms", "com.google.android.gsf", "com.android.vending")) {
+                    try { VcloudCore.get().stopPackage(pkg, 0) } catch (_: Throwable) {}
+                }
+                true
+            }
+        }
         findPreference<Preference>("manter_vivos")?.setOnPreferenceClickListener {
             startActivity(android.content.Intent(requireContext(), com.vcloud.app.view.vivos.VivosActivity::class.java))
             true

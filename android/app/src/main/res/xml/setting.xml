@@ -32,6 +32,12 @@
                 app:summary="Desligado: a Play Store funciona escondida, só para os jogos" />
 
         <SwitchPreferenceCompat
+                app:key="google_completo"
+                app:persistent="false"
+                app:title="Google completo dentro do Vcloud"
+                app:summary="Experimental: a Play Store e o Google de dentro usam só as cópias de dentro, sem o Google do celular" />
+
+        <SwitchPreferenceCompat
                 app:key="daemon_enable"
                 app:title="@string/daemon_enable" />
 

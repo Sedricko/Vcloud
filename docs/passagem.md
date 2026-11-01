@@ -334,3 +334,8 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
   `relatorio` (permissão READ_GSERVICES, ANDROID_ID, versões GSF/GMS/Play Store no celular e dentro do Vcloud) e `medirDentro`
   (roda 3 s depois de abrir vending/gms e escreve `GOOGLE dentro de <pkg>: Gservices -> ...`). Central ganhou "Testar Google".
 - Próximo: com a resposta, escolher o conserto (identidade da consulta, ANDROID_ID, checkin do GSF).
+
+## Google completo dentro do Vcloud (experimental)
+- Chave em Ajustes: "Google completo dentro do Vcloud" (arquivo `blackbox/google_completo`; desligada = como antes).
+- Ligada: os provedores do Google (gms/gsf/vending) pedidos por apps de dentro usam a cópia de dentro quando ela existe; senão caem no celular (anotado no histórico: `GOOGLE provedor ...`).
+- Não testado no aparelho. Incógnitas: checkin do GMS de dentro como app comum, login de conta, licenças (não se burla). Teste: ligar, abrir a Play Store de dentro, Central > Testar Google > Copiar.

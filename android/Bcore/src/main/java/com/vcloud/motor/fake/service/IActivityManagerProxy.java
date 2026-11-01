@@ -149,15 +149,25 @@ public class IActivityManagerProxy extends ClassInvocationStub {
                     args[1] = VcloudCore.getHostPkg();
                 }
 
-                if (auth.equals("settings")
+                boolean google = ((String) auth).contains("com.google.android.gms")
+                        || ((String) auth).contains("com.android.vending")
+                        || ((String) auth).contains("com.google.android.gsf");
+                boolean googleDentro = false;
+                if (google && com.vcloud.motor.utils.GoogleModo.completoDentro()) {
+                    // Vcloud: modo "Google completo dentro": usa a cópia de dentro se ela tiver o provedor; senão cai no celular.
+                    googleDentro = VcloudCore.getBPackageManager()
+                            .resolveContentProvider((String) auth, GET_META_DATA, BActivityThread.getUserId()) != null;
+                    com.vcloud.motor.utils.Diagnostico.eventoLimitado("gprov|" + auth, 300_000,
+                            "GOOGLE provedor " + auth + " -> " + (googleDentro ? "cópia de dentro" : "celular (sem cópia)"));
+                }
+
+                if (!googleDentro && (auth.equals("settings")
                         || auth.equals("media")
                         || auth.equals("telephony")
-                        || ((String) auth).contains("com.google.android.gms")
-                        || ((String) auth).contains("com.android.vending")
-                        || ((String) auth).contains("com.google.android.gsf")
+                        || google
                         || auth.equals("com.google.android.gms.chimera")
                         || auth.equals("com.huawei.android.launcher.settings")
-                        || auth.equals("com.hihonor.android.launcher.settings")) {
+                        || auth.equals("com.hihonor.android.launcher.settings"))) {
                     try {
                         content = method.invoke(who, args);
                     } catch (java.lang.reflect.InvocationTargetException e) {

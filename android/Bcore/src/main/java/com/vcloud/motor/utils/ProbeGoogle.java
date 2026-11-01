@@ -39,6 +39,7 @@ public final class ProbeGoogle {
     /** Relatório para a Central (roda no processo principal do Vcloud). */
     public static String relatorio(Context ctx) {
         StringBuilder sb = new StringBuilder();
+        sb.append("Modo Google completo dentro do Vcloud: ").append(GoogleModo.completoDentro() ? "LIGADO" : "desligado").append('\n');
         sb.append("Permissão READ_GSERVICES do Vcloud: ")
                 .append(ctx.checkSelfPermission("com.google.android.providers.gsf.permission.READ_GSERVICES") == 0 ? "concedida" : "NEGADA").append('\n');
         String sec;
