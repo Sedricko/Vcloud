@@ -21,15 +21,16 @@ dentro, **sem root no celular**. O resto fica no celular normal.
 - **Próximo:** F0, o teste sem programar.
 
 ## Fases
+Foco: **o root funcionar lá dentro** e **o que estiver lá dentro rodar bem**. O Unit é um dos apps de root.
+
 | Fase | O que | Pronto quando |
 |---|---|---|
-| F0 | Testar o BlackBox pronto com o Orecraft dentro | Abre, roda e salva |
-| F1 | Compilar o BlackBox e cortar o que não usamos (espaço mínimo) | O nosso build roda o Orecraft |
-| F2 | O hospedeiro lê a memória sem root | Lê o Cobre certo |
-| F3 | Juntar com o Unit | Achar, editar e congelar o Cobre sem root |
-| F3c | Root do Vcloud (`su` interno com janela de permissão) | Um app pede root e recebe, só lá dentro |
-| F3d | Pastas: mesmas do celular + pasta dos saves visível; opção "isolado" | Save do Orecraft com backup pelo app Arquivos |
-| F4 | Testar em Android antigo e novo (vPhone, outro emulador, S25 se autorizar) | Funciona no 7 e no 16 |
+| F0 | Testar o BlackBox pronto: o Orecraft e mais 2 ou 3 apps que o usuário quer usar dentro | Abrem, rodam e salvam |
+| F1 | Compilar o BlackBox e cortar o que não usamos (espaço mínimo) | O nosso build roda os mesmos apps |
+| F2 | Root do Vcloud (`su` interno com janela "permitir root?") | Um verificador de root dentro diz "tem root" |
+| F3 | Apps de root funcionando: o Unit (e outro app de root) lendo e mudando o Orecraft lá dentro | Achar, editar e congelar o Cobre |
+| F4 | Pastas: mesmas do celular + pasta dos saves visível; opção "isolado" | Backup do save pelo app Arquivos |
+| F5 | Testar em Android antigo e novo (vPhone, outro emulador, S25 se autorizar) | Funciona no 7 e no 16 |
 | Lab | Plano B: APK do jogo com uma pecinha nossa | Só se algum jogo não rodar no espaço |
 
 ## Cuidados já conhecidos
