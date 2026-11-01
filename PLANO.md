@@ -40,7 +40,7 @@ dentro, **sem root no celular**. O resto fica no celular normal.
   (`IServiceConnection.connected` ganhou um parâmetro `IBinderSession`). Corrigido no motor e **confirmado pelo 2º relatório** (erro sumiu).
   2º relatório (23:05): Orecraft, DYSMANTLE e com.slg.policewar abrem mas pedem **Google Play Services** ("missing").
   Outros erros vistos: (a) abrir a Play Store de dentro cai no "IntentRedirect Hardening" do Android 17 (intent embrulhado
-  sem token); (b) Tinker caiu por ForegroundServiceDidNotStartInTime no ProxyService. Ficam anotados para depois.
+  sem token); (b) Tinker caiu por ForegroundServiceDidNotStartInTime no ProxyService. Corrigidos no motor em 01/11 (aguardando teste).
   **Falta na F1:** ativar "Serviços do Google" no Vcloud e ver se o Orecraft roda e salva no S25.
 
 ## Fases
