@@ -2,6 +2,7 @@ package com.vcloud.motor.fake.service;
 
 import android.content.ComponentName;
 import android.content.Intent;
+import android.os.Build;
 import android.content.pm.PackageInfo;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
@@ -30,6 +31,19 @@ public class ActivityManagerCommonProxy {
 
     @ProxyMethod("startActivity")
     public static class StartActivity extends MethodHook {
+        /**
+         * Vcloud: no Android 16+ (proteção "Intent Redirect", obrigatória no 17) um intent que veio de dentro de outro
+         * (desempacotado) só pode ser aberto se quem repassa disser que é intencional. Sem isso o app de dentro cai
+         * com SecurityException ao abrir outro app (ex.: a Play Store).
+         */
+        private static void allowRedirect(Intent intent) {
+            if (intent == null || Build.VERSION.SDK_INT < 36) return;
+            try {
+                Intent.class.getMethod("removeLaunchSecurityProtection").invoke(intent);
+            } catch (Throwable ignored) {
+            }
+        }
+
         @Override
         protected Object hook(Object who, Method method, Object[] args) throws Throwable {
             MethodParameterUtils.replaceFirstAppPkg(args);
@@ -39,6 +53,7 @@ public class ActivityManagerCommonProxy {
             
             
             if (intent.getParcelableExtra("_B_|_target_") != null) {
+                allowRedirect(intent);
                 return method.invoke(who, args);
             }
             if (ComponentUtils.isRequestInstall(intent)) {
@@ -66,6 +81,7 @@ public class ActivityManagerCommonProxy {
                     return 0;
                 }
                 intent.setData(FileProviderHandler.convertFileUri(BActivityThread.getApplication(), intent.getData()));
+                allowRedirect(intent);
                 return method.invoke(who, args);
             }
             String dataString = intent.getDataString();
@@ -92,7 +108,8 @@ public class ActivityManagerCommonProxy {
                         BActivityThread.getUserId());
                 if (resolveInfo == null) {
                     intent.setPackage(origPackage);
-                    return method.invoke(who, args);
+                    allowRedirect(intent);
+                return method.invoke(who, args);
                 }
             }
 
