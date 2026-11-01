@@ -1,9 +1,9 @@
 package black.android.content.pm;
 
-import top.niunaijun.blackreflection.annotation.BClassName;
-import top.niunaijun.blackreflection.annotation.BField;
-import top.niunaijun.blackreflection.annotation.BMethod;
-import top.niunaijun.blackreflection.annotation.BStaticMethod;
+import com.vcloud.reflexao.annotation.BClassName;
+import com.vcloud.reflexao.annotation.BField;
+import com.vcloud.reflexao.annotation.BMethod;
+import com.vcloud.reflexao.annotation.BStaticMethod;
 
 @BClassName("android.content.pm.PackageManager")
 public interface PackageManager {

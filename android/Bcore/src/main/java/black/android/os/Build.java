@@ -1,7 +1,7 @@
 package black.android.os;
 
 
-import top.niunaijun.blackreflection.annotation.BClassName;
+import com.vcloud.reflexao.annotation.BClassName;
 
 @BClassName("android.os.Build")
 public interface Build {

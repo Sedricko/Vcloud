@@ -4,9 +4,9 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.IBinder;
 
-import top.niunaijun.blackreflection.annotation.BClassName;
-import top.niunaijun.blackreflection.annotation.BField;
-import top.niunaijun.blackreflection.annotation.BMethod;
+import com.vcloud.reflexao.annotation.BClassName;
+import com.vcloud.reflexao.annotation.BField;
+import com.vcloud.reflexao.annotation.BMethod;
 
 @BClassName("android.app.Activity")
 public interface Activity {

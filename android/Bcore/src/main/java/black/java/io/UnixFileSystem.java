@@ -1,7 +1,7 @@
 package black.java.io;
 
 
-import top.niunaijun.blackreflection.annotation.BClassName;
+import com.vcloud.reflexao.annotation.BClassName;
 
 @BClassName("java.io.UnixFileSystem")
 public interface UnixFileSystem {

@@ -5,9 +5,9 @@ import android.os.IInterface;
 
 import java.util.Map;
 
-import top.niunaijun.blackreflection.annotation.BClassName;
-import top.niunaijun.blackreflection.annotation.BStaticField;
-import top.niunaijun.blackreflection.annotation.BStaticMethod;
+import com.vcloud.reflexao.annotation.BClassName;
+import com.vcloud.reflexao.annotation.BStaticField;
+import com.vcloud.reflexao.annotation.BStaticMethod;
 
 @BClassName("android.os.ServiceManager")
 public interface ServiceManager {

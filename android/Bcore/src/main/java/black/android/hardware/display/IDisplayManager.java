@@ -1,7 +1,7 @@
 package black.android.hardware.display;
 
 
-import top.niunaijun.blackreflection.annotation.BClassName;
+import com.vcloud.reflexao.annotation.BClassName;
 
 @BClassName("android.hardware.display.IDisplayManager")
 public interface IDisplayManager {

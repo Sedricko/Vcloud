@@ -2,8 +2,8 @@ package black.android.rms;
 
 import java.util.Map;
 
-import top.niunaijun.blackreflection.annotation.BClassName;
-import top.niunaijun.blackreflection.annotation.BField;
+import com.vcloud.reflexao.annotation.BClassName;
+import com.vcloud.reflexao.annotation.BField;
 
 @BClassName("android.rms.HwSysResImpl")
 public interface HwSysResImplP {

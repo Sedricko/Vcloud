@@ -3,9 +3,9 @@ package black.android.content.pm;
 import android.graphics.Bitmap;
 import android.net.Uri;
 
-import top.niunaijun.blackreflection.annotation.BClassName;
-import top.niunaijun.blackreflection.annotation.BConstructor;
-import top.niunaijun.blackreflection.annotation.BField;
+import com.vcloud.reflexao.annotation.BClassName;
+import com.vcloud.reflexao.annotation.BConstructor;
+import com.vcloud.reflexao.annotation.BField;
 
 @BClassName("mirror.android.content.pm.PackageInstaller")
 public interface PackageInstaller {

@@ -3,8 +3,8 @@ package black.android.app.job;
 import android.os.IBinder;
 import android.os.PersistableBundle;
 
-import top.niunaijun.blackreflection.annotation.BClassName;
-import top.niunaijun.blackreflection.annotation.BField;
+import com.vcloud.reflexao.annotation.BClassName;
+import com.vcloud.reflexao.annotation.BField;
 
 @BClassName("android.app.job.JobParameters")
 public interface JobParameters {

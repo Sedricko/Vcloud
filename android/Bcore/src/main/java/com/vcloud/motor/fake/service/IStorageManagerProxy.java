@@ -1,0 +1,79 @@
+package com.vcloud.motor.fake.service;
+
+import android.os.IInterface;
+import android.os.storage.StorageVolume;
+
+import java.lang.reflect.Method;
+
+import black.android.os.BRServiceManager;
+import black.android.os.mount.BRIMountServiceStub;
+import black.android.os.storage.BRIStorageManagerStub;
+import com.vcloud.motor.VcloudCore;
+import com.vcloud.motor.app.BActivityThread;
+import com.vcloud.motor.fake.hook.BinderInvocationStub;
+import com.vcloud.motor.fake.hook.MethodHook;
+import com.vcloud.motor.fake.hook.ProxyMethod;
+import com.vcloud.motor.utils.compat.BuildCompat;
+
+
+public class IStorageManagerProxy extends BinderInvocationStub {
+
+    public IStorageManagerProxy() {
+        super(BRServiceManager.get().getService("mount"));
+    }
+
+    @Override
+    protected Object getWho() {
+        IInterface mount;
+        if (BuildCompat.isOreo()) {
+            mount = BRIStorageManagerStub.get().asInterface(BRServiceManager.get().getService("mount"));
+        } else {
+            mount = BRIMountServiceStub.get().asInterface(BRServiceManager.get().getService("mount"));
+        }
+        return mount;
+    }
+
+    @Override
+    protected void inject(Object baseInvocation, Object proxyInvocation) {
+        replaceSystemService("mount");
+    }
+
+    @Override
+    public boolean isBadEnv() {
+        return false;
+    }
+
+    @ProxyMethod("getVolumeList")
+    public static class GetVolumeList extends MethodHook {
+        @Override
+        protected Object hook(Object who, Method method, Object[] args) throws Throwable {
+            if (args == null) {
+                StorageVolume[] volumeList = VcloudCore.getBStorageManager().getVolumeList(BActivityThread.getBUid(), null, 0, BActivityThread.getUserId());
+                if (volumeList == null) {
+                    return method.invoke(who, args);
+                }
+                return volumeList;
+            }
+            try {
+                int uid = (int) args[0];
+                String packageName = (String) args[1];
+                int flags = (int) args[2];
+                StorageVolume[] volumeList = VcloudCore.getBStorageManager().getVolumeList(uid, packageName, flags, BActivityThread.getUserId());
+                if (volumeList == null) {
+                    return method.invoke(who, args);
+                }
+                return volumeList;
+            } catch (Throwable t) {
+                return method.invoke(who, args);
+            }
+        }
+    }
+
+    @ProxyMethod("mkdirs")
+    public static class mkdirs extends MethodHook {
+        @Override
+        protected Object hook(Object who, Method method, Object[] args) throws Throwable {
+            return 0;
+        }
+    }
+}

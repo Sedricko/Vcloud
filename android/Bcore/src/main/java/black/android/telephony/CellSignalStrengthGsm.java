@@ -1,9 +1,9 @@
 package black.android.telephony;
 
 
-import top.niunaijun.blackreflection.annotation.BClassName;
-import top.niunaijun.blackreflection.annotation.BConstructor;
-import top.niunaijun.blackreflection.annotation.BField;
+import com.vcloud.reflexao.annotation.BClassName;
+import com.vcloud.reflexao.annotation.BConstructor;
+import com.vcloud.reflexao.annotation.BField;
 
 @BClassName("android.telephony.CellSignalStrengthGsm")
 public interface CellSignalStrengthGsm {

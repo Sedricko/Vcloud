@@ -16,13 +16,13 @@ import android.view.Window;
 import java.util.List;
 import java.util.Map;
 
-import top.niunaijun.blackreflection.annotation.BClassName;
-import top.niunaijun.blackreflection.annotation.BConstructor;
-import top.niunaijun.blackreflection.annotation.BField;
-import top.niunaijun.blackreflection.annotation.BMethod;
-import top.niunaijun.blackreflection.annotation.BParamClassName;
-import top.niunaijun.blackreflection.annotation.BStaticField;
-import top.niunaijun.blackreflection.annotation.BStaticMethod;
+import com.vcloud.reflexao.annotation.BClassName;
+import com.vcloud.reflexao.annotation.BConstructor;
+import com.vcloud.reflexao.annotation.BField;
+import com.vcloud.reflexao.annotation.BMethod;
+import com.vcloud.reflexao.annotation.BParamClassName;
+import com.vcloud.reflexao.annotation.BStaticField;
+import com.vcloud.reflexao.annotation.BStaticMethod;
 
 @BClassName("android.app.ActivityThread")
 public interface ActivityThread {

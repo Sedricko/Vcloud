@@ -2,8 +2,8 @@ package black.android.view;
 
 import java.io.File;
 
-import top.niunaijun.blackreflection.annotation.BClassName;
-import top.niunaijun.blackreflection.annotation.BStaticMethod;
+import com.vcloud.reflexao.annotation.BClassName;
+import com.vcloud.reflexao.annotation.BStaticMethod;
 
 @BClassName("android.view.HardwareRenderer")
 public interface HardwareRenderer {

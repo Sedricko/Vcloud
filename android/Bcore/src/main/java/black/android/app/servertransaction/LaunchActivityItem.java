@@ -3,8 +3,8 @@ package black.android.app.servertransaction;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 
-import top.niunaijun.blackreflection.annotation.BClassName;
-import top.niunaijun.blackreflection.annotation.BField;
+import com.vcloud.reflexao.annotation.BClassName;
+import com.vcloud.reflexao.annotation.BField;
 
 @BClassName("android.app.servertransaction.LaunchActivityItem")
 public interface LaunchActivityItem {

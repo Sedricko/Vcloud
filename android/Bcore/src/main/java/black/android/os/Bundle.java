@@ -2,8 +2,8 @@ package black.android.os;
 
 import android.os.IBinder;
 
-import top.niunaijun.blackreflection.annotation.BClassName;
-import top.niunaijun.blackreflection.annotation.BMethod;
+import com.vcloud.reflexao.annotation.BClassName;
+import com.vcloud.reflexao.annotation.BMethod;
 
 @BClassName("android.os.Bundle")
 public interface Bundle {

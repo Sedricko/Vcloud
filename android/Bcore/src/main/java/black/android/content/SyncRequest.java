@@ -3,8 +3,8 @@ package black.android.content;
 import android.accounts.Account;
 import android.os.Bundle;
 
-import top.niunaijun.blackreflection.annotation.BClassName;
-import top.niunaijun.blackreflection.annotation.BField;
+import com.vcloud.reflexao.annotation.BClassName;
+import com.vcloud.reflexao.annotation.BField;
 
 @BClassName("android.content.SyncRequest")
 public interface SyncRequest {

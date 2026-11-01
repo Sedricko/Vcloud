@@ -5,11 +5,11 @@ plugins {
 
 android {
 
-    namespace 'top.niunaijun.blackboxa'
+    namespace 'com.vcloud.app'
     compileSdk rootProject.ext.compileSdkVersion
     ndkVersion rootProject.ext.ndkVersion
     defaultConfig {
-        applicationId "com.vcloud.app" // Vcloud: identidade própria (as classes internas continuam em top.niunaijun.*)
+        applicationId "com.vcloud.app" // Vcloud: identidade própria
         minSdk rootProject.ext.minSdk
         targetSdk rootProject.ext.targetSdkVersion
         versionCode rootProject.ext.versionCode

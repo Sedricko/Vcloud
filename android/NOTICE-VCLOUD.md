@@ -17,4 +17,9 @@ github.com/LamPPKK/NewBlackbox, commit `6e6d90137213148af5a19df3f3ffd60cbf2700f3
 - Opções removidas da tela: ocultar root, rede VPN, permitir captura de tela (agora sempre desligados no loader), localização falsa e link de código aberto no menu.
 - Identidade própria: `applicationId "com.vcloud.app"` e APK `Vcloud_*.apk` (classes internas continuam em `top.niunaijun.*`).
 - Limpeza do app (telas): apagados localização falsa (view/fake, RockerManager, RockerView, EnFloatView, osmdroid), telas de Xposed e 27 textos sem uso.
+- **Nome Vcloud em tudo:** pacotes `top.niunaijun.blackbox` → `com.vcloud.motor`, `top.niunaijun.blackboxa` →
+  `com.vcloud.app`, `top.niunaijun.blackreflection` → `com.vcloud.reflexao`, `top.niunaijun.jnihook` → `com.vcloud.jnihook`;
+  `BlackBoxCore` → `VcloudCore`, `BlackBoxSystem` → `VcloudSystem`, `BlackBoxLoader` → `VcloudLoader`; textos "BlackBox" →
+  "Vcloud"; projeto `Vcloud`; tema `Theme.Vcloud`. Apagados README/Docs/RELEASE_NOTES/docs/assets do projeto de origem.
+  (Ficam só nomes internos de pastas de dados em minúsculas, invisíveis ao usuário.)
 Motivo: regras do projeto (não enganar verificações de segurança; nada de enviar dados para fora).

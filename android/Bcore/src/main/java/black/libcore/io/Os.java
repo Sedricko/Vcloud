@@ -1,7 +1,7 @@
 package black.libcore.io;
 
 
-import top.niunaijun.blackreflection.annotation.BClassName;
+import com.vcloud.reflexao.annotation.BClassName;
 
 @BClassName("libcore.io.Os")
 public interface Os {

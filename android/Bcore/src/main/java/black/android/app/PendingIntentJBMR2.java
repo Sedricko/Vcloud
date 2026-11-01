@@ -3,9 +3,9 @@ package black.android.app;
 import android.content.Intent;
 import android.os.IBinder;
 
-import top.niunaijun.blackreflection.annotation.BClassName;
-import top.niunaijun.blackreflection.annotation.BConstructor;
-import top.niunaijun.blackreflection.annotation.BMethod;
+import com.vcloud.reflexao.annotation.BClassName;
+import com.vcloud.reflexao.annotation.BConstructor;
+import com.vcloud.reflexao.annotation.BMethod;
 
 @BClassName("android.app.PendingIntent")
 public interface PendingIntentJBMR2 {

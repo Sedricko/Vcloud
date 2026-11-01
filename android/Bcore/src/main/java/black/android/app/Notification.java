@@ -3,8 +3,8 @@ package black.android.app;
 import android.app.PendingIntent;
 import android.content.Context;
 
-import top.niunaijun.blackreflection.annotation.BClassName;
-import top.niunaijun.blackreflection.annotation.BMethod;
+import com.vcloud.reflexao.annotation.BClassName;
+import com.vcloud.reflexao.annotation.BMethod;
 
 @BClassName("android.app.Notification")
 public interface Notification {

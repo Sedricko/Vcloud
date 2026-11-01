@@ -20,25 +20,25 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 
--keep class top.niunaijun.blackbox.** {*; }
--keep class top.niunaijun.jnihook.** {*; }
+-keep class com.vcloud.motor.** {*; }
+-keep class com.vcloud.jnihook.** {*; }
 -keep class mirror.** {*; }
 -keep class android.** {*; }
 -keep class com.android.** {*; }
 
--keep class top.niunaijun.blackreflection.** {*; }
--keep @top.niunaijun.blackreflection.annotation.BClass class * {*;}
--keep @top.niunaijun.blackreflection.annotation.BClassName class * {*;}
--keep @top.niunaijun.blackreflection.annotation.BClassNameNotProcess class * {*;}
+-keep class com.vcloud.reflexao.** {*; }
+-keep @com.vcloud.reflexao.annotation.BClass class * {*;}
+-keep @com.vcloud.reflexao.annotation.BClassName class * {*;}
+-keep @com.vcloud.reflexao.annotation.BClassNameNotProcess class * {*;}
 -keepclasseswithmembernames class * {
-    @top.niunaijun.blackreflection.annotation.BField.* <methods>;
-    @top.niunaijun.blackreflection.annotation.BFieldNotProcess.* <methods>;
-    @top.niunaijun.blackreflection.annotation.BFieldSetNotProcess.* <methods>;
-    @top.niunaijun.blackreflection.annotation.BFieldCheckNotProcess.* <methods>;
-    @top.niunaijun.blackreflection.annotation.BMethod.* <methods>;
-    @top.niunaijun.blackreflection.annotation.BStaticField.* <methods>;
-    @top.niunaijun.blackreflection.annotation.BStaticMethod.* <methods>;
-    @top.niunaijun.blackreflection.annotation.BMethodCheckNotProcess.* <methods>;
-    @top.niunaijun.blackreflection.annotation.BConstructor.* <methods>;
-    @top.niunaijun.blackreflection.annotation.BConstructorNotProcess.* <methods>;
+    @com.vcloud.reflexao.annotation.BField.* <methods>;
+    @com.vcloud.reflexao.annotation.BFieldNotProcess.* <methods>;
+    @com.vcloud.reflexao.annotation.BFieldSetNotProcess.* <methods>;
+    @com.vcloud.reflexao.annotation.BFieldCheckNotProcess.* <methods>;
+    @com.vcloud.reflexao.annotation.BMethod.* <methods>;
+    @com.vcloud.reflexao.annotation.BStaticField.* <methods>;
+    @com.vcloud.reflexao.annotation.BStaticMethod.* <methods>;
+    @com.vcloud.reflexao.annotation.BMethodCheckNotProcess.* <methods>;
+    @com.vcloud.reflexao.annotation.BConstructor.* <methods>;
+    @com.vcloud.reflexao.annotation.BConstructorNotProcess.* <methods>;
 }
