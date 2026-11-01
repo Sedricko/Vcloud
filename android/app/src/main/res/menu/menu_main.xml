@@ -19,7 +19,7 @@
             app:showAsAction="never" />
 
     <item
-            android:id="@+id/main_tg"
-            android:title="@string/tg_group"
+            android:id="@+id/main_report"
+            android:title="Gerar relatório de erros"
             app:showAsAction="never" />
 </menu>

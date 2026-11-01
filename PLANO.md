@@ -32,7 +32,10 @@ dentro, **sem root no celular**. O resto fica no celular normal.
   artefato `vcloud-debug-apk`). **Build passou (01/11, run 2)**: APK arm64 de ~10 MB, pacote ainda
   `top.niunaijun.blackbox` (renomear para Vcloud depois). **Primeiro teste no S25 de verdade (instalado pelo usuário):** o nosso APK abriu
   e o app "Tinker" abriu dentro dele. Prints: o app de root "Tinker" abre lá dentro e mostra "Cannot run program su" (esperado: ainda não há
-  root interno, é a F2). Tirado o pedido de VPN ao abrir. **Falta na F1:** Orecraft (abre, liso, salva) e a versão do
+  root interno, é a F2). Tirado o pedido de VPN ao abrir.
+  **Relatório de erros local:** quando algo trava, ou pelo menu "Gerar relatório de erros", grava
+  `Download/Vcloud/relatorio-AAAAMMDD-HHMMSS.txt` (aparelho + logcat do Vcloud e dos apps de dentro); o usuário manda o
+  arquivo na conversa. Nada sai do celular sozinho. **Falta na F1:** Orecraft (abre, liso, salva) e a versão do
   Android do S25.
 
 ## Fases

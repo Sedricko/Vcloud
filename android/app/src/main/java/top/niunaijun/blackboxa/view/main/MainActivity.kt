@@ -412,9 +412,15 @@ class MainActivity : LoadingActivity() {
                 R.id.main_setting -> {
                     SettingActivity.start(this)
                 }
-                R.id.main_tg -> {
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/newblackboxa"))
-                    startActivity(intent)
+                R.id.main_report -> {
+                    Thread {
+                        val msg = try {
+                            "Relatório salvo em " + BlackBoxCore.get().writeReport("gerado pelo usuário").absolutePath
+                        } catch (e: Exception) {
+                            "Não consegui salvar o relatório: ${e.message}"
+                        }
+                        runOnUiThread { android.widget.Toast.makeText(this, msg, android.widget.Toast.LENGTH_LONG).show() }
+                    }.start()
                 }
                 R.id.fake_location -> {
                     
