@@ -122,14 +122,41 @@ public class ContentProviderStub extends ClassInvocationStub implements BContent
     private void fixarOrigem(Object[] args) {
         AttributionSourceUtils.fixAttributionSourceInArgs(args);
         if (args == null) return;
-        for (Object a : args) {
-            if (a != null && a.getClass().getName().endsWith("AttributionSource")) {
-                // uid do celular (o Android confere), mas o NOME é o do app de dentro que pede: o Gservices só entrega/grava o
-                // identificador do aparelho para pacotes aprovados ("Package com.vcloud.app is not approved to access the device ID").
-                String quem = BActivityThread.getAppPackageName();
-                if (quem == null || VcloudCore.getHostPkg().equals(mAppPkg)) quem = VcloudCore.getHostPkg();
-                try { com.vcloud.motor.utils.compat.ContextCompat.fixAttributionSourceState(a, VcloudCore.getHostUid(), quem); } catch (Throwable ignored) {}
+        // uid do celular (o Android confere), mas o NOME é o do app de dentro que pede: o Gservices só entrega/grava o
+        // identificador do aparelho para pacotes aprovados ("Package com.vcloud.app is not approved to access the device ID").
+        String quem = BActivityThread.getAppPackageName();
+        if (quem == null || VcloudCore.getHostPkg().equals(mAppPkg)) quem = VcloudCore.getHostPkg();
+        for (int i = 0; i < args.length; i++) {
+            Object a = args[i];
+            if (a == null || !a.getClass().getName().endsWith("AttributionSource")) continue;
+            String antes = nomeDaOrigem(a);
+            try { com.vcloud.motor.utils.compat.ContextCompat.fixAttributionSourceState(a, VcloudCore.getHostUid(), quem); } catch (Throwable ignored) {}
+            String depois = nomeDaOrigem(a);
+            if (!quem.equals(depois)) {
+                // o ajuste no lugar não pegou (campo mudou no Android): cria uma origem nova com uid do celular e o nome certo
+                Object nova = novaOrigem(a.getClass(), VcloudCore.getHostUid(), quem);
+                if (nova != null) { args[i] = nova; depois = nomeDaOrigem(nova) + " (origem nova)"; }
             }
+            com.vcloud.motor.utils.Diagnostico.eventoLimitado("origem|" + mAppPkg + "|" + quem, 120_000,
+                    "ORIGEM do pedido ao provedor de " + mAppPkg + ": nome antes=" + antes + " depois=" + depois + " (quer=" + quem + ")");
+        }
+    }
+
+    private static String nomeDaOrigem(Object a) {
+        try { return (String) a.getClass().getMethod("getPackageName").invoke(a); } catch (Throwable e) { return "?"; }
+    }
+
+    private static Object novaOrigem(Class<?> tipo, int uid, String pacote) {
+        try {
+            java.lang.reflect.Constructor<?> c3 = tipo.getDeclaredConstructor(int.class, String.class, String.class);
+            c3.setAccessible(true);
+            return c3.newInstance(uid, pacote, null);
+        } catch (Throwable e) {
+            try {
+                java.lang.reflect.Constructor<?> c = tipo.getDeclaredConstructor(int.class, String.class);
+                c.setAccessible(true);
+                return c.newInstance(uid, pacote);
+            } catch (Throwable e2) { return null; }
         }
     }
 

@@ -341,7 +341,7 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Não testado no aparelho. Incógnitas: checkin do GMS de dentro como app comum, login de conta, licenças (não se burla). Teste: ligar, abrir a Play Store de dentro, Central > Testar Google > Copiar.
 
 ## Regra: versão do app
-- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.23 (423).
+- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.24 (424).
 
 ## Play Store de dentro: erro de uid no provedor (4.0.2)
 - Relatório 19:33: `PROVEDOR erro engolido (query) em gms: Calling uid: 10014 doesn't match source uid: 10454` (modo Google completo ligado, caminho de dentro ativo).
@@ -464,3 +464,9 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Causa do erro (prova): `Auth: [CheckinHelper] Checkin timed out ... 10000 ms` → `setCheckinResult done with result=false` → `RESULT_ERROR`. No mesmo instante: `GservicesPersistence: Package com.vcloud.app is not approved to access the device ID` (pid do gms) — o Gservices só dá/grava o device id a pacotes aprovados, e o pedido chegava com o NOME do Vcloud (que eu mesmo fixei na origem do provedor na 4.0.6). Isso também explica `android_id=null` desde o início.
 - 4.0.23: `ContentProviderStub.fixarOrigem` mantém o uid do celular (o Android confere) mas põe como NOME da origem o pacote do app de dentro que pede (`BActivityThread.getAppPackageName()`); provedor do próprio Vcloud segue com o nome do Vcloud. `ContextCompat.fixAttributionSourceState(obj, uid, pacote)`. Regra `Checkin timed out` no AutoAnalise. Não testado.
 - Se o checkin ainda não completar: faltaria a rede do gms (HTTP para o Google) ou o `GservicesPersistence` aprovar por outro critério.
+
+## 4.0.24 (relatório 01:24, app 4.0.23) — regra do device id lida no gms
+- Checkin continua `timed out` e `Package com.vcloud.app is not approved...` (a troca de nome da 4.0.23 não pegou).
+- Código do gms 26.43.30 (só leitura): `GservicesChimeraProvider.query` → `cwly.h(ctx, Binder.getCallingUid(), getCallingPackage(), chave)`. Para `android_id`: se `uid == Process.myUid()` → libera; senão se `pkg != null`: `brfg.g(pkg)` (assinado Google) → libera; senão `DevicePolicyManager.isDeviceOwnerApp/isProfileOwnerApp(pkg)` → libera; senão LOG "Package X is not approved..." e NEGA. (`brfg.g` → `brfg.a(pkg,false,false).b`, checa assinatura Google/plataforma.) Logo: o chamador legítimo (gms/vending) passa pelo PACOTE, desde que `getCallingPackage()` seja o do app de dentro.
+- Hipótese: `ContextCompat.fixAttributionSourceState` não altera nada no Android 17 (`_check_mAttributionSourceState()` nulo?) e o nome fica o do Vcloud. 4.0.24: `ContentProviderStub.fixarOrigem` lê o nome antes/depois (`getPackageName()`), e se não mudou cria uma `AttributionSource(uid do celular, nome do app de dentro)` nova no argumento. Histórico: `ORIGEM do pedido ao provedor de X: nome antes=.. depois=.. (quer=..)`. Não testado.
+- NÃO fazer: devolver `Process.myUid()` para todo mundo no Gservices (anularia o controle de acesso do device id).
