@@ -639,3 +639,9 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Mudança: nomes ficam como a Play Store gravou; base = `<pacote>.apk` (ou base.apk / maior .apk); depois de instalar o base, copia as `.so` das outras partes (`NativeUtils.copyNativeLib`, ex.: `config.arm64_v8a`) para a pasta de bibliotecas do app. Partes de recursos (densidade/idioma) continuam sem uso (próxima etapa).
 - Também visto: `IV2::AdvHelper ... NOT_FOUND: Session not found: 700000` (gRPC de verificação; só aviso) e, para blackdeck, `RF::PP-Copy ENOENT .../dataloader/.../upfront/stream..*.dm` (status 6401): não investigado.
 - Não verificado no aparelho.
+
+## 4.0.53
+- Relatório 19:16 (4.0.52): a Play Store cria sessão, baixa e CHEGA A CONFIRMAR ("Submitter: start committing"), mas `SM: Session operation failed ... InvocationTargetException` por `NullPointerException ... FileBridge$FileBridgeOutputStream.<init> ... PackageInstaller$Session.openWriteAppMetadata` (via `setAppMetadata`): meu `openWriteAppMetadata` da sessão virtual devolvia null.
+- Também visto: 1ª tentativa de cada app tenta o "data loader/streaming" e falha com `ENOENT .../dataloader/<pkg>/upfront/stream..*` (status 6401); a Play Store então repete pelo caminho normal ("Incremental install not requested") — é este que importa.
+- Mudança: `openWriteAppMetadata` devolve escrita (arquivo `_app_metadata`, fora de getNames/bibliotecas). Log `INSTALADOR sessão método X` (1x/min) para ver os métodos usados.
+- Não verificado no aparelho.

@@ -186,6 +186,7 @@ public final class InstaladorVirtual {
 
     private static Object sessaoChamada(Method m, Object[] a, int id) throws Throwable {
         File dir = pasta(id);
+        Diagnostico.eventoLimitado("instalador|sessmeth|" + m.getName(), 60_000, "INSTALADOR sessão método " + m.getName());
         switch (m.getName()) {
             case "openWrite":
                 return abrirEscrita(new File(dir, nomeSeguro((String) a[0])), ((Number) a[1]).longValue());
@@ -201,12 +202,14 @@ public final class InstaladorVirtual {
                 }
                 return null;
             }
+            case "openWriteAppMetadata": // Session.setAppMetadata (a Play Store grava os metadados do app antes de confirmar)
+                return abrirEscrita(new File(dir, "_app_metadata"), 0);
             case "openRead":
                 return ParcelFileDescriptor.open(new File(dir, nomeSeguro((String) a[0])), ParcelFileDescriptor.MODE_READ_ONLY);
             case "getNames": {
                 List<String> nomes = new ArrayList<>();
                 File[] fs = dir.listFiles();
-                if (fs != null) for (File f : fs) if (!f.getName().equals("meta.properties")) nomes.add(f.getName());
+                if (fs != null) for (File f : fs) if (!f.getName().equals("meta.properties") && !f.getName().startsWith("_")) nomes.add(f.getName());
                 return nomes.toArray(new String[0]);
             }
             case "removeSplit":
@@ -302,7 +305,7 @@ public final class InstaladorVirtual {
         File[] fs = dir.listFiles();
         if (fs == null) return;
         for (File f : fs) {
-            if (f.equals(base) || f.getName().equals("meta.properties") || f.getName().endsWith(".dm")) continue;
+            if (f.equals(base) || f.getName().equals("meta.properties") || f.getName().startsWith("_") || f.getName().endsWith(".dm")) continue;
             try {
                 com.vcloud.motor.utils.NativeUtils.copyNativeLib(f, BEnvironment.getAppLibDir(pacote));
                 Diagnostico.evento("INSTALADOR bibliotecas da parte " + f.getName() + " copiadas para " + pacote);
