@@ -341,7 +341,7 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Não testado no aparelho. Incógnitas: checkin do GMS de dentro como app comum, login de conta, licenças (não se burla). Teste: ligar, abrir a Play Store de dentro, Central > Testar Google > Copiar.
 
 ## Regra: versão do app
-- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.14 (414).
+- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.15 (415).
 
 ## Play Store de dentro: erro de uid no provedor (4.0.2)
 - Relatório 19:33: `PROVEDOR erro engolido (query) em gms: Calling uid: 10014 doesn't match source uid: 10454` (modo Google completo ligado, caminho de dentro ativo).
@@ -403,3 +403,11 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Nova barreira (log, gms pid p1): `AccountAuthenticator addAccount(com.google)` → `SecurityException: Only 0p apps are allowed to call this API` logo depois de `PackageManagerStub: 0 , com.google.android.gms GetPackagesForUid: [com.google.android.gms]` (o gms perguntou pelo uid de quem chama e recebeu 0). Código ofuscado (`atmv.i`); não achei a regra em fonte pública — hipótese: só aceita sistema/Google (o AccountManagerService do sistema chama como uid 1000).
 - 4.0.14 (hipótese): `NativeCore.getCallingUid` devolve 1000 só no gms e só dentro de `AbstractAccountAuthenticator$Transport`; `GetPackagesForUid` passa uids < 10000 ao Android real (1000 → "android"). Histórico: `LOGIN chamador do autenticador: uid X -> sistema`.
 - Aberto ainda: `BIND sem serviço de dentro para com.google.android.webview/...SandboxedProcessService0`; `Unable to load font Google Sans` (fonts provider); `android-id = 0`/`not approved to access the device ID`.
+
+## 4.0.15 — Auto diagnóstico
+- Pedido do usuário: "auto diagnóstico que lê tudo no Vcloud e tudo que acontece dentro dele".
+- `utils/AutoAnalise.java` (Java puro, testado em `AutoAnaliseTest`, 7 testes): lê o logcat inteiro (todos os processos do Vcloud: tela, `:black` e apps de dentro) + o histórico; agrupa por regra, dá nome ao processo (pid → pacote), marca `[novo]` (últimos 10 min do log) e mostra causa, o que fazer e a linha de prova. Regras vêm de falhas reais: permissão de sistema negada, "Only system may", "Only 0p apps", bind recusado, uid de origem, android-id 0, tela não instanciou, JNI/proteção, queda nativa, ANR, fonte, provedor, etc. Erros sem regra: só os 8 mais novos.
+- `utils/AutoDiagnostico.java`: leitura do estado agora (versão, chaves Google completo/root/painel, sobreposição, bateria, espaço livre, apps instalados dentro, processos do Vcloud rodando) + a análise.
+- `VcloudCore.writeReport`: o logcat é lido na memória (limite 24 MB) e o auto diagnóstico vai no TOPO do relatório (antes do resumo e do logcat). Sem mudança de tela (o botão "Gerar relatório" já existente passa a incluí-lo).
+- Validado em relatório real (22:52): achou android-id 0, "Only 0p", provedor de fonte, bind sem serviço (webview) e um achado novo: `SecurityException: Package com.android.vending does not belong to 10454` (pacote/uid — relevante ao android-id).
+- Não feito: botão/tela própria na Central (precisa de prévia); vigia contínuo em segundo plano.

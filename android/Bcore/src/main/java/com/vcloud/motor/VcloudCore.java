@@ -1783,17 +1783,29 @@ public class VcloudCore extends ClientConfiguration {
     public File writeReport(String caption) throws java.io.IOException {
         String stamp = new java.text.SimpleDateFormat("yyyyMMdd-HHmmss", java.util.Locale.US).format(new java.util.Date());
         File file = new File(getReportDir(), "relatorio-" + stamp + ".txt");
+        // Vcloud: o logcat é lido na memória (limite de 24 MB, fica o final) para o auto diagnóstico analisar antes de gravar.
+        java.io.ByteArrayOutputStream log = new java.io.ByteArrayOutputStream();
+        java.lang.Process process = Runtime.getRuntime().exec(new String[]{"logcat", "-d", "-v", "threadtime"});
+        try (java.io.InputStream in = process.getInputStream()) {
+            byte[] buffer = new byte[8192];
+            int len;
+            while ((len = in.read(buffer)) != -1) {
+                log.write(buffer, 0, len);
+                if (log.size() > 24 * 1024 * 1024) {
+                    byte[] fim = log.toByteArray();
+                    log.reset();
+                    log.write(fim, fim.length / 2, fim.length - fim.length / 2);
+                }
+            }
+        }
+        String logcat = log.toString("UTF-8");
         try (java.io.FileOutputStream fos = new java.io.FileOutputStream(file)) {
             String header = "Relatório Vcloud\nMotivo: " + caption + "\nProcesso: " + getProcessName(getContext())
-                    + "\n\n--- DIAGNÓSTICO (resumo dos apps de dentro) ---\n" + com.vcloud.motor.utils.Diagnostico.ler()
+                    + "\n\n" + com.vcloud.motor.utils.AutoDiagnostico.gerar(getContext(), logcat)
+                    + "\n--- DIAGNÓSTICO (resumo dos apps de dentro) ---\n" + com.vcloud.motor.utils.Diagnostico.ler()
                     + "\n" + getDeviceInfoString() + "\n\n--- LOGCAT ---\n";
             fos.write(header.getBytes("UTF-8"));
-            java.lang.Process process = Runtime.getRuntime().exec(new String[]{"logcat", "-d", "-v", "threadtime"});
-            try (java.io.InputStream in = process.getInputStream()) {
-                byte[] buffer = new byte[8192];
-                int len;
-                while ((len = in.read(buffer)) != -1) fos.write(buffer, 0, len);
-            }
+            log.writeTo(fos);
         }
         return file;
     }
