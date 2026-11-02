@@ -124,7 +124,11 @@ public class ContentProviderStub extends ClassInvocationStub implements BContent
         if (args == null) return;
         for (Object a : args) {
             if (a != null && a.getClass().getName().endsWith("AttributionSource")) {
-                try { com.vcloud.motor.utils.compat.ContextCompat.fixAttributionSourceState(a, VcloudCore.getHostUid()); } catch (Throwable ignored) {}
+                // uid do celular (o Android confere), mas o NOME é o do app de dentro que pede: o Gservices só entrega/grava o
+                // identificador do aparelho para pacotes aprovados ("Package com.vcloud.app is not approved to access the device ID").
+                String quem = BActivityThread.getAppPackageName();
+                if (quem == null || VcloudCore.getHostPkg().equals(mAppPkg)) quem = VcloudCore.getHostPkg();
+                try { com.vcloud.motor.utils.compat.ContextCompat.fixAttributionSourceState(a, VcloudCore.getHostUid(), quem); } catch (Throwable ignored) {}
             }
         }
     }

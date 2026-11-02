@@ -45,6 +45,8 @@ public final class AutoAnalise {
                     "O nome do pacote da chamada não é do uid do Vcloud.", "Trocar o nome do app pelo do Vcloud (IAuthServiceProxy, já feito)."},
             {"bioAvancada", ALTA, "SET_BIOMETRIC_DIALOG_ADVANCED", "A janela biométrica pediu recursos avançados (logo/conteúdo)",
                     "O sistema exige permissão de sistema para logo/conteúdo personalizado na janela de confirmação.", "Tirar esses itens do pedido (IAuthServiceProxy, já feito)."},
+            {"checkin", ALTA, "Checkin timed out", "O checkin do Google não terminou (o login espera 10 s e mostra erro)",
+                    "O registro do aparelho no Google (checkin) não completou; sem ele não há android-id.", "Ver 'not approved to access the device ID' e a rede do gms."},
             {"pkgUid", ALTA, "does not belong to", "Pacote não pertence ao uid de quem chamou",
                     "O app de dentro se apresentou com o nome dele e o Android conferiu com o uid do Vcloud.", "Trocar o nome do app pelo do Vcloud na chamada (como no PackageInstaller)."},
             {"pkgChamador", ALTA, "Unknown calling package name", "O Google não reconheceu o app que o chamou",

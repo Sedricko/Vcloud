@@ -341,7 +341,7 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Não testado no aparelho. Incógnitas: checkin do GMS de dentro como app comum, login de conta, licenças (não se burla). Teste: ligar, abrir a Play Store de dentro, Central > Testar Google > Copiar.
 
 ## Regra: versão do app
-- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.22 (422).
+- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.23 (423).
 
 ## Play Store de dentro: erro de uid no provedor (4.0.2)
 - Relatório 19:33: `PROVEDOR erro engolido (query) em gms: Calling uid: 10014 doesn't match source uid: 10454` (modo Google completo ligado, caminho de dentro ativo).
@@ -458,3 +458,9 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - O nome do pacote nos serviços de biometria resolveu `not allowed to perform USE_BIOMETRIC`; nova recusa, agora no SISTEMA: `Must have SET_BIOMETRIC_DIALOG_ADVANCED permission` (`AuthService.authenticate`, via `IAuthService$Stub$Proxy.authenticate`).
 - Lido no AOSP (`PromptInfo.requiresAdvancedPermission`, `AuthService.authenticate`): a permissão só é exigida se o pedido tem `mLogoRes != 0`, `mLogoBitmap`, `mLogoDescription` ou `mContentView` (com botão "mais opções"), ou autenticador IDENTITY_CHECK. Fonte: branch main do AOSP; o Android 17 do aparelho pode diferir.
 - 4.0.22: `IAuthServiceProxy` limpa `mLogoRes/mLogoBitmap/mLogoDescription/mContentView` do `PromptInfo` antes de `authenticate` (só decoração; a confirmação é a mesma). Histórico: `BIOMETRIA recursos avançados ... tirados`. Não testado. Se o Google pedir IDENTITY_CHECK, não resolve.
+
+## 4.0.23 (relatório 01:17, app 4.0.22) — o login chega ao checkin
+- Sem nenhuma queda do Google. Fluxo no log: `AccountIntro` → `WrapperControlled` → `PreAddAccountActivity` → (10 s) → `ErrorActivity`. `BiometricPrompt: onAuthenticationSucceeded` (a confirmação do bloqueio PASSOU; o `BIOMETRIA ... tirados` do histórico confirma a limpeza do PromptInfo).
+- Causa do erro (prova): `Auth: [CheckinHelper] Checkin timed out ... 10000 ms` → `setCheckinResult done with result=false` → `RESULT_ERROR`. No mesmo instante: `GservicesPersistence: Package com.vcloud.app is not approved to access the device ID` (pid do gms) — o Gservices só dá/grava o device id a pacotes aprovados, e o pedido chegava com o NOME do Vcloud (que eu mesmo fixei na origem do provedor na 4.0.6). Isso também explica `android_id=null` desde o início.
+- 4.0.23: `ContentProviderStub.fixarOrigem` mantém o uid do celular (o Android confere) mas põe como NOME da origem o pacote do app de dentro que pede (`BActivityThread.getAppPackageName()`); provedor do próprio Vcloud segue com o nome do Vcloud. `ContextCompat.fixAttributionSourceState(obj, uid, pacote)`. Regra `Checkin timed out` no AutoAnalise. Não testado.
+- Se o checkin ainda não completar: faltaria a rede do gms (HTTP para o Google) ou o `GservicesPersistence` aprovar por outro critério.

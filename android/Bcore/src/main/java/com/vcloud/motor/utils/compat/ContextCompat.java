@@ -19,14 +19,19 @@ public class ContextCompat {
     public static final String TAG = "ContextCompat";
 
     public static void fixAttributionSourceState(Object obj, int uid) {
+        fixAttributionSourceState(obj, uid, VcloudCore.getHostPkg());
+    }
+
+    /** Mesmo ajuste, escolhendo o nome do pacote da origem (ex.: o do app de dentro, para o provedor de destino saber quem pede). */
+    public static void fixAttributionSourceState(Object obj, int uid, String pacote) {
         Object mAttributionSourceState;
         if (obj != null && BRAttributionSource.get(obj)._check_mAttributionSourceState() != null) {
             mAttributionSourceState = BRAttributionSource.get(obj).mAttributionSourceState();
 
             AttributionSourceStateContext attributionSourceStateContext = BRAttributionSourceState.get(mAttributionSourceState);
-            attributionSourceStateContext._set_packageName(VcloudCore.getHostPkg());
+            attributionSourceStateContext._set_packageName(pacote);
             attributionSourceStateContext._set_uid(uid);
-            fixAttributionSourceState(BRAttributionSource.get(obj).getNext(), uid);
+            fixAttributionSourceState(BRAttributionSource.get(obj).getNext(), uid, pacote);
         }
     }
 
