@@ -341,7 +341,7 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Não testado no aparelho. Incógnitas: checkin do GMS de dentro como app comum, login de conta, licenças (não se burla). Teste: ligar, abrir a Play Store de dentro, Central > Testar Google > Copiar.
 
 ## Regra: versão do app
-- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.28 (428).
+- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.29 (429).
 
 ## Play Store de dentro: erro de uid no provedor (4.0.2)
 - Relatório 19:33: `PROVEDOR erro engolido (query) em gms: Calling uid: 10014 doesn't match source uid: 10454` (modo Google completo ligado, caminho de dentro ativo).
@@ -492,3 +492,9 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Diagnóstico mostrou: `START ... CHECKIN_START_ACTION` → `SERVIÇO iniciando onStartCommand: GmsIntentOperationService ação=...CHECKIN_START_ACTION` → o serviço roda (todos os outros também) e o executor cai: `FATAL EXCEPTION [GmsIntentOperationChimeraService-Executor]: SecurityException: getIccSerialNumber: The uid 10454 does not meet the requirements to access device identifiers` (`TelephonyManager.getSimSerialNumber` ← `CheckinIntentOperation.onHandleIntent`). O serviço de checkin explode e por isso o login dá `Checkin timed out`.
 - Também (não fatal): `Finsky: SecurityException when adding listener to subscriptions`.
 - 4.0.28: `IPhoneSubInfoProxy.invoke` captura SecurityException de identificadores (`device identifiers`, `READ_PRIVILEGED_PHONE_STATE`, `READ_PHONE_STATE`) e devolve `ValorPadrao` (null para String) + histórico `TELEFONE <método> recusado...`. Regra nova no AutoAnalise. Não testado. O checkin pode esbarrar em outros identificadores (IMEI, serial, Wi-Fi MAC...) e em rede/aceitação do Google.
+
+## 4.0.29 (relatório 02:46, app 4.0.28)
+- A 4.0.28 funcionou: `TELEFONE getIccSerialNumberForSubscriber / getSubscriberIdForSubscriber recusado ...; resposta: sem valor`; o checkin passou desse ponto.
+- Nova queda no mesmo executor (`CheckinIntentOperation.onHandleIntent` → `SubscriptionManager.getActiveSubscriptionIdList` → `ISub$Stub$Proxy.getActiveSubIdList`): `SecurityException: getActiveSubIdList. Does not have any of the following permissions. [android.permission.READ_PRIVILEGED_PHONE_STATE]`.
+- 4.0.29: `ISubProxy` (serviço `isub`, base `PacoteDoVcloudProxy`) captura essas recusas e devolve `ValorPadrao` (int[] vazio...). Histórico: `CHIP <método> recusado pelo Android (permissão privilegiada); resposta: neutra`. Regra `READ_PRIVILEGED_PHONE_STATE` no AutoAnalise. Não testado.
+- Padrão: cada pergunta de telefonia/chip que o checkin faz pode dar uma recusa nova. Se vierem muitas, trocar por um filtro genérico para todo o serviço de telefonia.
