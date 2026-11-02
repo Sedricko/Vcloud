@@ -63,7 +63,7 @@ public class NativeCore {
                 // Só nos apps de dentro; o servidor ":black" e a tela do Vcloud seguem como antes.
                 if (VcloudCore.get().isBlackProcess()) {
                     int cpid = android.os.Binder.getCallingPid();
-                    if (cpid == Process.myPid()) return origCallingUid;
+                    if (cpid == Process.myPid()) return Process.myUid(); // igual ao uid que o app vê de si (Play Store: "Binding only allowed within app")
                     int quem = com.vcloud.motor.utils.QuemChama.uidDoPid(cpid);
                     if (quem > 0 && quem < Process.LAST_APPLICATION_UID) return quem == VcloudCore.getBUid() ? origCallingUid : quem;
                 }

@@ -533,3 +533,9 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
   2. `GoogleServicesActivity` caía: `IBackupManager.isBackupServiceActive → SecurityException: ... android.permission.BACKUP`. 4.0.35: `IBackupManagerProxy` (serviço `backup`, base `PacoteDoVcloudProxy`) responde neutro. Histórico `BACKUP <método> recusado...`.
 - Também visto (não tratado): `ClassNotFoundException BackgroundProcessEndpointService` da Play Store (`com.google.frameworks.client.data.android.server.play`) — classe provavelmente em split da Play Store (só o `base.apk` é copiado).
 - Aberto: a conta existe dentro; falta conferir a Play Store autenticada, licenças dos jogos (Touch Macro/DYSMANTLE) e WebView/splits.
+
+## 4.0.36
+- Play Store travava ao abrir: `SecurityException: Binding only allowed within app` (Firebase Messaging confere `Binder.getCallingUid() == Process.myUid()`).
+- Causa (hipótese forte, lida no código): `Process.myUid()` devolve o uid virtual (OsStub.getuid → getBAppId) e `getCallingUid` devolvia o uid do celular quando a chamada é do próprio processo.
+- Mudança: na chamada do próprio processo, `NativeCore.getCallingUid` devolve `Process.myUid()`.
+- Não verificado no aparelho. Risco: outro app de dentro que comparava com o uid do celular nessa situação.
