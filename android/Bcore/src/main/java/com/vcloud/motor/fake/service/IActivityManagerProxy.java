@@ -248,6 +248,12 @@ public class IActivityManagerProxy extends ClassInvocationStub {
             Intent intent = (Intent) args[1];
             String resolvedType = (String) args[2];
             ResolveInfo resolveInfo = VcloudCore.getBPackageManager().resolveService(intent, 0, resolvedType, BActivityThread.getUserId());
+            String alvo = intent.getComponent() != null ? intent.getComponent().getPackageName() : intent.getPackage();
+            if (alvo != null && alvo.startsWith("com.google.android.") && com.vcloud.motor.utils.GoogleModo.completoDentro()) {
+                com.vcloud.motor.utils.Diagnostico.eventoLimitado("start|" + intent.getComponent() + "|" + intent.getAction(), 30_000,
+                        "START serviço: " + (intent.getComponent() == null ? alvo : intent.getComponent().flattenToShortString())
+                                + " ação=" + intent.getAction() + " | de dentro=" + (resolveInfo != null));
+            }
             if (resolveInfo == null) {
                 return method.invoke(who, args);
             }

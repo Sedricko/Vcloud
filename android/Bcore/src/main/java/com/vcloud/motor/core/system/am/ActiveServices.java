@@ -70,6 +70,8 @@ public class ActiveServices {
                     }
                 } catch (Throwable e) {
                     e.printStackTrace();
+                    com.vcloud.motor.utils.Diagnostico.eventoLimitado("startponte|" + serviceInfo.name, 30_000,
+                            "START do serviço-ponte falhou para " + serviceInfo.packageName + "/" + serviceInfo.name + ": " + e);
                 }
             }
         }).start();
