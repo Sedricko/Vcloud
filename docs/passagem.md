@@ -341,7 +341,7 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Não testado no aparelho. Incógnitas: checkin do GMS de dentro como app comum, login de conta, licenças (não se burla). Teste: ligar, abrir a Play Store de dentro, Central > Testar Google > Copiar.
 
 ## Regra: versão do app
-- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.10 (410).
+- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.11 (411).
 
 ## Play Store de dentro: erro de uid no provedor (4.0.2)
 - Relatório 19:33: `PROVEDOR erro engolido (query) em gms: Calling uid: 10014 doesn't match source uid: 10454` (modo Google completo ligado, caminho de dentro ativo).
@@ -380,3 +380,8 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Relatório 21:18 (4.0.9): o bind do login FUNCIONOU (`LOGIN bind ... -> ponte=ProxyService$P1`, a Play Store não fecha mais). Agora o autenticador do gms recusa `addAccount`: `SecurityException: Access denied, requires android.permission.ACCOUNT_MANAGER` (Android 17: `PermissionEnforcer`), porque quem chama é o uid do Vcloud.
 - 4.0.10: `PermissionCheckerProxy` (serviço `permission_checker`) e ganchos `checkPermission/checkUidPermission` em `IPermissionManagerProxy` concedem SÓ `ACCOUNT_MANAGER`. Não sei qual dos caminhos o Android 17 usa; histórico: `LOGIN permissão ACCOUNT_MANAGER concedida (permission_checker)` quando o primeiro for o usado.
 - Também visto: `GservicesPersistence: Package com.vcloud.app is not approved to access the device ID` (o gms de dentro recusa o uid do Vcloud) → ligado ao `android_id=null`; próximo.
+
+## 4.0.11
+- Relatório 21:24 (4.0.10): `Access denied, requires ACCOUNT_MANAGER` continua e a linha `permissão concedida` não apareceu: os ganchos de `permission_checker`/`permissionmgr` não são o caminho do Android 17 → removidos.
+- Agora: `NativeCore.getCallingUid` devolve o uid do sistema só dentro de `android.accounts.*_enforcePermission` (o autenticador confere `checkPermission(perm, pid, getCallingUid())`; uid 1000 passa). Não testado.
+- Segue: `GservicesPersistence: Package com.vcloud.app is not approved to access the device ID` e `android_id=null` / `Unexpected android-id = 0` no vending:background.

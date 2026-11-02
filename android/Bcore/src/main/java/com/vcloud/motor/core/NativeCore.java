@@ -51,8 +51,13 @@ public class NativeCore {
             if (origCallingUid == VcloudCore.getHostUid()) {
                 // Vcloud: checagem da origem do provedor (AttributionSource) compara com o uid do celular
                 StackTraceElement[] st = Thread.currentThread().getStackTrace();
-                for (int i = 0; i < st.length && i < 14; i++) {
+                for (int i = 0; i < st.length && i < 20; i++) {
                     String cn = st[i].getClassName();
+                    // Vcloud: autenticador de conta de dentro (ex.: Google) confere ACCOUNT_MANAGER com o uid de quem chama
+                    // (o Vcloud, sem permissão de sistema); nessa checagem o chamador vale como sistema.
+                    if (cn.startsWith("android.accounts.") && st[i].getMethodName().endsWith("_enforcePermission")) {
+                        return Process.SYSTEM_UID;
+                    }
                     if (cn.equals("android.content.AttributionSource") || cn.startsWith("android.content.ContentProvider$Transport")) {
                         return origCallingUid;
                     }
