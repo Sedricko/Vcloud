@@ -366,12 +366,47 @@ public class IPackageManagerProxy extends BinderInvocationStub {
                 return method.invoke(who, args);
             }
             if (uid == VcloudCore.getHostUid()) {
+                if ("com.google.android.gms".equals(BActivityThread.getAppPackageName())) {
+                    StringBuilder pilha = new StringBuilder();
+                    StackTraceElement[] st = Thread.currentThread().getStackTrace();
+                    for (int i = 3; i < Math.min(st.length, 16); i++) pilha.append(st[i].getClassName()).append('.').append(st[i].getMethodName()).append(' ');
+                    com.vcloud.motor.utils.Diagnostico.eventoLimitado("pkguid", 60_000,
+                            "UID perguntou pacotes do uid do celular (" + uid + ") no gms; quem perguntou: " + pilha);
+                }
                 args[0] = BActivityThread.getBUid();
                 uid = (int) args[0];
             }
             String[] packagesForUid = VcloudCore.getBPackageManager().getPackagesForUid(uid);
             Slog.d(TAG, args[0] + " , " + BActivityThread.getAppProcessName() + " GetPackagesForUid: " + Arrays.toString(packagesForUid));
             return packagesForUid;
+        }
+    }
+
+    /**
+     * O PackageInstaller do app de dentro se apresenta com o nome do app (ex.: com.android.vending) e o Android confere se esse
+     * pacote é do uid de quem chama (o Vcloud): "Package com.android.vending does not belong to 10454". Troca o nome do app pelo do Vcloud.
+     */
+    @ProxyMethod("getPackageInstaller")
+    public static class GetPackageInstaller extends MethodHook {
+        @Override
+        protected Object hook(Object who, Method method, Object[] args) throws Throwable {
+            final Object real = method.invoke(who, args);
+            if (real == null) return null;
+            return java.lang.reflect.Proxy.newProxyInstance(real.getClass().getClassLoader(), real.getClass().getInterfaces(),
+                    new java.lang.reflect.InvocationHandler() {
+                        @Override
+                        public Object invoke(Object proxy, Method m, Object[] a) throws Throwable {
+                            String guest = BActivityThread.getAppPackageName();
+                            if (a != null && guest != null) {
+                                for (int i = 0; i < a.length; i++) if (guest.equals(a[i])) a[i] = VcloudCore.getHostPkg();
+                            }
+                            try {
+                                return m.invoke(real, a);
+                            } catch (java.lang.reflect.InvocationTargetException e) {
+                                throw e.getCause() != null ? e.getCause() : e;
+                            }
+                        }
+                    });
         }
     }
 

@@ -341,7 +341,7 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Não testado no aparelho. Incógnitas: checkin do GMS de dentro como app comum, login de conta, licenças (não se burla). Teste: ligar, abrir a Play Store de dentro, Central > Testar Google > Copiar.
 
 ## Regra: versão do app
-- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.15 (415).
+- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.16 (416).
 
 ## Play Store de dentro: erro de uid no provedor (4.0.2)
 - Relatório 19:33: `PROVEDOR erro engolido (query) em gms: Calling uid: 10014 doesn't match source uid: 10454` (modo Google completo ligado, caminho de dentro ativo).
@@ -411,3 +411,12 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - `VcloudCore.writeReport`: o logcat é lido na memória (limite 24 MB) e o auto diagnóstico vai no TOPO do relatório (antes do resumo e do logcat). Sem mudança de tela (o botão "Gerar relatório" já existente passa a incluí-lo).
 - Validado em relatório real (22:52): achou android-id 0, "Only 0p", provedor de fonte, bind sem serviço (webview) e um achado novo: `SecurityException: Package com.android.vending does not belong to 10454` (pacote/uid — relevante ao android-id).
 - Não feito: botão/tela própria na Central (precisa de prévia); vigia contínuo em segundo plano.
+
+## 4.0.16 (relatório 23:24, app 4.0.15 — o primeiro com o auto diagnóstico no topo)
+- Auto diagnóstico funcionou: o topo do relatório já mostra estado + problemas agrupados.
+- Achados reais:
+  1. `Unknown calling package name 'com.android.vending'` (FATAL, derruba a Play Store; vem do módulo de medição do gms) e `Only 0p apps` na checagem do `DefaultAuthDelegate`: o gms vê o chamador errado. Causa: `AppConfig.callingBUid` é gravado UMA vez quando o processo nasce (quem criou o processo) e `NativeCore.getCallingUid` o devolve para toda chamada.
+  2. `IPackageInstaller.getMySessions` → `Package com.android.vending does not belong to 10454` (nome do app não bate com o uid do Vcloud).
+  3. `LOGIN chamador ... -> sistema (1000)` rodou, mas o `GetPackagesForUid` seguinte perguntou pelo uid do celular (10454→10015): a checagem `0p` usa outro caminho.
+- 4.0.16: (1) `QuemChama` (arquivos `pids/PID` = uid virtual, gravados pelo servidor ao iniciar/limpos ao morrer/ao ligar) + `NativeCore.getCallingUid` responde o dono do `Binder.getCallingPid()` (cache de 3 s); fica por último o comportamento antigo. (2) `getPackageInstaller` devolve um proxy que troca o nome do app pelo do Vcloud. (3) diagnóstico: `UID perguntou pacotes do uid do celular ... quem perguntou: <pilha>` (gms) para descobrir quem faz a checagem `0p`. (4) `AutoAnalise` ganhou as regras "does not belong to" e "Unknown calling package name".
+- Não testado no aparelho. Risco: o uid de quem chama agora muda em TODO app de dentro que recebe chamadas de outro app de dentro.

@@ -73,6 +73,9 @@ public class NativeCore {
                         return origCallingUid;
                     }
                 }
+                // Vcloud: o chamador de verdade desta chamada (pelo pid), e não o app que criou este processo (fica velho)
+                int quem = com.vcloud.motor.utils.QuemChama.uidDoPid(android.os.Binder.getCallingPid());
+                if (quem > 0 && quem < Process.LAST_APPLICATION_UID) return quem;
                 
                 String appPackageName = VcloudCore.getAppPackageName();
                 if (appPackageName != null && appPackageName.equals("com.google.android.gms")){

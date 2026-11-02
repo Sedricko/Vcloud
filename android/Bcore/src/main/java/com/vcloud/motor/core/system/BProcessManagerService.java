@@ -105,6 +105,7 @@ public class BProcessManagerService implements ISystemService {
                 app = null;
             } else {
                 app.pid = getPid(VcloudCore.getContext(), ProxyManifest.getProcessName(app.bpid));
+                com.vcloud.motor.utils.QuemChama.registrar(app.pid, BUserHandle.getAppId(app.buid));
             }
         }
         return app;
@@ -215,6 +216,7 @@ public class BProcessManagerService implements ISystemService {
             mPidsSelfLocked.remove(record);
 
             removeProc(record);
+            com.vcloud.motor.utils.QuemChama.remover(record.pid);
             BNotificationManagerService.get().deletePackageNotification(record.getPackageName(), record.userId);
         }
     }
@@ -344,6 +346,7 @@ public class BProcessManagerService implements ISystemService {
     @Override
     public void systemReady() {
         FileUtils.deleteDir(BEnvironment.getProcDir());
+        com.vcloud.motor.utils.QuemChama.limparTudo();
         com.vcloud.motor.core.root.RootServer.start();
     }
 }
