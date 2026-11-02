@@ -645,3 +645,9 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Também visto: 1ª tentativa de cada app tenta o "data loader/streaming" e falha com `ENOENT .../dataloader/<pkg>/upfront/stream..*` (status 6401); a Play Store então repete pelo caminho normal ("Incremental install not requested") — é este que importa.
 - Mudança: `openWriteAppMetadata` devolve escrita (arquivo `_app_metadata`, fora de getNames/bibliotecas). Log `INSTALADOR sessão método X` (1x/min) para ver os métodos usados.
 - Não verificado no aparelho.
+
+## 4.0.54
+- Relatório 19:24 (4.0.53): **a Play Store instalou um app dentro do Vcloud** (`INSTALADOR sessão 700002 instalou com.avegagames.magic.craft.survival`; aparece na lista de apps de dentro, 1.8.96). Pedido do instalador: getNames, setChecksums, openWriteAppMetadata, commit.
+- Logo depois: `Tipos de conta registrados dentro: NENHUM` e `bind failure` / `Error while retrieving auth token` (110x) → a Play Store perde o login e os próximos downloads falham (1400). Causa: `BAccountManagerService.loadAuthenticatorCache(pacote)` (chamado em `onPackageInstalled`) fazia `authenticators.clear()` e lia só o pacote novo → apagava o autenticador do Google toda vez que se instalava um app.
+- Mudança: com pacote, só as entradas daquele pacote são refeitas (sem clear geral).
+- Não verificado no aparelho (instalar 2 apps seguidos; abrir o app instalado).

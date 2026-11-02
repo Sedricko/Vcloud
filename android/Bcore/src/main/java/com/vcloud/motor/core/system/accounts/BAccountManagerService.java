@@ -1396,7 +1396,14 @@ public class BAccountManagerService extends IBAccountManagerService.Stub impleme
     }
 
     public void loadAuthenticatorCache(String packageName) {
-        mAuthenticatorCache.authenticators.clear();
+        // Vcloud: ao instalar UM app, só as entradas dele são refeitas. Antes limpava tudo e lia só o app novo: o autenticador do Google
+        // sumia ("Tipos de conta registrados dentro: NENHUM") e a Play Store dizia "Error while retrieving auth token".
+        if (packageName == null) {
+            mAuthenticatorCache.authenticators.clear();
+        } else {
+            java.util.Iterator<Map.Entry<String, AuthenticatorInfo>> it = mAuthenticatorCache.authenticators.entrySet().iterator();
+            while (it.hasNext()) if (packageName.equals(it.next().getValue().serviceInfo.packageName)) it.remove();
+        }
         Intent intent = new Intent(AccountManager.ACTION_AUTHENTICATOR_INTENT);
         if (packageName != null) {
             intent.setPackage(packageName);
