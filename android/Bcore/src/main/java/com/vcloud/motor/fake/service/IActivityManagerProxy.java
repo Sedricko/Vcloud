@@ -115,16 +115,13 @@ public class IActivityManagerProxy extends ClassInvocationStub {
             Slog.w(TAG, "ActivityManager invoke: SecurityException in " + methodName + ", returning safe default", e);
             
             
-            if (methodName.startsWith("set") || methodName.startsWith("update")) {
-                return null; 
-            } else if (methodName.startsWith("get") || methodName.startsWith("query")) {
-                return null; 
-            } else if (methodName.startsWith("start") || methodName.startsWith("bind")) {
+            // null para retorno primitivo dava NullPointerException no app ("Expected to unbox a 'int'..." em getUidProcessState)
+            if (methodName.startsWith("start") || methodName.startsWith("bind")) {
                 return false; 
             } else if (methodName.startsWith("stop") || methodName.startsWith("unbind")) {
                 return true; 
             } else {
-                return null; 
+                return com.vcloud.motor.utils.ValorPadrao.de(method.getReturnType());
             }
         } catch (Exception e) {
             Slog.e(TAG, "ActivityManager invoke: Unexpected error in " + method.getName(), e);

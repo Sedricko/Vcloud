@@ -341,7 +341,7 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Não testado no aparelho. Incógnitas: checkin do GMS de dentro como app comum, login de conta, licenças (não se burla). Teste: ligar, abrir a Play Store de dentro, Central > Testar Google > Copiar.
 
 ## Regra: versão do app
-- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.34 (434).
+- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.35 (435).
 
 ## Play Store de dentro: erro de uid no provedor (4.0.2)
 - Relatório 19:33: `PROVEDOR erro engolido (query) em gms: Calling uid: 10014 doesn't match source uid: 10454` (modo Google completo ligado, caminho de dentro ativo).
@@ -525,3 +525,11 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - O pedido foi ao servidor e VOLTOU recusado: `Checkin failed: https://android.googleapis.com/checkin ... invalid hardware identifier: "5628c3bc4e63dbcaa448a7627ff47ce6" is not a valid IMEI (expect 15 decimal digits)` → `Checkin Operation finished with result: FAILURE` → ErrorActivity em ~4 s.
 - Origem: `ITelephonyManagerProxy` (BlackBox) responde `md5(pacote do Vcloud)` para `getDeviceId`, `getImeiForSlot`, `getMeidForSlot`, `getSubscriberId`, `getDeviceIdWithFeature`.
 - 4.0.34: `idDoAparelho()`: para apps do Google (`GmsCore.isGoogleAppOrService`) responde `null` (sem valor, não inventa IMEI); os outros apps continuam com o md5. Regra `not a valid IMEI` no AutoAnalise. Não testado. Próximos riscos: outros identificadores no pedido (serial, MAC, ICCID) ou o Google recusar um aparelho sem IMEI/virtual.
+
+## 4.0.35 (relatório 08:38, app 4.0.34) — LOGIN DO GOOGLE FUNCIONOU
+- `[CheckinRequestProcessor] ... Checkin Succeeded: https://android.googleapis.com/checkin` → `[CheckinOperation] Checkin Operation finished with result: SUCCESS` → `Gservices -> android_id=4483960649116985303` (primeiro android_id de dentro) → `[AddAccountHelper] Account added successfully to AccountManager` / `[AuthAccountManager] Account added successfully.` (08:37:25). A correção do IMEI (4.0.34: `null` para apps do Google) resolveu o checkin.
+- Falhas de acabamento:
+  1. `NullPointerException: Expected to unbox a 'int' primitive type but was returned null` em `ActivityManager.getUidImportance → getUidProcessState` (gms caía 3x): `IActivityManagerProxy.invoke` devolvia `null` no catch de SecurityException para métodos `get*`. Corrigido: `ValorPadrao.de(tipo de retorno)`.
+  2. `GoogleServicesActivity` caía: `IBackupManager.isBackupServiceActive → SecurityException: ... android.permission.BACKUP`. 4.0.35: `IBackupManagerProxy` (serviço `backup`, base `PacoteDoVcloudProxy`) responde neutro. Histórico `BACKUP <método> recusado...`.
+- Também visto (não tratado): `ClassNotFoundException BackgroundProcessEndpointService` da Play Store (`com.google.frameworks.client.data.android.server.play`) — classe provavelmente em split da Play Store (só o `base.apk` é copiado).
+- Aberto: a conta existe dentro; falta conferir a Play Store autenticada, licenças dos jogos (Touch Macro/DYSMANTLE) e WebView/splits.

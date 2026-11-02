@@ -191,6 +191,7 @@ public class HookManager {
                 addInjector(new com.vcloud.motor.fake.service.IAuthServiceProxy());
                 addInjector(new com.vcloud.motor.fake.service.IBiometricServiceProxy());
                 addInjector(new com.vcloud.motor.fake.service.ISubProxy());
+                addInjector(new com.vcloud.motor.fake.service.IBackupManagerProxy());
             }
             
             if (BuildCompat.isQ()) {
