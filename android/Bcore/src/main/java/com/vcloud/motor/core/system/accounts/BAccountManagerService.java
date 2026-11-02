@@ -1761,6 +1761,23 @@ public class BAccountManagerService extends IBAccountManagerService.Stub impleme
 
 
 
+            // Vcloud: o autenticador é um serviço de DENTRO; o bind direto cai no Android real e é recusado
+            // ("Not allowed to bind"). Pede o intent do serviço-ponte ao gerenciador virtual e faz o bind nele.
+            try {
+                Intent ponte = com.vcloud.motor.core.system.am.BActivityManagerService.get()
+                        .bindService(intent, null, null, mAccounts.userId);
+                com.vcloud.motor.utils.Diagnostico.eventoLimitado("authbind|" + componentName, 30_000,
+                        "LOGIN bind do autenticador " + componentName.flattenToShortString() + " -> ponte="
+                                + (ponte == null ? "nenhuma" : String.valueOf(ponte.getComponent())));
+                if (ponte != null && ponte.getComponent() != null
+                        && !componentName.equals(ponte.getComponent())) {
+                    intent = ponte;
+                }
+            } catch (Throwable t) {
+                com.vcloud.motor.utils.Diagnostico.eventoLimitado("authbinderr", 30_000,
+                        "LOGIN bind do autenticador falhou no gerenciador virtual: " + t);
+            }
+
             if (!mContext.bindService(intent, this, flags)) {
                 if (Log.isLoggable(TAG, Log.VERBOSE)) {
                     Log.v(TAG, "bindService to " + componentName + " failed");

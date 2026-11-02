@@ -341,7 +341,7 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Não testado no aparelho. Incógnitas: checkin do GMS de dentro como app comum, login de conta, licenças (não se burla). Teste: ligar, abrir a Play Store de dentro, Central > Testar Google > Copiar.
 
 ## Regra: versão do app
-- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.8 (408).
+- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.9 (409).
 
 ## Play Store de dentro: erro de uid no provedor (4.0.2)
 - Relatório 19:33: `PROVEDOR erro engolido (query) em gms: Calling uid: 10014 doesn't match source uid: 10454` (modo Google completo ligado, caminho de dentro ativo).
@@ -371,3 +371,7 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 
 ## 4.0.8
 - Relatório 20:46 (4.0.7): nenhuma linha `BIND ...`. "Not allowed to bind to service" é o `ContextImpl.bindServiceCommon` quando o AMS devolve `res < 0` (não é exceção do AMS): o bind chegou ao Android e foi recusado, sem passar pelos casos já registrados. 4.0.8 registra todo bind do gms no `:black` (`BIND pedido`), o resultado negativo (`BIND recusado ... proxy=`) e a falta de intent de proxy.
+
+## 4.0.9
+- Relatório 21:02 (4.0.8): o gancho de bind registra os binds do gms (`BIND pedido ... de dentro=true`), mas NENHUM para `GoogleAccountAuthenticatorService`: o bind do login, feito pelo `BAccountManagerService` no `:black`, não passa pelo gancho e cai no Android real (recusado).
+- `bindToAuthenticator` agora pede o intent-ponte direto ao `BActivityManagerService` e faz o bind nele (histórico: `LOGIN bind do autenticador ... -> ponte=...`). Sem `binder` no registro (o unbind não desconta contagem). Não testado.
