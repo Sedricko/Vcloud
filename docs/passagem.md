@@ -663,3 +663,8 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Usuário: tocar no ícone de perfil da Play Store sai da loja. Relatório 19:34 (4.0.54): `CrashMonitor: Crash detected: Crash[JavaException] com.android.vending` → `Sending signal PID 602 SIG: 9` logo depois do toque (AppInfoManager / OneGoogle). A exceção (mensagem "Package com.android.vending does not belong to 10454") é de uma exceção NÃO TRATADA na linha principal; o `CrashMonitor.installGlobalCrashHandlers` mata o processo e a pilha nunca era impressa (só havia a mensagem). Esse mesmo "does not belong to 10454" aparece em todo relatório e é a provável causa dos "fechou logo ao abrir" da Play Store.
 - Mudança só de diagnóstico: `CrashMonitor.handleCrash` imprime `FATAL EXCEPTION ... (Vcloud)` com a pilha completa (Log.e AndroidRuntime).
 - Também (sync/instalação): `Instalando...` pode ter sido resolvido na 4.0.55 (extras de preenchimento); não confirmado.
+
+## 4.0.57 — perfil da Play Store
+- Relatório 19:47 (4.0.56, com a pilha): tocar no perfil cai (linha principal) em `ICrossProfileApps$Stub$Proxy.getTargetUserProfiles ← CrossProfileApps.getTargetUserProfiles ← Play Store (onClick)`: `SecurityException: Package com.android.vending does not belong to 10454`. Outra, em thread de fundo: `IUsageStatsManager.queryEventsWithFilter`: `com.android.vending from uid 10454 not allowed to perform GET_USAGE_STATS`.
+- Mudança: `ICrossProfileAppsProxy` (serviço "crossprofileapps": nome do app → Vcloud; recusa → vazio) e `IUsageStatsProxy` ("usagestats": recusa → vazio), no bloco isR do HookManager.
+- Não verificado no aparelho.
