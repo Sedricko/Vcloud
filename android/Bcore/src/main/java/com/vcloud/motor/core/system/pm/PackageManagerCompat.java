@@ -284,24 +284,6 @@ public class PackageManagerCompat {
         return ii;
     }
 
-    /**
-     * Vcloud: o Google de dentro é cópia do que está no celular, onde ele é app de SISTEMA. O serviço de login do Google só aceita
-     * chamadas de "0p" (sistema/Google): assinatura do Google não basta (o próprio gms foi recusado). A cópia nasce de um APK
-     * comum e perderia essa marca; repete a do celular (só os bits públicos "sistema" e "sistema atualizado").
-     */
-    private static void marcarComoDoCelular(ApplicationInfo ai) {
-        if (!com.vcloud.motor.core.GmsCore.isGoogleAppOrService(ai.packageName)) return;
-        try {
-            ApplicationInfo real = VcloudCore.getPackageManager().getApplicationInfo(ai.packageName, 0);
-            int bits = real.flags & (ApplicationInfo.FLAG_SYSTEM | ApplicationInfo.FLAG_UPDATED_SYSTEM_APP);
-            if ((ai.flags & bits) != bits) {
-                ai.flags |= bits;
-                com.vcloud.motor.utils.Diagnostico.eventoLimitado("sysflag|" + ai.packageName, 300_000,
-                        "GOOGLE " + ai.packageName + " marcado como no celular (sistema=" + ((bits & ApplicationInfo.FLAG_SYSTEM) != 0) + ")");
-            }
-        } catch (Throwable ignored) { }
-    }
-
     public static ApplicationInfo generateApplicationInfo(BPackage p, int flags, BPackageUserState state, int userId) {
         if (!checkUseInstalledOrHidden(flags, state, p.applicationInfo)) {
             return null;
@@ -318,7 +300,6 @@ public class PackageManagerCompat {
                     .getPackageArchiveInfo(sourceDir, 0).applicationInfo;
         }
         ApplicationInfo ai = new ApplicationInfo(p.applicationInfo);
-        marcarComoDoCelular(ai);
         if ((flags & PackageManager.GET_META_DATA) != 0) {
             ai.metaData = p.mAppMetaData;
         }

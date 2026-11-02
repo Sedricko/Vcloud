@@ -45,22 +45,6 @@ public class NativeCore {
             if (origCallingUid > 0 && origCallingUid < Process.FIRST_APPLICATION_UID)
                 return origCallingUid;
 
-            // Vcloud: o autenticador do Google só aceita addAccount de "0p" (sistema/Google) e quem chama é o gerenciador de contas
-            // do Vcloud, que faz o papel do AccountManagerService do sistema; para ele, o chamador vale como sistema.
-            if (origCallingUid == 0 || origCallingUid == VcloudCore.getHostUid()) {
-                String pkg = VcloudCore.getAppPackageName();
-                if (pkg != null && pkg.equals("com.google.android.gms")) {
-                    StackTraceElement[] st0 = Thread.currentThread().getStackTrace();
-                    for (int i = 0; i < st0.length && i < 24; i++) {
-                        if (st0[i].getClassName().startsWith("android.accounts.AbstractAccountAuthenticator$Transport")) {
-                            com.vcloud.motor.utils.Diagnostico.eventoLimitado("authuid", 60_000,
-                                    "LOGIN chamador do autenticador: uid " + origCallingUid + " -> sistema (" + Process.SYSTEM_UID + ")");
-                            return Process.SYSTEM_UID;
-                        }
-                    }
-                }
-            }
-            
             if (origCallingUid > Process.LAST_APPLICATION_UID)
                 return origCallingUid;
 
@@ -74,8 +58,15 @@ public class NativeCore {
                     }
                 }
                 // Vcloud: o chamador de verdade desta chamada (pelo pid), e não o app que criou este processo (fica velho)
-                int quem = com.vcloud.motor.utils.QuemChama.uidDoPid(android.os.Binder.getCallingPid());
-                if (quem > 0 && quem < Process.LAST_APPLICATION_UID) return quem;
+                // Mesmo app (chamada dentro do próprio processo ou entre processos do mesmo app, ex.: gms -> gms): no Android de verdade o
+                // uid de quem chama é igual a Process.myUid() (= uid do celular aqui). O Google confere isso ("0p": getCallingUid() == myUid()).
+                // Só nos apps de dentro; o servidor ":black" e a tela do Vcloud seguem como antes.
+                if (VcloudCore.get().isBlackProcess()) {
+                    int cpid = android.os.Binder.getCallingPid();
+                    if (cpid == Process.myPid()) return origCallingUid;
+                    int quem = com.vcloud.motor.utils.QuemChama.uidDoPid(cpid);
+                    if (quem > 0 && quem < Process.LAST_APPLICATION_UID) return quem == VcloudCore.getBUid() ? origCallingUid : quem;
+                }
                 
                 String appPackageName = VcloudCore.getAppPackageName();
                 if (appPackageName != null && appPackageName.equals("com.google.android.gms")){
@@ -89,7 +80,7 @@ public class NativeCore {
                 try {
                     int callingBUid = VcloudCore.getCallingBUid();
                     if (callingBUid > 0 && callingBUid < Process.LAST_APPLICATION_UID) {
-                        return callingBUid;
+                        return callingBUid == VcloudCore.getBUid() ? origCallingUid : callingBUid;
                     }
                 } catch (Exception e) {
                     Log.w(TAG, "Error getting calling BUid: " + e.getMessage());

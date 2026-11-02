@@ -366,13 +366,6 @@ public class IPackageManagerProxy extends BinderInvocationStub {
                 return method.invoke(who, args);
             }
             if (uid == VcloudCore.getHostUid()) {
-                if ("com.google.android.gms".equals(BActivityThread.getAppPackageName())) {
-                    StringBuilder pilha = new StringBuilder();
-                    StackTraceElement[] st = Thread.currentThread().getStackTrace();
-                    for (int i = 3; i < Math.min(st.length, 16); i++) pilha.append(st[i].getClassName()).append('.').append(st[i].getMethodName()).append(' ');
-                    com.vcloud.motor.utils.Diagnostico.eventoLimitado("pkguid", 60_000,
-                            "UID perguntou pacotes do uid do celular (" + uid + ") no gms; quem perguntou: " + pilha);
-                }
                 args[0] = BActivityThread.getBUid();
                 uid = (int) args[0];
             }

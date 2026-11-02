@@ -341,7 +341,7 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Não testado no aparelho. Incógnitas: checkin do GMS de dentro como app comum, login de conta, licenças (não se burla). Teste: ligar, abrir a Play Store de dentro, Central > Testar Google > Copiar.
 
 ## Regra: versão do app
-- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.18 (418).
+- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.19 (419).
 
 ## Play Store de dentro: erro de uid no provedor (4.0.2)
 - Relatório 19:33: `PROVEDOR erro engolido (query) em gms: Calling uid: 10014 doesn't match source uid: 10454` (modo Google completo ligado, caminho de dentro ativo).
@@ -431,3 +431,11 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - `UID perguntou pacotes do uid do celular ... AbstractGmsTracer` = rastreio do gms (inofensivo).
 - `Only 0p apps`: logo antes (`DefaultAuthDelegateChimeraService`) o gms perguntou os pacotes do uid 10025 = ele mesmo, com assinatura do Google (`VcloudAssinatura ... signatures=1`) e foi recusado → "0p" não é só assinatura: exige app de sistema. A cópia nasce de um APK comum sem `FLAG_SYSTEM`.
 - 4.0.18 (hipótese, ainda sem prova): `PackageManagerCompat.marcarComoDoCelular` copia do celular os bits públicos FLAG_SYSTEM/FLAG_UPDATED_SYSTEM_APP para os pacotes Google de dentro (`GmsCore.isGoogleAppOrService`). Histórico: `GOOGLE <pkg> marcado como no celular`. Não mexe em privateFlags (privilegiado).
+
+## 4.0.19 — regra do "0p" lida no código do Google Play Services 26.43.30 (APK enviado pelo usuário, só leitura)
+- Erro: `atmv.i(Context)` (DefaultAuthDelegateChimeraService) → `if (!bteg.U(ctx)) throw SecurityException("Only 0p apps...")`; `bteg.U(ctx) = dodv.a(ctx, Binder.getCallingUid())`.
+- `dodv.a(ctx, uid)`: **`uid == Process.myUid()` → true**; senão `dodv.c(ctx, uid)`: cache de uids aprovados; senão `getPackagesForUid(uid)` e algum pacote na lista `donn.a` {com.google.android.gms, .isolated, .isolated.droidguard, .supervision, .isolated.auth.account} E `brfg.g(pkg)` (assinado Google/plataforma, via módulo googlecertificates ou `getPackageInfo(pkg, GET_SIGNING_CERTIFICATES|GET_SIGNATURES)`).
+- Causa no Vcloud: `Process.myUid()` mostra o uid do celular (10454) mas `NativeCore.getCallingUid` devolvia o uid virtual (10025) mesmo para chamadas do próprio app (gms→gms, ou depois de `clearCallingIdentity`) → nunca iguais → caía na checagem pesada e falhava. (Prova: `PackageManagerStub: 10025 , gms GetPackagesForUid` logo antes do erro.)
+- 4.0.19: nos apps de dentro, `getCallingUid` devolve o uid do celular quando o chamador é o próprio processo ou outro processo do MESMO app (pid → `QuemChama` → mesmo uid virtual); também no caminho antigo (`callingBUid == meu buid`). REMOVIDOS: remendo "sistema 1000" (4.0.14), marca FLAG_SYSTEM (4.0.18, nunca disparou) e o diagnóstico do rastreio do gms.
+- O gms real vem em SPLITS (`split_GoogleCertificates_installtime`, `DynamiteLoader`, `CronetDynamite`, `AdsDynamite`, `MeasurementDynamite`, `DynamiteModulesA/C`, `MapsDynamite`, config.*) e o Vcloud só copia o `base.apk` (`installPackageAsUser(sourceDir)`); o log mostra `Selected local version of googlecertificates` (vem do base) e módulos dynamite "remote". Possível problema futuro.
+- Não testado no aparelho.
