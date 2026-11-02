@@ -67,6 +67,13 @@ class App : Application() {
             super.onCreate()
             AppManager.doOnCreate(mContext)
             com.vcloud.app.view.painel.PainelLateral.iniciarSeForServidor(mContext)
+            // Google de dentro: reinício único dos dados (estado velho do checkin); espera o servidor do motor subir
+            if (VcloudCore.get().isMainProcess) {
+                Thread {
+                    try { Thread.sleep(8000) } catch (_: InterruptedException) { }
+                    com.vcloud.motor.utils.GoogleModo.reiniciarDadosUmaVez("google_reset_4_0_33")
+                }.start()
+            }
         } catch (e: Exception) {
             Log.e("App", "Error in onCreate: ${e.message}")
         }

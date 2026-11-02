@@ -341,7 +341,7 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Não testado no aparelho. Incógnitas: checkin do GMS de dentro como app comum, login de conta, licenças (não se burla). Teste: ligar, abrir a Play Store de dentro, Central > Testar Google > Copiar.
 
 ## Regra: versão do app
-- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.32 (432).
+- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.33 (433).
 
 ## Play Store de dentro: erro de uid no provedor (4.0.2)
 - Relatório 19:33: `PROVEDOR erro engolido (query) em gms: Calling uid: 10014 doesn't match source uid: 10454` (modo Google completo ligado, caminho de dentro ativo).
@@ -513,3 +513,9 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Foto (`FOTO das threads do gms 8 s depois do checkin`): `[GmsIntentOperationChimeraService] processing` está WAITING em `afqc.run:38` (`Object.wait`); `PersistentIntentOperationChimeraService` idem; o executor de operações (keepAlive 5 s) já não existe. Código (só leitura): `afqc.run` espera em `k.wait()` até a fila `l` ter intents; `afqe.onStartCommand` adiciona o intent e `notifyAll()`. Logo o checkin foi tratado ou descartado sem erro e sem nenhuma consulta de telefone (nenhum `phonesubinfo.getIccSerialNumber...`).
 - Hipótese (NÃO confirmada): estado salvo de tentativas anteriores no `gms` (as rodadas 4.0.27/28 caíram no meio do checkin) faz o checkin pular ("espera/backoff"); resetar os dados do Google de dentro (Serviços do Google: desinstalar e instalar) limparia isso.
 - 4.0.32: registros `TELEFONE consulta ...` agora com limite de 3 s (antes 120 s escondia repetições no mesmo processo); a foto passa a mostrar o processo e o pid.
+
+## 4.0.33 (relatório 03:19, app 4.0.32)
+- Foto das threads (agora com processo/pid = gms.ui): `GmsIntentOperationChimeraService [processing]` WAITING em `afqc.run` (espera a fila `l`); sem nenhuma consulta de telefone depois do `CHECKIN_START_ACTION`. O checkin some sem erro.
+- Código do gms 26.43.30 (só leitura), `blan.a()` (CheckinTask): portões antes de iniciar: (1) com flag, `ActivityManager.getRunningServices` contendo `com.google.android.gsf/.checkin.CheckinService` → "GSF Checkin still active" e aborta; (2) `ConnectivityManager.getActiveNetworkInfo() == null` → "checkin scheduled: no active network"; (3) "GmsCore checkin is not enabled."; (4) mensagens "Checkin will retry later, network is not available" / "Unable to run checkin now.". O motor responde NetworkInfo não nulo e CONNECTED; o `getServices` virtual só lista serviços do processo do chamador (não deve incluir o do gsf). Essas mensagens usam o logger `La.V` (não vai ao logcat) → portão não observável.
+- O log não mostra reinício dos dados do Google (nenhum `onPackageUninstalled/installPackage`), então o passo manual provavelmente não foi feito.
+- 4.0.33: `GoogleModo.reiniciarDadosUmaVez("google_reset_4_0_33")` chamado em `App.onCreate` (processo principal, 8 s depois): com o modo Google completo ligado, `clearPackage` de gms/gsf/vending uma única vez (arquivo-marca em `blackbox/`); histórico `GOOGLE dados de dentro reiniciados uma vez ...`. Hipótese NÃO confirmada: o Chimera guarda registro de quedas (`GCore-Chimera-Crash`) e pula a operação que caiu 4x nas rodadas 4.0.27/28.

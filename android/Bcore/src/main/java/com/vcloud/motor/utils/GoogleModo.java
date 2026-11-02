@@ -23,4 +23,25 @@ public final class GoogleModo {
             Diagnostico.evento("GOOGLE modo: não consegui gravar a chave (" + e + ")");
         }
     }
+
+    /**
+     * Uma vez por "marca": apaga os dados do Google de dentro (gms, gsf, Play Store) para sair de um estado velho/quebrado
+     * (tentativas de checkin que caíram antes). Só com o modo Google completo ligado; não mexe no Google do celular.
+     */
+    public static void reiniciarDadosUmaVez(String marca) {
+        try {
+            if (!completoDentro()) return;
+            File m = new File(BEnvironment.getVirtualRoot(), marca);
+            if (m.exists()) return;
+            for (String pkg : new String[]{"com.google.android.gms", "com.google.android.gsf", "com.android.vending"}) {
+                try { com.vcloud.motor.VcloudCore.get().clearPackage(pkg, 0); } catch (Throwable e) {
+                    Diagnostico.evento("GOOGLE reinício: não consegui limpar " + pkg + " (" + e + ")");
+                }
+            }
+            m.createNewFile();
+            Diagnostico.evento("GOOGLE dados de dentro reiniciados uma vez (" + marca + "): gms, gsf e Play Store");
+        } catch (Throwable e) {
+            Diagnostico.evento("GOOGLE reinício falhou: " + e);
+        }
+    }
 }
