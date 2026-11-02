@@ -33,6 +33,25 @@ public class IDevicePolicyManagerProxy extends BinderInvocationStub {
         return false;
     }
 
+    /**
+     * O Android confere se o pacote informado (ex.: com.google.android.gms) é do uid de quem chama (o Vcloud) e recusa
+     * ("Caller with uid 10454 is not com.google.android.gms"), derrubando a tela de escolher conta. No espaço virtual não há política
+     * de dispositivo: respostas neutras (vazio / falso).
+     */
+    @Override
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        try {
+            return super.invoke(proxy, method, args);
+        } catch (SecurityException e) {
+            String m = e.getMessage();
+            if (m == null || !(m.contains("Caller with uid") || m.contains("is not ") || m.contains("does not belong"))) throw e;
+            Object r = com.vcloud.motor.utils.ValorPadrao.de(method.getReturnType());
+            com.vcloud.motor.utils.Diagnostico.eventoLimitado("dpm|" + method.getName(), 300_000,
+                    "POLÍTICA " + method.getName() + " recusada pelo Android; resposta neutra");
+            return r;
+        }
+    }
+
     @ProxyMethod("getStorageEncryptionStatus")
     public static class GetStorageEncryptionStatus extends MethodHook {
 

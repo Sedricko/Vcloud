@@ -35,6 +35,25 @@ public class IUserManagerProxy extends BinderInvocationStub {
         return false;
     }
 
+    /**
+     * Perguntas sobre usuários (isMainUser, isManagedProfile, ...) que o Android recusa ao Vcloud ("need MANAGE_USERS, CREATE_USERS, or
+     * QUERY_USERS") derrubavam a tela de login do Google. O usuário virtual é o principal e único: respostas neutras.
+     */
+    @Override
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        try {
+            return super.invoke(proxy, method, args);
+        } catch (SecurityException e) {
+            String m = e.getMessage();
+            if (m == null || !(m.contains("MANAGE_USERS") || m.contains("QUERY_USERS") || m.contains("CREATE_USERS"))) throw e;
+            String n = method.getName();
+            Object r = n.equals("isMainUser") || n.equals("isUserUnlocked") || n.equals("isUserRunning") || n.equals("isUserForeground")
+                    || n.equals("isUserVisible") ? (Object) Boolean.TRUE : com.vcloud.motor.utils.ValorPadrao.de(method.getReturnType());
+            com.vcloud.motor.utils.Diagnostico.eventoLimitado("usr|" + n, 300_000, "USUÁRIO " + n + " recusado pelo Android; resposta neutra: " + r);
+            return r;
+        }
+    }
+
     @ProxyMethod("getApplicationRestrictions")
     public static class GetApplicationRestrictions extends MethodHook {
         @Override

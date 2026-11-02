@@ -341,7 +341,7 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Não testado no aparelho. Incógnitas: checkin do GMS de dentro como app comum, login de conta, licenças (não se burla). Teste: ligar, abrir a Play Store de dentro, Central > Testar Google > Copiar.
 
 ## Regra: versão do app
-- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.19 (419).
+- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.20 (420).
 
 ## Play Store de dentro: erro de uid no provedor (4.0.2)
 - Relatório 19:33: `PROVEDOR erro engolido (query) em gms: Calling uid: 10014 doesn't match source uid: 10454` (modo Google completo ligado, caminho de dentro ativo).
@@ -439,3 +439,11 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - 4.0.19: nos apps de dentro, `getCallingUid` devolve o uid do celular quando o chamador é o próprio processo ou outro processo do MESMO app (pid → `QuemChama` → mesmo uid virtual); também no caminho antigo (`callingBUid == meu buid`). REMOVIDOS: remendo "sistema 1000" (4.0.14), marca FLAG_SYSTEM (4.0.18, nunca disparou) e o diagnóstico do rastreio do gms.
 - O gms real vem em SPLITS (`split_GoogleCertificates_installtime`, `DynamiteLoader`, `CronetDynamite`, `AdsDynamite`, `MeasurementDynamite`, `DynamiteModulesA/C`, `MapsDynamite`, config.*) e o Vcloud só copia o `base.apk` (`installPackageAsUser(sourceDir)`); o log mostra `Selected local version of googlecertificates` (vem do base) e módulos dynamite "remote". Possível problema futuro.
 - Não testado no aparelho.
+
+## 4.0.20 (relatório 00:37, app 4.0.19) — o `0p` PASSOU
+- Sem `Only 0p` no log: a regra lida no gms (`getCallingUid()==myUid()`) estava certa. As telas de login do Google agora ABREM (`AccountIntroActivity`, `AccountPickerActivity`, processo `gms.ui`) e caem por permissões do Android:
+  1. `UserManager.isMainUser()` → `SecurityException: need MANAGE_USERS, CREATE_USERS, or QUERY_USERS` (derruba `AccountIntroActivity.onCreate`).
+  2. `DevicePolicyManager.getAccountTypesWithManagementDisabledAsUser` → `Caller with uid 10454 is not com.google.android.gms` (derruba `AccountPickerActivity.onResume`).
+  3. Bug meu: `GetContentProvider` com `initProcess` nulo (app pausado) → NPE.
+- 4.0.20: `IUserManagerProxy.invoke` e `IDevicePolicyManagerProxy.invoke` capturam essas recusas e devolvem resposta neutra (`ValorPadrao`: `isMainUser/isUserUnlocked/...` = true, o resto vazio/falso/0); `GetContentProvider` trata `appConfig == null`. Regras novas no `AutoAnalise`. Histórico: `USUÁRIO <método> recusado...`, `POLÍTICA <método> recusada...`.
+- Ainda abertos: `android-id = 0`; WebView (`SandboxedProcessService0`) ausente dentro; gms só com `base.apk` (sem splits).

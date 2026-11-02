@@ -200,6 +200,7 @@ public class IActivityManagerProxy extends ClassInvocationStub {
                                         providerInfo.packageName,
                                         providerInfo.processName,
                                         BActivityThread.getUserId());
+                        if (appConfig == null) return null; // app pausado pelo freio de queda em laço: provedor indisponível
                         if (appConfig.bpid != BActivityThread.getAppPid()) {
                             providerBinder = VcloudCore.getBActivityManager()
                                     .acquireContentProviderClient(providerInfo);
