@@ -44,6 +44,21 @@ public class IUserManagerProxy extends BinderInvocationStub {
         }
     }
 
+    /**
+     * Android 17: UserManager.getApplicationRestrictions chama getApplicationRestrictionsForUser(pacote, userId) e o sistema só
+     * aceita se o pacote for do próprio uid de quem chama (senão "Only system may: get application restrictions for other
+     * user/app" e o addAccount do Google falha). O gancho acima tem o nome antigo e nunca pegava essa chamada.
+     */
+    @ProxyMethod("getApplicationRestrictionsForUser")
+    public static class GetApplicationRestrictionsForUser extends MethodHook {
+        @Override
+        protected Object hook(Object who, Method method, Object[] args) throws Throwable {
+            args[0] = VcloudCore.getHostPkg();
+            if (args.length > 1 && args[1] instanceof Integer) args[1] = VcloudCore.getHostUserId();
+            return method.invoke(who, args);
+        }
+    }
+
     @ProxyMethod("getProfileParent")
     public static class GetProfileParent extends MethodHook {
         @Override
