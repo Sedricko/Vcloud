@@ -361,6 +361,10 @@ public class IPackageManagerProxy extends BinderInvocationStub {
         @Override
         protected Object hook(Object who, Method method, Object[] args) throws Throwable {
             int uid = (Integer) args[0];
+            if (uid >= 0 && uid < android.os.Process.FIRST_APPLICATION_UID) {
+                // uid de sistema (ex.: 1000 = "android"): quem responde é o Android de verdade, não a lista virtual
+                return method.invoke(who, args);
+            }
             if (uid == VcloudCore.getHostUid()) {
                 args[0] = BActivityThread.getBUid();
                 uid = (int) args[0];

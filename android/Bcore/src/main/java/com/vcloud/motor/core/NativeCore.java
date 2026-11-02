@@ -44,6 +44,22 @@ public class NativeCore {
             
             if (origCallingUid > 0 && origCallingUid < Process.FIRST_APPLICATION_UID)
                 return origCallingUid;
+
+            // Vcloud: o autenticador do Google só aceita addAccount de "0p" (sistema/Google) e quem chama é o gerenciador de contas
+            // do Vcloud, que faz o papel do AccountManagerService do sistema; para ele, o chamador vale como sistema.
+            if (origCallingUid == 0 || origCallingUid == VcloudCore.getHostUid()) {
+                String pkg = VcloudCore.getAppPackageName();
+                if (pkg != null && pkg.equals("com.google.android.gms")) {
+                    StackTraceElement[] st0 = Thread.currentThread().getStackTrace();
+                    for (int i = 0; i < st0.length && i < 24; i++) {
+                        if (st0[i].getClassName().startsWith("android.accounts.AbstractAccountAuthenticator$Transport")) {
+                            com.vcloud.motor.utils.Diagnostico.eventoLimitado("authuid", 60_000,
+                                    "LOGIN chamador do autenticador: uid " + origCallingUid + " -> sistema (" + Process.SYSTEM_UID + ")");
+                            return Process.SYSTEM_UID;
+                        }
+                    }
+                }
+            }
             
             if (origCallingUid > Process.LAST_APPLICATION_UID)
                 return origCallingUid;

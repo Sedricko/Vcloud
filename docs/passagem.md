@@ -341,7 +341,7 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Não testado no aparelho. Incógnitas: checkin do GMS de dentro como app comum, login de conta, licenças (não se burla). Teste: ligar, abrir a Play Store de dentro, Central > Testar Google > Copiar.
 
 ## Regra: versão do app
-- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.13 (413).
+- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.14 (414).
 
 ## Play Store de dentro: erro de uid no provedor (4.0.2)
 - Relatório 19:33: `PROVEDOR erro engolido (query) em gms: Calling uid: 10014 doesn't match source uid: 10454` (modo Google completo ligado, caminho de dentro ativo).
@@ -397,3 +397,9 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Causa: `IUserManagerProxy` tinha o gancho `getApplicationRestrictions` (nome antigo); o método real é `getApplicationRestrictionsForUser(pkg, userId)`. 4.0.13 adiciona o gancho com o nome certo (pacote e userId do Vcloud). Não testado.
 - Também no log: `GservicesPersistence: Package com.vcloud.app is not approved to access the device ID` (ligado ao android_id) — ainda aberto.
 - Processo de UI do login: `com.google.android.gms.ui` (p2) já sobe ("Prewarming auth UI process").
+
+## 4.0.14 (relatório 22:52, app 4.0.13)
+- `getApplicationRestrictionsForUser` resolveu: o addAccount agora chega ao autenticador, o processo da tela de login (`gms.ui`) sobe e o WebView é pré-aquecido.
+- Nova barreira (log, gms pid p1): `AccountAuthenticator addAccount(com.google)` → `SecurityException: Only 0p apps are allowed to call this API` logo depois de `PackageManagerStub: 0 , com.google.android.gms GetPackagesForUid: [com.google.android.gms]` (o gms perguntou pelo uid de quem chama e recebeu 0). Código ofuscado (`atmv.i`); não achei a regra em fonte pública — hipótese: só aceita sistema/Google (o AccountManagerService do sistema chama como uid 1000).
+- 4.0.14 (hipótese): `NativeCore.getCallingUid` devolve 1000 só no gms e só dentro de `AbstractAccountAuthenticator$Transport`; `GetPackagesForUid` passa uids < 10000 ao Android real (1000 → "android"). Histórico: `LOGIN chamador do autenticador: uid X -> sistema`.
+- Aberto ainda: `BIND sem serviço de dentro para com.google.android.webview/...SandboxedProcessService0`; `Unable to load font Google Sans` (fonts provider); `android-id = 0`/`not approved to access the device ID`.
