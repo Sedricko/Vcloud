@@ -593,3 +593,10 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Causa provável (código): `spl` (componente da loja no :background) não implementa `avru`/`auxo`; essas tarefas são dos provedores do processo PRINCIPAL. `BActivityThread.installProviders` instala em qualquer processo os provedores cujo `processName` é o pacote (condição `providerInfo.processName.equals(context.getPackageName())`), ou seja, instalava provedores do processo principal também no `:background`.
 - Mudança: 4.0.43 revertida; na Play Store (`com.android.vending`) os provedores do processo principal não são instalados nos outros processos (só ela, para não mexer no resto, p.ex. gms).
 - Não verificado no aparelho.
+
+## 4.0.45
+- Usuário (após a 4.0.44): compra funciona; download, perfil e desinstalar não.
+- Relatório 10:48 (4.0.44): o `:background` não cai mais; a Play Store enfileira ("Will queue ... downloaded") mas logo recebe do servidor `PERMISSION_DENIED: Rejected by (internal-only) security policy` (chamada gRPC; qual não sei). Nenhum `INSTALADOR` apareceu.
+- Mudança 1: `ActivityManagerCommonProxy.StartActivity`: pedido de tela ACTION_DELETE / UNINSTALL_PACKAGE com `package:X` de um app instalado DENTRO do Vcloud (não Google) remove de dentro (`uninstallPackageAsUser`), sem abrir a tela do celular. Sem confirmação (a Play Store costuma pedir a dela antes: não verificado).
+- Mudança 2 (diagnóstico): `VENDING abre: ação=... dados=... componente=...` (cada tela que a Play Store abre) e `INSTALADOR chamada <método>` (cada método do instalador que ela usa).
+- Não verificado no aparelho. Download e perfil seguem sem causa conhecida; precisam do relatório com essas linhas.

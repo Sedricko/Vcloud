@@ -84,6 +84,24 @@ public class ActivityManagerCommonProxy {
                 allowRedirect(intent);
                 return method.invoke(who, args);
             }
+            if ("com.android.vending".equals(BActivityThread.getAppPackageName())) {
+                com.vcloud.motor.utils.Diagnostico.eventoLimitado("vendingabre|" + intent.getAction() + intent.getDataString(), 5_000,
+                        "VENDING abre: ação=" + intent.getAction() + " dados=" + intent.getDataString() + " componente=" + intent.getComponent());
+            }
+            // Vcloud: "Desinstalar" da Play Store abre a tela de desinstalação do celular; se o app está DENTRO do Vcloud, remove de dentro.
+            if (intent.getData() != null && "package".equals(intent.getScheme())
+                    && (Intent.ACTION_DELETE.equals(intent.getAction()) || "android.intent.action.UNINSTALL_PACKAGE".equals(intent.getAction()))) {
+                final String alvo = intent.getData().getSchemeSpecificPart();
+                final int uid = BActivityThread.getUserId();
+                if (alvo != null && VcloudCore.getBPackageManager().isInstalled(alvo, uid)
+                        && !com.vcloud.motor.core.GmsCore.isGoogleAppOrService(alvo)) {
+                    com.vcloud.motor.utils.Diagnostico.evento("DESINSTALAR " + alvo + " (pedido de tela, feito dentro do Vcloud)");
+                    new Thread(new Runnable() {
+                        @Override public void run() { VcloudCore.getBPackageManager().uninstallPackageAsUser(alvo, uid); }
+                    }, "desinstalar-dentro").start();
+                    return 0;
+                }
+            }
             String dataString = intent.getDataString();
             if (dataString != null && dataString.equals("package:" + BActivityThread.getAppPackageName())) {
                 intent.setData(Uri.parse("package:" + VcloudCore.getHostPkg()));

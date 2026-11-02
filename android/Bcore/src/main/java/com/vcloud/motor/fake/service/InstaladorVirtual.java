@@ -66,6 +66,7 @@ public final class InstaladorVirtual {
     /** Responde as chamadas do IPackageInstaller; devolve NAO se não for com ela. */
     public static Object tratar(Method m, Object[] a) throws Throwable {
         String nome = m.getName();
+        Diagnostico.eventoLimitado("instalador|chamada|" + nome, 60_000, "INSTALADOR chamada " + nome);
         switch (nome) {
             case "createSession":
                 return criar(a[0]);
