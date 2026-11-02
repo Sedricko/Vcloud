@@ -651,3 +651,10 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Logo depois: `Tipos de conta registrados dentro: NENHUM` e `bind failure` / `Error while retrieving auth token` (110x) → a Play Store perde o login e os próximos downloads falham (1400). Causa: `BAccountManagerService.loadAuthenticatorCache(pacote)` (chamado em `onPackageInstalled`) fazia `authenticators.clear()` e lia só o pacote novo → apagava o autenticador do Google toda vez que se instalava um app.
 - Mudança: com pacote, só as entradas daquele pacote são refeitas (sem clear geral).
 - Não verificado no aparelho (instalar 2 apps seguidos; abrir o app instalado).
+
+## 4.0.55
+- Usuário (19:33): Play Store mostra 4 apps "Instalando..." sem terminar; Zombie Waves e outros já aparecem na lista do Vcloud (instalam), mas a loja não sabe que acabou. Craft Survival (jogo com licença Play) abre e fecha em 1 s: `LicenseClient NameNotFoundException`, `PSR: Package ... not installed`, `Package name ... is not owned by caller`, `getInstallSourceInfo NameNotFound`.
+- Causa achada no código do Vcloud: o aviso final do instalador (`IntentSender.sendIntent` com `EXTRA_STATUS`) vai para um PendingIntent de broadcast "de fachada" (`ProxyBroadcastReceiver`); o Android coloca os extras de preenchimento no intent de fachada, e `ProxyBroadcastRecord.create` só entregava o intent original → a Play Store nunca recebia o status.
+- Mudança: `ProxyBroadcastRecord.create` copia os extras de preenchimento do intent de fachada para o original.
+- Ainda a fazer: `getInstallSourceInfo`/installer do app (Play Store como instalador, para a licença); callbacks de sessão (`onFinished`); PACKAGE_ADDED aos apps de dentro; partes de recursos.
+- Não verificado no aparelho.
