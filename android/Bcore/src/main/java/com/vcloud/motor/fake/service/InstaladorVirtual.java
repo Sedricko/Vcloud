@@ -345,10 +345,47 @@ public final class InstaladorVirtual {
                 } finally {
                     Diagnostico.evento("INSTALADOR sessão " + id + (ok ? " instalou " : " NÃO instalou ") + pacote + (msg != null ? " | " + msg : ""));
                     avisar(destino, id, pacote, ok ? PackageInstaller.STATUS_SUCCESS : PackageInstaller.STATUS_FAILURE, msg);
+                    notificarSessao(id, ok);
                     apagar(dir);
                 }
             }
         }, "instalador-confirmar").start();
+    }
+
+    /**
+     * No Android de verdade, ao terminar a sessão o sistema (1) chama os callbacks de sessão e (2) manda o broadcast
+     * android.content.pm.action.SESSION_UPDATED ao instalador (a Play Store tem receptores para ele). Sem isso ela ficava em "Instalando...".
+     */
+    private static void notificarSessao(int id, boolean ok) {
+        synchronized (CALLBACKS) {
+            for (Object cb : new ArrayList<>(CALLBACKS)) {
+                try { cb.getClass().getMethod("onSessionFinished", int.class, boolean.class).invoke(cb, id, ok); } catch (Throwable ignored) { }
+            }
+        }
+        try {
+            Intent i = new Intent("android.content.pm.action.SESSION_UPDATED");
+            Object info = info(id);
+            if (info instanceof android.os.Parcelable) i.putExtra("android.content.pm.extra.SESSION", (android.os.Parcelable) info);
+            i.setPackage(meta(id).getProperty("guest"));
+            android.os.Parcel p = android.os.Parcel.obtain();
+            try {
+                p.writeInt(2); // TYPE_UNREGISTERED: finish() não fala com o Android
+                p.writeByte((byte) 0); p.writeByte((byte) 0);
+                p.writeStrongBinder(null);
+                p.writeInt(BActivityThread.getUserId()); p.writeInt(0); p.writeInt(0);
+                p.writeString(null); p.writeBundle(null);
+                p.writeByte((byte) 0); p.writeByte((byte) 0);
+                p.writeString(java.util.UUID.randomUUID().toString());
+                p.setDataPosition(0);
+                com.vcloud.motor.entity.am.PendingResultData pr = com.vcloud.motor.entity.am.PendingResultData.CREATOR.createFromParcel(p);
+                VcloudCore.getBActivityManager().scheduleBroadcastReceiver(i, pr, BActivityThread.getUserId());
+            } finally {
+                p.recycle();
+            }
+            Diagnostico.evento("INSTALADOR SESSION_UPDATED enviado para " + i.getPackage() + " (sessão " + id + ")");
+        } catch (Throwable t) {
+            Diagnostico.eventoLimitado("instalador|sessionupdated", 5000, "INSTALADOR SESSION_UPDATED falhou: " + t);
+        }
     }
 
     private static String nomes(File[] fs) {

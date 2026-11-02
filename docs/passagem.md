@@ -668,3 +668,9 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Relatório 19:47 (4.0.56, com a pilha): tocar no perfil cai (linha principal) em `ICrossProfileApps$Stub$Proxy.getTargetUserProfiles ← CrossProfileApps.getTargetUserProfiles ← Play Store (onClick)`: `SecurityException: Package com.android.vending does not belong to 10454`. Outra, em thread de fundo: `IUsageStatsManager.queryEventsWithFilter`: `com.android.vending from uid 10454 not allowed to perform GET_USAGE_STATS`.
 - Mudança: `ICrossProfileAppsProxy` (serviço "crossprofileapps": nome do app → Vcloud; recusa → vazio) e `IUsageStatsProxy` ("usagestats": recusa → vazio), no bloco isR do HookManager.
 - Não verificado no aparelho.
+
+## 4.0.58
+- Usuário: perfil abre (4.0.57 ok). Alguns apps instalam (Soul Huntress, Zombie Waves...), outros não. Relatório 20:01: Soul Huntress instala dentro (`sessão ... instalou`), mas a Play Store não vira para "instalado" (nada depois do commit); os que "falham" (blackdeck 6252, stronghold 5426) são pedidos ANTIGOS reiniciados (`IV2: restart active install`, `SM: session ... is closed`, `PSV: Package ... was not installed`): a sessão virtual deles já não existe.
+- Achado no manifesto da Play Store: `AtomicInstallBroadcastReceiverMain/Background` com `android.content.pm.action.SESSION_UPDATED`. No Android real o sistema manda esse broadcast (e os callbacks de sessão) ao fim; o Vcloud não mandava.
+- Mudança: `InstaladorVirtual.notificarSessao`: chama os callbacks registrados (`onSessionFinished`) e envia SESSION_UPDATED (com SessionInfo) aos receptores do instalador via `BActivityManager.scheduleBroadcastReceiver` com um `PendingResultData` tipo TYPE_UNREGISTERED. Log `INSTALADOR SESSION_UPDATED enviado`.
+- Não verificado no aparelho. Se a loja ainda não marcar como instalado, falta também PACKAGE_ADDED aos receptores dinâmicos.
