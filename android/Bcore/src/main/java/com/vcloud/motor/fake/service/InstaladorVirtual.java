@@ -229,9 +229,9 @@ public final class InstaladorVirtual {
     }
 
     private static String nomeSeguro(String nome) {
+        // Vcloud: a Play Store confere os nomes que gravou ("config.arm64_v8a", "com.pacote.apk"...) com o getNames(); não mexer neles.
         String n = nome == null ? "base.apk" : new File(nome).getName();
-        if (n.equals("meta.properties")) n = "_meta";
-        return n.endsWith(".apk") ? n : n + ".apk";
+        return n.equals("meta.properties") ? "_meta" : n;
     }
 
     /** Servidor do "FileBridge" do Android: o cliente escreve comandos (1 grava, 2 fsync, 3 fecha) num socket. */
@@ -286,13 +286,30 @@ public final class InstaladorVirtual {
         return true;
     }
 
-    private static File escolherBase(File dir) {
-        File base = new File(dir, "base.apk");
+    private static File escolherBase(File dir, String pacote) {
+        File base = pacote == null ? null : new File(dir, pacote + ".apk");
+        if (base != null && base.exists()) return base;
+        base = new File(dir, "base.apk");
         if (base.exists()) return base;
         File melhor = null;
         File[] fs = dir.listFiles();
         if (fs != null) for (File f : fs) if (f.getName().endsWith(".apk") && (melhor == null || f.length() > melhor.length())) melhor = f;
         return melhor;
+    }
+
+    /** As partes (splits) com bibliotecas nativas (ex.: config.arm64_v8a): copia as .so para a pasta de bibliotecas do app. */
+    private static void copiarBibliotecasDasPartes(File dir, File base, String pacote) {
+        File[] fs = dir.listFiles();
+        if (fs == null) return;
+        for (File f : fs) {
+            if (f.equals(base) || f.getName().equals("meta.properties") || f.getName().endsWith(".dm")) continue;
+            try {
+                com.vcloud.motor.utils.NativeUtils.copyNativeLib(f, BEnvironment.getAppLibDir(pacote));
+                Diagnostico.evento("INSTALADOR bibliotecas da parte " + f.getName() + " copiadas para " + pacote);
+            } catch (Throwable t) {
+                Diagnostico.eventoLimitado("instalador|lib|" + f.getName(), 5000, "INSTALADOR parte " + f.getName() + " sem bibliotecas (" + t + ")");
+            }
+        }
     }
 
     private static void confirmar(final int id, final IntentSender destino) {
@@ -305,7 +322,7 @@ public final class InstaladorVirtual {
                 String pacote = meta(id).getProperty("pacote");
                 File dir = pasta(id);
                 try {
-                    File base = escolherBase(dir);
+                    File base = escolherBase(dir, pacote);
                     File[] fs = dir.listFiles();
                     Diagnostico.evento("INSTALADOR sessão " + id + " confirmada: pacote=" + pacote + " arquivos=" + (fs == null ? 0 : fs.length)
                             + (fs == null ? "" : " " + nomes(fs)));
@@ -318,6 +335,7 @@ public final class InstaladorVirtual {
                         ok = r != null && r.success;
                         msg = r == null ? "o Vcloud não respondeu" : r.msg;
                         if (r != null && r.packageName != null) pacote = r.packageName;
+                        if (ok) copiarBibliotecasDasPartes(dir, base, pacote);
                     }
                 } catch (Throwable t) {
                     msg = t.toString();

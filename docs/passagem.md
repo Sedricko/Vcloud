@@ -632,3 +632,10 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Relatório 16:23 (4.0.50): `cifm.a=10031` = `myUid` = buid da Play Store (ok, sem problema de captura cedo). Mas NENHUMA linha de chamada do mesmo app em outro processo (`quem=10031 eu=10031`) → a chamada do grpc-binder InstallQueue chega SEM pid (`cpid=0`, `quem=0`: "SEM dono"): é transação `oneway`, que no Android não traz o pid de quem chama. Caía no caminho antigo e devolvia o uid do celular (10454 ≠ 10031) → `internal-only`.
 - Mudança: `NativeCore.getCallingUid`: no processo da Play Store, `cpid==0` → `Process.myUid()`. Só nela (os outros apps seguem como antes).
 - Risco: um app de dentro que chame a Play Store por oneway passaria por ela mesma; dentro do Vcloud já compartilham o mesmo uid real. Não verificado no aparelho.
+
+## 4.0.52
+- Relatório 16:53 (4.0.51): **o `internal-only` sumiu**. A Play Store de dentro agora cria sessão no instalador virtual (`INSTALADOR sessão 700000 criada para com.slg.policewar`), baixa (apk 860 KB + config.arm64_v8a 27 MB + .dm, ~23 s) e tenta instalar.
+- Falha seguinte: `IV2::PreSV: Session doesn't contain resources of required artifacts for package com.slg.policewar. Required artifacts: [com.slg.policewar.apk, config.arm64_v8a, gpdeku, gpdeku.config.arm64_v8a...]` → `SM: Session operation failed statusCode=5425 ... Status: 6573`. Causa: `InstaladorVirtual.nomeSeguro` acrescentava ".apk" a nomes sem ".apk" ("config.arm64_v8a" virava "config.arm64_v8a.apk"), então `getNames()` não batia com os artefatos.
+- Mudança: nomes ficam como a Play Store gravou; base = `<pacote>.apk` (ou base.apk / maior .apk); depois de instalar o base, copia as `.so` das outras partes (`NativeUtils.copyNativeLib`, ex.: `config.arm64_v8a`) para a pasta de bibliotecas do app. Partes de recursos (densidade/idioma) continuam sem uso (próxima etapa).
+- Também visto: `IV2::AdvHelper ... NOT_FOUND: Session not found: 700000` (gRPC de verificação; só aviso) e, para blackdeck, `RF::PP-Copy ENOENT .../dataloader/.../upfront/stream..*.dm` (status 6401): não investigado.
+- Não verificado no aparelho.
