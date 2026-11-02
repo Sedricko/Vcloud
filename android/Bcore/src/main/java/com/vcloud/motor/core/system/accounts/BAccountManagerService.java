@@ -149,6 +149,23 @@ public class BAccountManagerService extends IBAccountManagerService.Stub impleme
         }
     }
 
+    /**
+     * Vcloud: apagar os dados do gms (ou desinstalar) deixava a conta Google na lista, sem o login por trás: a Play Store dizia
+     * "User needs to (re)enter credentials" e o login dizia "Esta conta já existe no seu dispositivo". Tira as contas do tipo.
+     */
+    public void removerContasDoTipo(String tipo) {
+        synchronized (mUserAccountsMap) {
+            for (BUserAccounts ua : mUserAccountsMap.values()) {
+                synchronized (ua.lock) {
+                    java.util.Iterator<BAccount> it = ua.accounts.iterator();
+                    while (it.hasNext()) if (tipo.equals(it.next().account.type)) it.remove();
+                }
+            }
+        }
+        saveAllAccounts();
+        android.util.Log.i("CONTAS", "contas do tipo " + tipo + " removidas");
+    }
+
     private void saveAllAccounts() {
         synchronized (mUserAccountsMap) {
             Parcel parcel = Parcel.obtain();

@@ -606,3 +606,8 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Achado no relatório: `FacsCacheGmsModule ... SecurityException: Calling uid: 10454 doesn't match source uid: 10032` em `IAppSearchManager.initialize` (gms de dentro, cache de conta). Candidato à causa do perfil; não confirmado.
 - Mudança: `IAppSearchProxy` (serviço "app_search"): corrige o AttributionSource (uid do celular) nos argumentos, como já é feito em provedores.
 - Não verificado no aparelho. Se o perfil continuar, falta o relatório logo após tocar no perfil (com a Play Store logada e o android_id preenchido).
+
+## 4.0.47
+- Relatório 13:19 (4.0.46): `android_id=null` continua; Play Store: `AuthFailureError: User needs to (re)enter credentials`; login diz "Esta conta já existe". Causa (log CONTAS: total=1): reativar os serviços do Google (tela do Vcloud) apaga os dados do gms mas a conta `com.google` continuava na lista do AccountManager de dentro → conta órfã, sem login, e sem poder entrar de novo. É por isso que perfil/desinstalar/download não dá para testar.
+- Mudança: `BAccountManagerService.removerContasDoTipo`; chamado ao limpar dados ou desinstalar o gms (`BPackageManagerService`). A marca de reinício único passou para `google_reset_4_0_47` (App.kt): na primeira abertura limpa gms/gsf/Play Store e tira a conta órfã. Será preciso entrar na conta Google de novo (uma vez).
+- Não verificado no aparelho.

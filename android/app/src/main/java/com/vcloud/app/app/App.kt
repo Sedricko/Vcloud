@@ -71,7 +71,7 @@ class App : Application() {
             if (VcloudCore.get().isMainProcess) {
                 Thread {
                     try { Thread.sleep(8000) } catch (_: InterruptedException) { }
-                    com.vcloud.motor.utils.GoogleModo.reiniciarDadosUmaVez("google_reset_4_0_33")
+                    com.vcloud.motor.utils.GoogleModo.reiniciarDadosUmaVez("google_reset_4_0_47")
                 }.start()
             }
         } catch (e: Exception) {

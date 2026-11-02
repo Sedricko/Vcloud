@@ -536,6 +536,9 @@ public class BPackageManagerService extends IBPackageManagerService.Stub impleme
                 if (!isInstalled(packageName, userId)) {
                     return;
                 }
+                if ("com.google.android.gms".equals(packageName)) {
+                    try { com.vcloud.motor.core.system.accounts.BAccountManagerService.get().removerContasDoTipo("com.google"); } catch (Throwable ignored) { }
+                }
                 boolean removeApp = ps.getUserState().size() <= 1;
                 BProcessManagerService.get().killPackageAsUser(packageName, userId);
                 int i = BPackageInstallerService.get().uninstallPackageAsUser(ps, removeApp, userId);
@@ -585,6 +588,9 @@ public class BPackageManagerService extends IBPackageManagerService.Stub impleme
         BPackageSettings ps = mPackages.get(packageName);
         if (ps == null)
             return;
+        if ("com.google.android.gms".equals(packageName)) {
+            try { com.vcloud.motor.core.system.accounts.BAccountManagerService.get().removerContasDoTipo("com.google"); } catch (Throwable ignored) { }
+        }
         int i = BPackageInstallerService.get().clearPackage(ps, userId);
     }
 
