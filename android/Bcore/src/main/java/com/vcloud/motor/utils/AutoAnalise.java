@@ -41,6 +41,8 @@ public final class AutoAnalise {
                     "Pergunta de usuário feita com o uid do Vcloud, sem permissão.", "Resposta neutra no gancho do UserManager (já feito)."},
             {"dpm", ALTA, "Caller with uid", "O Android recusou o pacote informado (política de dispositivo)",
                     "O pacote do app de dentro não é do uid do Vcloud.", "Resposta neutra no gancho do DevicePolicyManager (já feito)."},
+            {"biometria", ALTA, "not allowed to perform USE_BIOMETRIC", "A confirmação biométrica/tela de bloqueio foi recusada",
+                    "O nome do pacote da chamada não é do uid do Vcloud.", "Trocar o nome do app pelo do Vcloud (IAuthServiceProxy, já feito)."},
             {"pkgUid", ALTA, "does not belong to", "Pacote não pertence ao uid de quem chamou",
                     "O app de dentro se apresentou com o nome dele e o Android conferiu com o uid do Vcloud.", "Trocar o nome do app pelo do Vcloud na chamada (como no PackageInstaller)."},
             {"pkgChamador", ALTA, "Unknown calling package name", "O Google não reconheceu o app que o chamou",

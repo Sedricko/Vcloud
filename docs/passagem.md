@@ -341,7 +341,7 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Não testado no aparelho. Incógnitas: checkin do GMS de dentro como app comum, login de conta, licenças (não se burla). Teste: ligar, abrir a Play Store de dentro, Central > Testar Google > Copiar.
 
 ## Regra: versão do app
-- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.20 (420).
+- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.21 (421).
 
 ## Play Store de dentro: erro de uid no provedor (4.0.2)
 - Relatório 19:33: `PROVEDOR erro engolido (query) em gms: Calling uid: 10014 doesn't match source uid: 10454` (modo Google completo ligado, caminho de dentro ativo).
@@ -447,3 +447,9 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
   3. Bug meu: `GetContentProvider` com `initProcess` nulo (app pausado) → NPE.
 - 4.0.20: `IUserManagerProxy.invoke` e `IDevicePolicyManagerProxy.invoke` capturam essas recusas e devolvem resposta neutra (`ValorPadrao`: `isMainUser/isUserUnlocked/...` = true, o resto vazio/falso/0); `GetContentProvider` trata `appConfig == null`. Regras novas no `AutoAnalise`. Histórico: `USUÁRIO <método> recusado...`, `POLÍTICA <método> recusada...`.
 - Ainda abertos: `android-id = 0`; WebView (`SandboxedProcessService0`) ausente dentro; gms só com `base.apk` (sem splits).
+
+## 4.0.21 (relatório 00:53, app 4.0.20)
+- As respostas neutras funcionaram (`USUÁRIO isMainUser recusado... true`, `getSeedAccountOptions... null`, `POLÍTICA ... neutra`); a tela de login do Google passou pelo `AccountIntroActivity`.
+- Nova queda: `BiometricPrompt.authenticate` → `IAuthService.authenticate` → `SecurityException: com.google.android.gms from uid 10454 not allowed to perform USE_BIOMETRIC` (o serviço confere se o pacote é do uid de quem chama).
+- 4.0.21: `PacoteDoVcloudProxy` (base) troca o nome do app de dentro pelo do Vcloud em todas as chamadas dos serviços `auth` (`IAuthServiceProxy`) e `biometric` (`IBiometricServiceProxy`), como já feito no PackageInstaller. A janela de confirmação (tela de bloqueio/biometria) é do Android e pede a identidade do próprio usuário. Não testado.
+- Abertos: `android-id = 0`, WebView ausente dentro, gms só com `base.apk`.
