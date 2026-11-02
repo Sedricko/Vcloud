@@ -237,6 +237,10 @@ public class CrashMonitor {
             
             
             Slog.w(TAG, "Crash detected: " + crashInfo);
+            // Vcloud: este tratador substitui o do Android, então a pilha da exceção não aparecia em lugar nenhum do relatório.
+            try {
+                android.util.Log.e("AndroidRuntime", "FATAL EXCEPTION: " + (thread == null ? "?" : thread.getName()) + " (Vcloud)", throwable);
+            } catch (Throwable ignored) { }
             
             
             String crashKey = crashType + "_" + System.currentTimeMillis();

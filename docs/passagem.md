@@ -658,3 +658,8 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Mudança: `ProxyBroadcastRecord.create` copia os extras de preenchimento do intent de fachada para o original.
 - Ainda a fazer: `getInstallSourceInfo`/installer do app (Play Store como instalador, para a licença); callbacks de sessão (`onFinished`); PACKAGE_ADDED aos apps de dentro; partes de recursos.
 - Não verificado no aparelho.
+
+## 4.0.56 (diagnóstico do perfil)
+- Usuário: tocar no ícone de perfil da Play Store sai da loja. Relatório 19:34 (4.0.54): `CrashMonitor: Crash detected: Crash[JavaException] com.android.vending` → `Sending signal PID 602 SIG: 9` logo depois do toque (AppInfoManager / OneGoogle). A exceção (mensagem "Package com.android.vending does not belong to 10454") é de uma exceção NÃO TRATADA na linha principal; o `CrashMonitor.installGlobalCrashHandlers` mata o processo e a pilha nunca era impressa (só havia a mensagem). Esse mesmo "does not belong to 10454" aparece em todo relatório e é a provável causa dos "fechou logo ao abrir" da Play Store.
+- Mudança só de diagnóstico: `CrashMonitor.handleCrash` imprime `FATAL EXCEPTION ... (Vcloud)` com a pilha completa (Log.e AndroidRuntime).
+- Também (sync/instalação): `Instalando...` pode ter sido resolvido na 4.0.55 (extras de preenchimento); não confirmado.
