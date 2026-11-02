@@ -235,7 +235,8 @@ public final class InstaladorVirtual {
 
     /** Servidor do "FileBridge" do Android: o cliente escreve comandos (1 grava, 2 fsync, 3 fecha) num socket. */
     private static ParcelFileDescriptor abrirEscrita(File arquivo, long deslocamento) throws Exception {
-        FileDescriptor[] par = Os.socketpair(OsConstants.AF_UNIX, OsConstants.SOCK_STREAM, 0);
+        FileDescriptor[] par = {new FileDescriptor(), new FileDescriptor()};
+        Os.socketpair(OsConstants.AF_UNIX, OsConstants.SOCK_STREAM, 0, par[0], par[1]);
         final FileDescriptor servidor = par[0];
         final RandomAccessFile raf = new RandomAccessFile(arquivo, "rw");
         raf.seek(deslocamento);
