@@ -64,6 +64,10 @@ public class NativeCore {
                 if (VcloudCore.get().isBlackProcess()) {
                     int cpid = android.os.Binder.getCallingPid();
                     if (cpid == Process.myPid()) return Process.myUid(); // igual ao uid que o app vê de si (Play Store: "Binding only allowed within app")
+                    // Chamada "oneway" (sem espera de resposta) não traz o pid de quem chama (vem 0). O grpc-binder da Play Store (InstallQueue,
+                    // política internal-only) só usa oneway entre os processos da própria loja: então é ela mesma.
+                    // shortcut: vale só para a Play Store; outro app que receba oneway de pid 0 segue pelo caminho antigo.
+                    if (cpid == 0 && "com.android.vending".equals(VcloudCore.getAppPackageName())) return Process.myUid();
                     int quem = com.vcloud.motor.utils.QuemChama.uidDoPid(cpid);
                     if (quem > 0 && quem < Process.LAST_APPLICATION_UID) {
                         int res = quem == VcloudCore.getBUid() ? Process.myUid() : quem;

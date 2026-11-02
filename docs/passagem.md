@@ -627,3 +627,8 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Relatório 16:10 (4.0.49): `internal-only` continua. Lido no dex: a política é `Lcifj;->a(int uid)` = `uid == Lcifm;->a` e `Lcifm;.<clinit>` faz `a = Process.myUid()` UMA vez (capturado quando a classe carrega). Se carregar antes de `BActivityThread.isInit()` (mBoundApplication), `OsStub.getFakeUid` devolve o uid do celular; depois devolve o virtual → `a` e o uid devolvido por `getCallingUid` podem divergir.
 - Mudança só de diagnóstico: `PLAYSTORE (...) política internal-only: cifm.a=... myUid agora=... buid=... host=...` ao abrir a Play Store, e `UID chamada de outro processo: orig cpid quem eu(buid) myUid -> resultado` em `NativeCore.getCallingUid`.
 - Próximo: com esses números, igualar `getCallingUid` ao `cifm.a` ou fixar `Process.myUid()` cedo.
+
+## 4.0.51
+- Relatório 16:23 (4.0.50): `cifm.a=10031` = `myUid` = buid da Play Store (ok, sem problema de captura cedo). Mas NENHUMA linha de chamada do mesmo app em outro processo (`quem=10031 eu=10031`) → a chamada do grpc-binder InstallQueue chega SEM pid (`cpid=0`, `quem=0`: "SEM dono"): é transação `oneway`, que no Android não traz o pid de quem chama. Caía no caminho antigo e devolvia o uid do celular (10454 ≠ 10031) → `internal-only`.
+- Mudança: `NativeCore.getCallingUid`: no processo da Play Store, `cpid==0` → `Process.myUid()`. Só nela (os outros apps seguem como antes).
+- Risco: um app de dentro que chame a Play Store por oneway passaria por ela mesma; dentro do Vcloud já compartilham o mesmo uid real. Não verificado no aparelho.
