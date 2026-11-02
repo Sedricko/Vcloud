@@ -563,3 +563,16 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Ainda no log: `Finsky: Cannot find com.android.providers.downloads` (a Play Store não acha o gerenciador de downloads), `Cannot cast spl to avru` em CachedPackageContentProvider (processo :background, antigo e repetido), `Package com.android.vending does not belong to 10454` (isub/telephony registry).
 - Mudança: `com.android.providers.downloads` entra nos pacotes abertos do sistema (AppSystemEnv), então o pacote do celular fica visível.
 - Não verificado: se o download pela Play Store funciona. Atenção: o instalador usa o PackageInstaller do celular (GetPackageInstaller troca pelo pacote do Vcloud), então instalar pela Play Store pode instalar fora do Vcloud, não dentro.
+
+## 4.0.41 — instalador virtual (etapa 1: instalar, atualizar, desinstalar pela Play Store)
+- Pedido do usuário: a Play Store de dentro deve fazer tudo como a da loja do celular (instalar, atualizar, desinstalar, comprar). Sem burlar nada.
+- Causa (do código, não de um teste): a Play Store usava o PackageInstaller REAL do celular; o Vcloud só trocava o nome do pacote.
+- Mudança: `fake/service/InstaladorVirtual.java`, chamado em `IPackageManagerProxy.GetPackageInstaller` antes da chamada real.
+  - createSession/openSession/getSessionInfo/getAllSessions/getMySessions/abandonSession/registerCallback: sessões em `blackbox/instalador/ID` (arquivos, porque a Play Store tem vários processos).
+  - openWrite: servidor do "FileBridge" (socket; comandos 1 grava, 2 fsync, 3 fecha; cabeçalho 8 bytes big-endian).
+  - commit: instala o APK base com `BPackageManager.installPackageAsUser(..., installByStorage)` e avisa o IntentSender (EXTRA_STATUS 0 ou 1).
+  - uninstall: só se o pacote estiver instalado dentro; remove com `uninstallPackageAsUser`; pacote fora do Vcloud devolve STATUS_FAILURE_INVALID (nunca mexe no celular).
+  - Google (gms/vending/gsf...) não é atualizado nem removido por aqui (recusa com mensagem).
+  - Eventos `INSTALADOR ...` no relatório.
+- Não feito ainda: splits (config de ABI/densidade/idioma; só o base.apk é instalado), callbacks entre processos, compra, WebView.
+- Não verificado no aparelho; a classe nunca foi executada (só compilada pelo CI).

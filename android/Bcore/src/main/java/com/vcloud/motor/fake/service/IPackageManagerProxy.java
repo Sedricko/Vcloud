@@ -389,6 +389,9 @@ public class IPackageManagerProxy extends BinderInvocationStub {
                     new java.lang.reflect.InvocationHandler() {
                         @Override
                         public Object invoke(Object proxy, Method m, Object[] a) throws Throwable {
+                            // Vcloud: instalar/atualizar/desinstalar da Play Store viram instalação DENTRO do Vcloud
+                            Object feito = InstaladorVirtual.tratar(m, a);
+                            if (feito != InstaladorVirtual.NAO) return feito;
                             String guest = BActivityThread.getAppPackageName();
                             if (a != null && guest != null) {
                                 for (int i = 0; i < a.length; i++) if (guest.equals(a[i])) a[i] = VcloudCore.getHostPkg();
