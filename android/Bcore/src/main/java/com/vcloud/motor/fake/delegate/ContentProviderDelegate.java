@@ -28,6 +28,8 @@ import com.vcloud.motor.utils.compat.BuildCompat;
 public class ContentProviderDelegate {
     public static final String TAG = "ContentProviderDelegate";
     private static Set<String> sInjected = new HashSet<>();
+    /** Autoridades dos provedores do próprio app de dentro instalados neste processo (BActivityThread.installProviders). */
+    public static final Set<String> LOCAIS = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
     public static void update(Object holder, String auth) {
         IInterface iInterface;
@@ -73,7 +75,9 @@ public class ContentProviderDelegate {
             if (!sInjected.contains(providerName)) {
                 sInjected.add(providerName);
                 final IInterface iInterface = BRActivityThreadProviderClientRecordP.get(value).mProvider();
-                BRActivityThreadProviderClientRecordP.get(value)._set_mProvider(new ContentProviderStub().wrapper(iInterface, VcloudCore.getHostPkg()));
+                ContentProviderStub stub = new ContentProviderStub();
+                if (LOCAIS.contains(providerName)) stub.local();
+                BRActivityThreadProviderClientRecordP.get(value)._set_mProvider(stub.wrapper(iInterface, VcloudCore.getHostPkg()));
                 BRActivityThreadProviderClientRecordP.get(value)._set_mNames(new String[]{providerName});
             }
         }

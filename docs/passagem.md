@@ -341,7 +341,7 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Não testado no aparelho. Incógnitas: checkin do GMS de dentro como app comum, login de conta, licenças (não se burla). Teste: ligar, abrir a Play Store de dentro, Central > Testar Google > Copiar.
 
 ## Regra: versão do app
-- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.24 (424).
+- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.25 (425).
 
 ## Play Store de dentro: erro de uid no provedor (4.0.2)
 - Relatório 19:33: `PROVEDOR erro engolido (query) em gms: Calling uid: 10014 doesn't match source uid: 10454` (modo Google completo ligado, caminho de dentro ativo).
@@ -470,3 +470,8 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Código do gms 26.43.30 (só leitura): `GservicesChimeraProvider.query` → `cwly.h(ctx, Binder.getCallingUid(), getCallingPackage(), chave)`. Para `android_id`: se `uid == Process.myUid()` → libera; senão se `pkg != null`: `brfg.g(pkg)` (assinado Google) → libera; senão `DevicePolicyManager.isDeviceOwnerApp/isProfileOwnerApp(pkg)` → libera; senão LOG "Package X is not approved..." e NEGA. (`brfg.g` → `brfg.a(pkg,false,false).b`, checa assinatura Google/plataforma.) Logo: o chamador legítimo (gms/vending) passa pelo PACOTE, desde que `getCallingPackage()` seja o do app de dentro.
 - Hipótese: `ContextCompat.fixAttributionSourceState` não altera nada no Android 17 (`_check_mAttributionSourceState()` nulo?) e o nome fica o do Vcloud. 4.0.24: `ContentProviderStub.fixarOrigem` lê o nome antes/depois (`getPackageName()`), e se não mudou cria uma `AttributionSource(uid do celular, nome do app de dentro)` nova no argumento. Histórico: `ORIGEM do pedido ao provedor de X: nome antes=.. depois=.. (quer=..)`. Não testado.
 - NÃO fazer: devolver `Process.myUid()` para todo mundo no Gservices (anularia o controle de acesso do device id).
+
+## 4.0.25 (relatório 01:44, app 4.0.24)
+- O diagnóstico `ORIGEM` mostra a troca funcionando entre processos (`antes=com.vcloud.app depois=com.android.vending / com.google.android.gms / com.google.android.setupwizard`), mas `Package com.vcloud.app is not approved...` e `Checkin timed out` continuam: o aviso vem do PRÓPRIO processo do gms (pid do checkin = pid do provedor).
+- Causa: provedores do app que moram no mesmo processo (Gservices dentro do gms) são embrulhados em `ContentProviderDelegate.init()` com `new ContentProviderStub().wrapper(.., hostPkg)`; o filtro da 4.0.23/24 trata `mAppPkg == hostPkg` como "provedor do Vcloud" e mantém o nome do Vcloud. 
+- 4.0.25: `ContentProviderStub.local()`; `ContentProviderDelegate.LOCAIS` (autoridades instaladas em `BActivityThread.installProviders`); `init()` marca como locais; local → nome da origem = app de dentro. Histórico: `ORIGEM do pedido ao provedor local: ...`. Não testado.

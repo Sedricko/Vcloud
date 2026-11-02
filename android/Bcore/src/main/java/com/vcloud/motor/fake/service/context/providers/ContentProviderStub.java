@@ -17,6 +17,13 @@ public class ContentProviderStub extends ClassInvocationStub implements BContent
     public static final String TAG = "ContentProviderStub";
     private IInterface mBase;
     private String mAppPkg;
+    /** Provedor que mora dentro do próprio processo do app de dentro (ex.: Gservices dentro do gms): quem pede é o próprio app. */
+    private boolean mLocal;
+
+    public ContentProviderStub local() {
+        mLocal = true;
+        return this;
+    }
 
     public IInterface wrapper(final IInterface contentProviderProxy, final String appPkg) {
         mBase = contentProviderProxy;
@@ -125,7 +132,7 @@ public class ContentProviderStub extends ClassInvocationStub implements BContent
         // uid do celular (o Android confere), mas o NOME é o do app de dentro que pede: o Gservices só entrega/grava o
         // identificador do aparelho para pacotes aprovados ("Package com.vcloud.app is not approved to access the device ID").
         String quem = BActivityThread.getAppPackageName();
-        if (quem == null || VcloudCore.getHostPkg().equals(mAppPkg)) quem = VcloudCore.getHostPkg();
+        if (quem == null || (!mLocal && VcloudCore.getHostPkg().equals(mAppPkg))) quem = VcloudCore.getHostPkg();
         for (int i = 0; i < args.length; i++) {
             Object a = args[i];
             if (a == null || !a.getClass().getName().endsWith("AttributionSource")) continue;
@@ -138,7 +145,7 @@ public class ContentProviderStub extends ClassInvocationStub implements BContent
                 if (nova != null) { args[i] = nova; depois = nomeDaOrigem(nova) + " (origem nova)"; }
             }
             com.vcloud.motor.utils.Diagnostico.eventoLimitado("origem|" + mAppPkg + "|" + quem, 120_000,
-                    "ORIGEM do pedido ao provedor de " + mAppPkg + ": nome antes=" + antes + " depois=" + depois + " (quer=" + quem + ")");
+                    "ORIGEM do pedido ao provedor " + (mLocal ? "local" : "de " + mAppPkg) + ": nome antes=" + antes + " depois=" + depois + " (quer=" + quem + ")");
         }
     }
 

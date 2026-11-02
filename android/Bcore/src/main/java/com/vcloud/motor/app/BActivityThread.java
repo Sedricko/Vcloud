@@ -767,6 +767,9 @@ public class BActivityThread extends IBActivityThread.Stub {
                     if (processName.equals(providerInfo.processName) ||
                             providerInfo.processName.equals(context.getPackageName()) || providerInfo.multiprocess) {
                         installProvider(VcloudCore.mainThread(), context, providerInfo, null);
+                        if (providerInfo.authority != null) {
+                            for (String a : providerInfo.authority.split(";")) ContentProviderDelegate.LOCAIS.add(a);
+                        }
                     }
                 } catch (Throwable ignored) {
                 }
