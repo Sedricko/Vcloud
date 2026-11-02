@@ -47,6 +47,8 @@ public final class AutoAnalise {
                     "O sistema exige permissão de sistema para logo/conteúdo personalizado na janela de confirmação.", "Tirar esses itens do pedido (IAuthServiceProxy, já feito)."},
             {"checkin", ALTA, "Checkin timed out", "O checkin do Google não terminou (o login espera 10 s e mostra erro)",
                     "O registro do aparelho no Google (checkin) não completou; sem ele não há android-id.", "Ver 'not approved to access the device ID' e a rede do gms."},
+            {"identificadores", ALTA, "to access device identifiers", "O Android recusou um identificador do aparelho (chip/IMEI/serial)",
+                    "Só apps privilegiados leem esses identificadores; o checkin do Google os coleta.", "Resposta 'sem valor' no IPhoneSubInfoProxy (já feito)."},
             {"pkgUid", ALTA, "does not belong to", "Pacote não pertence ao uid de quem chamou",
                     "O app de dentro se apresentou com o nome dele e o Android conferiu com o uid do Vcloud.", "Trocar o nome do app pelo do Vcloud na chamada (como no PackageInstaller)."},
             {"pkgChamador", ALTA, "Unknown calling package name", "O Google não reconheceu o app que o chamou",

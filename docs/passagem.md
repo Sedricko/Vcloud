@@ -341,7 +341,7 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Não testado no aparelho. Incógnitas: checkin do GMS de dentro como app comum, login de conta, licenças (não se burla). Teste: ligar, abrir a Play Store de dentro, Central > Testar Google > Copiar.
 
 ## Regra: versão do app
-- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.27 (427).
+- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.28 (428).
 
 ## Play Store de dentro: erro de uid no provedor (4.0.2)
 - Relatório 19:33: `PROVEDOR erro engolido (query) em gms: Calling uid: 10014 doesn't match source uid: 10454` (modo Google completo ligado, caminho de dentro ativo).
@@ -487,3 +487,8 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - `START serviço: com.google.android.gms/.chimera.GmsIntentOperationService ação=com.google.android.gms.checkin.CHECKIN_START_ACTION | de dentro=true` → o motor ACEITOU iniciar o checkin virtualmente; sem `START do serviço-ponte falhou`. Outros starts do gms também aceitos (WRITE_JOURNAL_UPDATE, NO_OP, GcmService, UiIntentOperationService WARM_UP_UI_PROCESS).
 - Mesmo assim: nenhuma linha de execução de IntentOperation em todo o log (nem as outras) e `Checkin timed out` segue. Falta saber se `ProxyService.onStartCommand` chega a rodar e se `GmsIntentOperationService.onStartCommand` executa/falha.
 - 4.0.27 (só diagnóstico): `AppServiceDispatcher.onStartCommand` registra `SERVIÇO iniciando onStartCommand: <serviço> ação=..`, `SERVIÇO não foi criado`, `SERVIÇO onStartCommand FALHOU ... | <erro>` e `SERVIÇO comando sem dados do serviço`. Sem correção nova.
+
+## 4.0.28 (relatório 02:39, app 4.0.27) — o checkin EXECUTA e cai
+- Diagnóstico mostrou: `START ... CHECKIN_START_ACTION` → `SERVIÇO iniciando onStartCommand: GmsIntentOperationService ação=...CHECKIN_START_ACTION` → o serviço roda (todos os outros também) e o executor cai: `FATAL EXCEPTION [GmsIntentOperationChimeraService-Executor]: SecurityException: getIccSerialNumber: The uid 10454 does not meet the requirements to access device identifiers` (`TelephonyManager.getSimSerialNumber` ← `CheckinIntentOperation.onHandleIntent`). O serviço de checkin explode e por isso o login dá `Checkin timed out`.
+- Também (não fatal): `Finsky: SecurityException when adding listener to subscriptions`.
+- 4.0.28: `IPhoneSubInfoProxy.invoke` captura SecurityException de identificadores (`device identifiers`, `READ_PRIVILEGED_PHONE_STATE`, `READ_PHONE_STATE`) e devolve `ValorPadrao` (null para String) + histórico `TELEFONE <método> recusado...`. Regra nova no AutoAnalise. Não testado. O checkin pode esbarrar em outros identificadores (IMEI, serial, Wi-Fi MAC...) e em rede/aceitação do Google.

@@ -31,10 +31,23 @@ public class IPhoneSubInfoProxy extends ClassInvocationStub {
         BRTelephonyManager.get()._set_sIPhoneSubInfo(proxyInvocation);
     }
 
+    /**
+     * Identificadores do aparelho (chip/ICCID, IMEI, assinante...) só são dados a apps privilegiados (Android 10+). O Vcloud não é:
+     * o checkin do Google de dentro caía com "getIccSerialNumber: The uid 10454 does not meet the requirements to access device
+     * identifiers". O espaço virtual não expõe esses identificadores: a resposta é "sem valor" (null), sem derrubar o app.
+     */
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         MethodParameterUtils.replaceFirstAppPkg(args);
-        return super.invoke(proxy, method, args);
+        try {
+            return super.invoke(proxy, method, args);
+        } catch (SecurityException e) {
+            String m = e.getMessage();
+            if (m == null || !(m.contains("device identifiers") || m.contains("READ_PRIVILEGED_PHONE_STATE") || m.contains("READ_PHONE_STATE"))) throw e;
+            com.vcloud.motor.utils.Diagnostico.eventoLimitado("phone|" + method.getName(), 300_000,
+                    "TELEFONE " + method.getName() + " recusado pelo Android (identificador do aparelho); resposta: sem valor");
+            return com.vcloud.motor.utils.ValorPadrao.de(method.getReturnType());
+        }
     }
 
     @Override
