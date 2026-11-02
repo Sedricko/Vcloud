@@ -341,7 +341,7 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Não testado no aparelho. Incógnitas: checkin do GMS de dentro como app comum, login de conta, licenças (não se burla). Teste: ligar, abrir a Play Store de dentro, Central > Testar Google > Copiar.
 
 ## Regra: versão do app
-- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.30 (430).
+- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.31 (431).
 
 ## Play Store de dentro: erro de uid no provedor (4.0.2)
 - Relatório 19:33: `PROVEDOR erro engolido (query) em gms: Calling uid: 10014 doesn't match source uid: 10454` (modo Google completo ligado, caminho de dentro ativo).
@@ -503,3 +503,8 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Sem queda do Google, mas `Checkin timed out` continua. Nesta rodada NÃO aparece nenhuma linha `TELEFONE`/`CHIP` (nas rodadas 4.0.27/28 o executor do checkin chegava ao telefone ~5 s depois do `START CHECKIN_START_ACTION`, junto de um `START ... NO_OP`; agora não há NO_OP). Hipótese a verificar: o checkin não está chegando a executar (ou travou antes do telefone).
 - Erro real novo (Play Store): `FATAL EXCEPTION: CronetInit` → `IConnectivityManager.getNetworkCapabilities` → `SecurityException: Package com.android.vending does not belong to 10454` (11x no log). Corrigido: `IConnectivityManagerProxy.invoke` troca o nome do app de dentro pelo do Vcloud.
 - 4.0.30: log de TODA consulta de chip/telefone (`TELEFONE consulta isub.<método>` / `phonesubinfo.<método>`) para ver até onde o checkin vai.
+
+## 4.0.31 (relatório 02:59, app 4.0.30)
+- Nas rodadas 4.0.27/28 o executor do checkin (`CheckinIntentOperation.onHandleIntent`) chegava ao telefone ~5 s depois do `START CHECKIN_START_ACTION` (e caía); nas 4.0.29/30 NÃO chega: nenhuma consulta de telefone no processo do checkin (gms.ui) em 10 s (as `TELEFONE consulta isub.*` do log são só da inicialização do gms/Play Store). `ISubProxy` está instalado em todos os processos.
+- Código do gms (só leitura): `afqe.onStartCommand` põe o Intent numa fila (`l`) e `notifyAll()`; as operações rodam num `ThreadPoolExecutor(core 1, max 25, keepAlive 5 s, SynchronousQueue, DiscardPolicy)` (`afpz`); `NO_OP/KEEPALIVE/RELEASE_WAKELOCK` só ajustam contadores. Suspeita: o NO_OP ~5 s depois era o fim da operação (finally), não o gatilho.
+- 4.0.31 (só diagnóstico): 8 s depois de `CHECKIN_START_ACTION`, `AppServiceDispatcher.fotoDasThreads()` grava no histórico `FOTO das threads do gms ...` (nome, estado e 9 linhas de pilha das threads de operação/checkin) para ver onde o checkin está parado.

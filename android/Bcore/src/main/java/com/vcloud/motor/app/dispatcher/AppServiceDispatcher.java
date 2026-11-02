@@ -87,6 +87,10 @@ public class AppServiceDispatcher {
             return START_NOT_STICKY;
         }
         if (google) com.vcloud.motor.utils.Diagnostico.eventoLimitado("svcini|" + quem, 30_000, "SERVIÇO iniciando onStartCommand: " + quem);
+        if (google && stubRecord.mServiceIntent != null
+                && "com.google.android.gms.checkin.CHECKIN_START_ACTION".equals(stubRecord.mServiceIntent.getAction())) {
+            fotoDasThreads();
+        }
         stubRecord.mServiceIntent.setExtrasClassLoader(service.getClassLoader());
         ServiceRecord record = findRecord(stubRecord.mServiceIntent);
         record.setStartId(stubRecord.mStartId);
@@ -99,6 +103,37 @@ public class AppServiceDispatcher {
             com.vcloud.motor.utils.Diagnostico.eventoLimitado("svcerr|" + quem, 30_000, "SERVIÇO onStartCommand FALHOU: " + quem + " | " + e);
         }
         return START_NOT_STICKY;
+    }
+
+    /**
+     * Diagnóstico do checkin do Google: 8 s depois do pedido, anota o que cada thread deste processo está fazendo
+     * (nome, estado e as primeiras linhas da pilha). Mostra onde o checkin está parado.
+     */
+    private static void fotoDasThreads() {
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(8000);
+                    StringBuilder sb = new StringBuilder("FOTO das threads do gms 8 s depois do checkin:");
+                    int n = 0;
+                    for (java.util.Map.Entry<Thread, StackTraceElement[]> e : Thread.getAllStackTraces().entrySet()) {
+                        StackTraceElement[] st = e.getValue();
+                        if (st.length == 0) continue;
+                        String nome = e.getKey().getName();
+                        boolean interessa = nome.contains("Executor") || nome.contains("ntent") || nome.contains("heckin");
+                        for (StackTraceElement f : st) if (f.getClassName().toLowerCase().contains("checkin")) interessa = true;
+                        if (!interessa || ++n > 8) continue;
+                        sb.append("\n    [").append(nome).append("] ").append(e.getKey().getState());
+                        for (int i = 0; i < Math.min(st.length, 9); i++) sb.append("\n        ").append(st[i]);
+                    }
+                    if (n == 0) sb.append(" (nenhuma thread de operação/checkin encontrada)");
+                    com.vcloud.motor.utils.Diagnostico.evento(sb.toString());
+                } catch (Throwable ignored) { }
+            }
+        }, "vcloud-foto-checkin");
+        t.setDaemon(true);
+        t.start();
     }
 
     public void onDestroy() {
