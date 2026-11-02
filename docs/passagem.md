@@ -587,3 +587,9 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Hipótese (do código, não testada): o onCreate desses dois provedores dispara uma tarefa em thread de fundo que pede ao componente da loja uma interface que só existe depois do onCreate do app terminar. No Android real o onCreate é rápido e a tarefa perde a corrida; no Vcloud é mais lento.
 - Mudança: em `BActivityThread.handleBindApplication`, esses dois provedores da Play Store são instalados DEPOIS do `Application.onCreate`.
 - Não verificado no aparelho.
+
+## 4.0.44
+- Relatório 10:35 (4.0.43): a hipótese da 4.0.43 (adiar provedores) NÃO resolveu: o `Cannot cast spl to avru` continua; a pilha agora é `adsj.run → CachedPackageContentProvider.a → arwl.f → soy.e`.
+- Causa provável (código): `spl` (componente da loja no :background) não implementa `avru`/`auxo`; essas tarefas são dos provedores do processo PRINCIPAL. `BActivityThread.installProviders` instala em qualquer processo os provedores cujo `processName` é o pacote (condição `providerInfo.processName.equals(context.getPackageName())`), ou seja, instalava provedores do processo principal também no `:background`.
+- Mudança: 4.0.43 revertida; na Play Store (`com.android.vending`) os provedores do processo principal não são instalados nos outros processos (só ela, para não mexer no resto, p.ex. gms).
+- Não verificado no aparelho.
