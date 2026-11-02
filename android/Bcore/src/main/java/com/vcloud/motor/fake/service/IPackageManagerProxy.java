@@ -422,6 +422,41 @@ public class IPackageManagerProxy extends BinderInvocationStub {
         }
     }
 
+    /**
+     * Vcloud: a Play Store pergunta "quem instalou" (getInstallSourceInfo) de cada app de dentro para marcá-lo como dela
+     * ("Unable to check installer for ... NameNotFoundException" e "PSR: Package ... not installed"): sem isso o app não aparece como
+     * instalado/dela, e não há opção de desinstalar. O Android real só conhece os apps do celular; aqui vai o mesmo "com.android.vending"
+     * que getInstallerPackageName já devolve.
+     */
+    @ProxyMethod("getInstallSourceInfo")
+    public static class GetInstallSourceInfo extends MethodHook {
+        @Override
+        protected Object hook(Object who, Method method, Object[] args) throws Throwable {
+            String pacote = args != null && args.length > 0 && args[0] instanceof String ? (String) args[0] : null;
+            if (pacote != null && VcloudCore.get().isInstalled(pacote, VcloudCore.getUserId())) {
+                Class<?> tipo = method.getReturnType();
+                for (java.lang.reflect.Constructor<?> c : tipo.getDeclaredConstructors()) {
+                    try {
+                        Class<?>[] t = c.getParameterTypes();
+                        Object[] v = new Object[t.length];
+                        int strings = 0;
+                        for (int i = 0; i < t.length; i++) {
+                            if (t[i] == String.class) {
+                                // 1ª = quem iniciou, 2ª = origem, 3ª = quem instalou, 4ª = dono das atualizações
+                                v[i] = (strings == 0 || strings == 2) ? "com.android.vending" : null;
+                                strings++;
+                            } else if (t[i] == int.class) v[i] = 0;
+                            else v[i] = null;
+                        }
+                        c.setAccessible(true);
+                        return c.newInstance(v);
+                    } catch (Throwable ignored) { }
+                }
+            }
+            return method.invoke(who, args);
+        }
+    }
+
     @ProxyMethod("getSharedLibraries")
     public static class GetSharedLibraries extends MethodHook {
         @Override

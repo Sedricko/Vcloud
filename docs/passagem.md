@@ -685,3 +685,8 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Causa: `GetIntentSender` trocava QUALQUER PendingIntent de broadcast pelo componente `ProxyBroadcastReceiver` (só alcança receptores de manifesto). Receptores registrados em tempo de execução dentro do app (o caso do instalador) nunca recebiam.
 - Mudança: se o broadcast do PendingIntent é implícito (sem componente, com ação), o intent de fachada leva a ação + pacote do Vcloud (como `broadcastIntent` já faz), então o Android entrega aos receptores registrados (dinâmicos e de manifesto de apps de dentro); os extras de preenchimento (EXTRA_STATUS) são mesclados por `ProxyBroadcastRecord.create` (4.0.55).
 - Não verificado no aparelho.
+
+## 4.0.61
+- Usuário: falta a opção de desinstalar apps na Play Store; a loja não sincroniza com os apps já instalados. Relatórios anteriores: `Unable to check installer for <pacote>: NameNotFoundException (ApplicationPackageManager.getInstallSourceInfo)` e `PSR: Package <pacote> not installed`, mesmo com o app instalado dentro.
+- Mudança: `IPackageManagerProxy.GetInstallSourceInfo`: para app instalado dentro do Vcloud devolve `InstallSourceInfo` (reflexão) com instalador "com.android.vending" (igual ao `getInstallerPackageName`).
+- Não verificado no aparelho; pode faltar também o `PACKAGE_ADDED` aos receptores dinâmicos.
