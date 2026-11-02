@@ -341,7 +341,7 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Não testado no aparelho. Incógnitas: checkin do GMS de dentro como app comum, login de conta, licenças (não se burla). Teste: ligar, abrir a Play Store de dentro, Central > Testar Google > Copiar.
 
 ## Regra: versão do app
-- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.17 (417).
+- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.18 (418).
 
 ## Play Store de dentro: erro de uid no provedor (4.0.2)
 - Relatório 19:33: `PROVEDOR erro engolido (query) em gms: Calling uid: 10014 doesn't match source uid: 10454` (modo Google completo ligado, caminho de dentro ativo).
@@ -425,3 +425,9 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Pergunta do usuário: "Analisou se todos os serviços que o app exige estão disponíveis na instância?" → resposta honesta: até aqui só por falha isolada. Agora há a seção `REQUISITOS DO GOOGLE` no relatório (`AutoDiagnostico.requisitosGoogle`): pacotes (celular x dentro, com aviso "EXISTE NO CELULAR E FALTA DENTRO"), tipos de conta registrados dentro, provedores e serviços (ações) que a Play Store procura, telas/serviços de login do gms de dentro (nome, exportado, ligado/permissão).
 - Play Store 53.8.11-34 (APK enviado pelo usuário, analisada só por leitura): sem sharedUserId; `uses-library` todas `required=false`; `queries` só maps/CustomTabs/setupwizard; pede permissões de sistema (INSTALL_PACKAGES, MANAGE_USERS, GET_ACCOUNTS_PRIVILEGED...) que a cópia não recebe (não são do login). Strings do código: `com.google.android.gsf.action.GET_GLS` (login do gsf), `content://com.google.android.gsf.gservices` (+ `killswitch_to_allow_zero_android_id`), `com.google.android.gms.checkin.BIND_TO_SERVICE`, `"The com.google.android.gms.auth.accounts provider is not available."`, `getMySessions`, `READ_GSERVICES`.
 - A recusa `Only 0p apps` está no gms, não na Play Store: a resposta definitiva precisa do APK do gms 26.43.30 (peça ao usuário).
+
+## 4.0.18 (relatório 23:56, app 4.0.17)
+- `REQUISITOS DO GOOGLE` (primeira leitura): faltam dentro `com.google.android.webview` (existe no celular), e não existem dentro: serviço `GET_GLS` (gsf login) e `aang.events.services.START`. Provedores (`auth.accounts`, `gservices`, `chimera`, `phenotype`, `fonts`, `appdoctor`) existem. As linhas "Google Play Services de dentro: 0 telas..." e "Tipos de conta: NENHUM" NÃO são confiáveis (lidas da tela principal; os guests veem os componentes) — não tirar conclusão delas.
+- `UID perguntou pacotes do uid do celular ... AbstractGmsTracer` = rastreio do gms (inofensivo).
+- `Only 0p apps`: logo antes (`DefaultAuthDelegateChimeraService`) o gms perguntou os pacotes do uid 10025 = ele mesmo, com assinatura do Google (`VcloudAssinatura ... signatures=1`) e foi recusado → "0p" não é só assinatura: exige app de sistema. A cópia nasce de um APK comum sem `FLAG_SYSTEM`.
+- 4.0.18 (hipótese, ainda sem prova): `PackageManagerCompat.marcarComoDoCelular` copia do celular os bits públicos FLAG_SYSTEM/FLAG_UPDATED_SYSTEM_APP para os pacotes Google de dentro (`GmsCore.isGoogleAppOrService`). Histórico: `GOOGLE <pkg> marcado como no celular`. Não mexe em privateFlags (privilegiado).
