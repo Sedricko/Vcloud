@@ -38,6 +38,8 @@ public class IPermissionManagerProxy extends BinderInvocationStub {
     @Override
     protected void onBindMethod() {
         super.onBindMethod();
+        addMethodHook(new AccountManagerGrant("checkPermission"));
+        addMethodHook(new AccountManagerGrant("checkUidPermission"));
         addMethodHook(new ValueMethodProxy("addPermissionAsync", true));
         addMethodHook(new ValueMethodProxy("addPermission", true));
         addMethodHook(new ValueMethodProxy("performDexOpt", true));
@@ -58,6 +60,22 @@ public class IPermissionManagerProxy extends BinderInvocationStub {
     @Override
     public boolean isBadEnv() {
         return false;
+    }
+
+    /** Vcloud: ACCOUNT_MANAGER concedida (login do Google de dentro); os outros pedidos seguem normais. */
+    public static class AccountManagerGrant extends com.vcloud.motor.fake.hook.MethodHook {
+        private final String name;
+        public AccountManagerGrant(String name) { this.name = name; }
+        @Override protected String getMethodName() { return name; }
+        @Override
+        protected Object hook(Object who, java.lang.reflect.Method method, Object[] args) throws Throwable {
+            if (args != null) {
+                for (Object a : args) {
+                    if (android.Manifest.permission.ACCOUNT_MANAGER.equals(a)) return PackageManager.PERMISSION_GRANTED;
+                }
+            }
+            return method.invoke(who, args);
+        }
     }
 
 }

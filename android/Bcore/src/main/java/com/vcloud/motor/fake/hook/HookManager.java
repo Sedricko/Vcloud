@@ -188,6 +188,7 @@ public class HookManager {
             
             if (BuildCompat.isR()) {
                 addInjector(new IPermissionManagerProxy());
+                addInjector(new com.vcloud.motor.fake.service.PermissionCheckerProxy());
             }
             
             if (BuildCompat.isQ()) {
