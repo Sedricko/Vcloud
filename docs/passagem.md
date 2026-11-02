@@ -539,3 +539,9 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Causa (hipótese forte, lida no código): `Process.myUid()` devolve o uid virtual (OsStub.getuid → getBAppId) e `getCallingUid` devolvia o uid do celular quando a chamada é do próprio processo.
 - Mudança: na chamada do próprio processo, `NativeCore.getCallingUid` devolve `Process.myUid()`.
 - Não verificado no aparelho. Risco: outro app de dentro que comparava com o uid do celular nessa situação.
+
+## 4.0.37 (só diagnóstico)
+- Relatório 08:55 (4.0.36): a Play Store abre sem travar (o crash do 4.0.35 sumiu). Mas mostra "Fazer login"; o Finsky diz "No current account found" e o login do Google diz "Esta conta já existe no seu dispositivo".
+- Hipótese: a Play Store e o gms veem listas de contas diferentes (ou a lista do AccountManager de dentro está vazia e o gms guarda a conta no banco dele). Não confirmado.
+- Mudança: log `CONTAS` no servidor (getAccountsAsUser: tipo, quantas devolveu, total, pid; e quando adiciona conta).
+- Outros: `ITelephonyRegistry.addOnSubscriptionsChangedListener` ainda dá "Package com.android.vending does not belong to 10454" (não fatal).

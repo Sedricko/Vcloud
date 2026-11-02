@@ -258,6 +258,9 @@ public class BAccountManagerService extends IBAccountManagerService.Stub impleme
                 }
             }
         }
+        // Vcloud: diagnóstico - quem perguntou (pid) e quantas contas do tipo existem
+        android.util.Log.i("CONTAS", "getAccountsAsUser tipo=" + accountType + " user=" + userId + " devolveu=" + accounts.size()
+                + " total=" + userAccounts.accounts.size() + " quemPid=" + Binder.getCallingPid());
         return accounts.toArray(new Account[]{});
     }
 
@@ -981,6 +984,7 @@ public class BAccountManagerService extends IBAccountManagerService.Stub impleme
                 return false;
             }
             bAccount = accounts.addAccount(account);
+            android.util.Log.i("CONTAS", "conta adicionada tipo=" + account.type + " total=" + accounts.accounts.size());
             bAccount.password = password;
             if (extras != null) {
                 for (String key : extras.keySet()) {
