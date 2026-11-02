@@ -611,3 +611,8 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Relatório 13:19 (4.0.46): `android_id=null` continua; Play Store: `AuthFailureError: User needs to (re)enter credentials`; login diz "Esta conta já existe". Causa (log CONTAS: total=1): reativar os serviços do Google (tela do Vcloud) apaga os dados do gms mas a conta `com.google` continuava na lista do AccountManager de dentro → conta órfã, sem login, e sem poder entrar de novo. É por isso que perfil/desinstalar/download não dá para testar.
 - Mudança: `BAccountManagerService.removerContasDoTipo`; chamado ao limpar dados ou desinstalar o gms (`BPackageManagerService`). A marca de reinício único passou para `google_reset_4_0_47` (App.kt): na primeira abertura limpa gms/gsf/Play Store e tira a conta órfã. Será preciso entrar na conta Google de novo (uma vez).
 - Não verificado no aparelho.
+
+## 4.0.48
+- Relatório 13:59 (4.0.47): login funciona (checkin SUCCESS, conta adicionada). Depois a Play Store mostra "Estamos atualizando o Google Play ... Instalando..." e não sai (LocaleChangedModeActivity). Log: `Self-update check on locale change to ... splits=[config.arm64_v8a, config.pt, phonesky_data_loader, ...]`; `Locally installed splits [...splits=[]] missing some server available splits` → ela quer se auto-atualizar com splits. Nenhum pedido ao instalador virtual (só getMySessions).
+- Mudança: `IPackageManagerProxy.GetPackageInfo` devolve `splitNames` (as 6 partes do servidor, idioma do aparelho) para `com.android.vending` no modo Google completo, para a Play Store achar que não falta nada e não entrar na auto-atualização.
+- Risco: a Play Store pode tentar carregar essas partes (não existem). Não verificado no aparelho. Splits reais continuam para fazer.

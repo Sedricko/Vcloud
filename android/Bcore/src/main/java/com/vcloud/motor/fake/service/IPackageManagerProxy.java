@@ -140,6 +140,13 @@ public class IPackageManagerProxy extends BinderInvocationStub {
                 // diziam "assinatura inválida". Agora vai a Play Store verdadeira do celular, com a assinatura real.
                 return method.invoke(who, args);
             }
+            if (packageInfo != null && "com.android.vending".equals(packageName) && com.vcloud.motor.utils.GoogleModo.completoDentro()) {
+                // Vcloud: só o APK base da Play Store é instalado (sem splits). Ela se atualizava "para instalar o idioma" e a tela
+                // "Estamos atualizando o Google Play... Instalando" nunca terminava. Dizemos que as partes já estão instaladas.
+                String idioma = java.util.Locale.getDefault().getLanguage();
+                packageInfo.splitNames = new String[]{"config.arm64_v8a", "config." + idioma, "phonesky_data_loader",
+                        "phonesky_data_loader.config.arm64_v8a", "phonesky_webrtc_native_lib", "phonesky_webrtc_native_lib.config.arm64_v8a"};
+            }
             if (packageInfo != null) {
                 
                 if (packageInfo.requestedPermissions != null && packageInfo.requestedPermissionsFlags != null) {
