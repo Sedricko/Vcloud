@@ -341,7 +341,7 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Não testado no aparelho. Incógnitas: checkin do GMS de dentro como app comum, login de conta, licenças (não se burla). Teste: ligar, abrir a Play Store de dentro, Central > Testar Google > Copiar.
 
 ## Regra: versão do app
-- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.29 (429).
+- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.30 (430).
 
 ## Play Store de dentro: erro de uid no provedor (4.0.2)
 - Relatório 19:33: `PROVEDOR erro engolido (query) em gms: Calling uid: 10014 doesn't match source uid: 10454` (modo Google completo ligado, caminho de dentro ativo).
@@ -498,3 +498,8 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Nova queda no mesmo executor (`CheckinIntentOperation.onHandleIntent` → `SubscriptionManager.getActiveSubscriptionIdList` → `ISub$Stub$Proxy.getActiveSubIdList`): `SecurityException: getActiveSubIdList. Does not have any of the following permissions. [android.permission.READ_PRIVILEGED_PHONE_STATE]`.
 - 4.0.29: `ISubProxy` (serviço `isub`, base `PacoteDoVcloudProxy`) captura essas recusas e devolve `ValorPadrao` (int[] vazio...). Histórico: `CHIP <método> recusado pelo Android (permissão privilegiada); resposta: neutra`. Regra `READ_PRIVILEGED_PHONE_STATE` no AutoAnalise. Não testado.
 - Padrão: cada pergunta de telefonia/chip que o checkin faz pode dar uma recusa nova. Se vierem muitas, trocar por um filtro genérico para todo o serviço de telefonia.
+
+## 4.0.30 (relatório 02:52, app 4.0.29)
+- Sem queda do Google, mas `Checkin timed out` continua. Nesta rodada NÃO aparece nenhuma linha `TELEFONE`/`CHIP` (nas rodadas 4.0.27/28 o executor do checkin chegava ao telefone ~5 s depois do `START CHECKIN_START_ACTION`, junto de um `START ... NO_OP`; agora não há NO_OP). Hipótese a verificar: o checkin não está chegando a executar (ou travou antes do telefone).
+- Erro real novo (Play Store): `FATAL EXCEPTION: CronetInit` → `IConnectivityManager.getNetworkCapabilities` → `SecurityException: Package com.android.vending does not belong to 10454` (11x no log). Corrigido: `IConnectivityManagerProxy.invoke` troca o nome do app de dentro pelo do Vcloud.
+- 4.0.30: log de TODA consulta de chip/telefone (`TELEFONE consulta isub.<método>` / `phonesubinfo.<método>`) para ver até onde o checkin vai.

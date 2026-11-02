@@ -40,6 +40,19 @@ public class IConnectivityManagerProxy extends BinderInvocationStub {
         replaceSystemService(Context.CONNECTIVITY_SERVICE);
     }
 
+    /**
+     * O serviço de rede confere se o nome do pacote da chamada é do uid de quem chama ("Package com.android.vending does not belong
+     * to 10454"); derrubava a Play Store ao iniciar o Cronet (getNetworkCapabilities). Troca o nome do app de dentro pelo do Vcloud.
+     */
+    @Override
+    public Object invoke(Object proxy, java.lang.reflect.Method method, Object[] args) throws Throwable {
+        String guest = com.vcloud.motor.app.BActivityThread.getAppPackageName();
+        if (args != null && guest != null) {
+            for (int i = 0; i < args.length; i++) if (guest.equals(args[i])) args[i] = com.vcloud.motor.VcloudCore.getHostPkg();
+        }
+        return super.invoke(proxy, method, args);
+    }
+
     @Override
     protected void onBindMethod() {
         super.onBindMethod();
