@@ -341,7 +341,7 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Não testado no aparelho. Incógnitas: checkin do GMS de dentro como app comum, login de conta, licenças (não se burla). Teste: ligar, abrir a Play Store de dentro, Central > Testar Google > Copiar.
 
 ## Regra: versão do app
-- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.26 (426).
+- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.27 (427).
 
 ## Play Store de dentro: erro de uid no provedor (4.0.2)
 - Relatório 19:33: `PROVEDOR erro engolido (query) em gms: Calling uid: 10014 doesn't match source uid: 10454` (modo Google completo ligado, caminho de dentro ativo).
@@ -482,3 +482,8 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Código do gms 26.43.30 (só leitura): `CheckinApiStub.startCheckinAndGetCheckinResult` (`bkyv.f`) → se `jzca.c()`: executa tarefa `blag(ctx, bundle, listener)`; senão registra listener `blak` e `startService(Intent)` onde o Intent = `blbm.a(ctx, bundle)` = `IntentOperation.getStartIntent(ctx, "com.google.android.gms.checkin.CheckinIntentOperation", "com.google.android.gms.checkin.CHECKIN_START_ACTION")` + extra `config_flags_bundle`. Ou seja, o checkin roda como Chimera IntentOperation (serviço `GmsIntentOperationService`).
 - No log: depois de `startCheckinAndGetCheckinResult` NADA mais aparece (sem rede, sem erro, nenhuma linha "IntentOperation" em 3 min) → ou o serviço não inicia, ou o checkin não é logado.
 - 4.0.26 (só diagnóstico): `START serviço: <comp> ação=.. | de dentro=..` para serviços com.google.android.* no `StartService`, e `START do serviço-ponte falhou ...` em `ActiveServices.startService`. Sem correção nova.
+
+## 4.0.27 (relatório 02:30, app 4.0.26)
+- `START serviço: com.google.android.gms/.chimera.GmsIntentOperationService ação=com.google.android.gms.checkin.CHECKIN_START_ACTION | de dentro=true` → o motor ACEITOU iniciar o checkin virtualmente; sem `START do serviço-ponte falhou`. Outros starts do gms também aceitos (WRITE_JOURNAL_UPDATE, NO_OP, GcmService, UiIntentOperationService WARM_UP_UI_PROCESS).
+- Mesmo assim: nenhuma linha de execução de IntentOperation em todo o log (nem as outras) e `Checkin timed out` segue. Falta saber se `ProxyService.onStartCommand` chega a rodar e se `GmsIntentOperationService.onStartCommand` executa/falha.
+- 4.0.27 (só diagnóstico): `AppServiceDispatcher.onStartCommand` registra `SERVIÇO iniciando onStartCommand: <serviço> ação=..`, `SERVIÇO não foi criado`, `SERVIÇO onStartCommand FALHOU ... | <erro>` e `SERVIÇO comando sem dados do serviço`. Sem correção nova.

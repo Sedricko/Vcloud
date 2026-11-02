@@ -70,14 +70,23 @@ public class AppServiceDispatcher {
 
     public int onStartCommand(Intent proxyIntent, int flags, int startId) {
         ProxyServiceRecord stubRecord = ProxyServiceRecord.create(proxyIntent);
+        boolean google = stubRecord.mServiceInfo != null && stubRecord.mServiceInfo.packageName != null
+                && stubRecord.mServiceInfo.packageName.startsWith("com.google.android.")
+                && com.vcloud.motor.utils.GoogleModo.completoDentro();
+        String quem = stubRecord.mServiceInfo == null ? "?" : stubRecord.mServiceInfo.name
+                + " ação=" + (stubRecord.mServiceIntent == null ? "?" : stubRecord.mServiceIntent.getAction());
         if (stubRecord.mServiceIntent == null || stubRecord.mServiceInfo == null) {
+            com.vcloud.motor.utils.Diagnostico.eventoLimitado("svcvazio", 30_000, "SERVIÇO comando sem dados do serviço (ponte recebeu intent incompleto)");
             return START_NOT_STICKY;
         }
 
 
         Service service = getOrCreateService(stubRecord);
-        if (service == null)
+        if (service == null) {
+            if (google) com.vcloud.motor.utils.Diagnostico.eventoLimitado("svcnull|" + quem, 30_000, "SERVIÇO não foi criado: " + quem);
             return START_NOT_STICKY;
+        }
+        if (google) com.vcloud.motor.utils.Diagnostico.eventoLimitado("svcini|" + quem, 30_000, "SERVIÇO iniciando onStartCommand: " + quem);
         stubRecord.mServiceIntent.setExtrasClassLoader(service.getClassLoader());
         ServiceRecord record = findRecord(stubRecord.mServiceIntent);
         record.setStartId(stubRecord.mStartId);
@@ -87,6 +96,7 @@ public class AppServiceDispatcher {
             return i;
         } catch (Throwable e) {
             e.printStackTrace();
+            com.vcloud.motor.utils.Diagnostico.eventoLimitado("svcerr|" + quem, 30_000, "SERVIÇO onStartCommand FALHOU: " + quem + " | " + e);
         }
         return START_NOT_STICKY;
     }
