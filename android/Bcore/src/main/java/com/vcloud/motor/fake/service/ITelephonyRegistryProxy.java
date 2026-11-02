@@ -25,6 +25,17 @@ public class ITelephonyRegistryProxy extends BinderInvocationStub {
         replaceSystemService("telephony.registry");
     }
 
+    // Vcloud: addOnSubscriptionsChangedListener & cia. levam o nome do app de dentro e o Android confere com o uid do Vcloud
+    // ("Package com.android.vending does not belong to 10454"); troca pelo nome do Vcloud em qualquer método.
+    @Override
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        String guest = com.vcloud.motor.app.BActivityThread.getAppPackageName();
+        if (args != null && guest != null) {
+            for (int i = 0; i < args.length; i++) if (guest.equals(args[i])) args[i] = com.vcloud.motor.VcloudCore.getHostPkg();
+        }
+        return super.invoke(proxy, method, args);
+    }
+
     @Override
     public boolean isBadEnv() {
         return false;

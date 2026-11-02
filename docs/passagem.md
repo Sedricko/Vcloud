@@ -576,3 +576,8 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
   - Eventos `INSTALADOR ...` no relatório.
 - Não feito ainda: splits (config de ABI/densidade/idioma; só o base.apk é instalado), callbacks entre processos, compra, WebView.
 - Não verificado no aparelho; a classe nunca foi executada (só compilada pelo CI).
+
+## 4.0.42
+- Relatório 09:50 (4.0.41): nenhum evento `INSTALADOR` → a atualização nem chegou ao instalador virtual (a Play Store desiste antes; causa não achada). Perfil não abre: sem erro fatal; o gms nega o serviço #468 (`ZERO_PARTY`, AppImportanceApiService) à Play Store: `dozn.a` (gms) só deixa se `brft.d(pkg).b` (verificador de assinatura do Google) ou pacote na lista extra (flag do servidor). Não resolvido.
+- Mudança pequena: `ITelephonyRegistryProxy.invoke` troca o nome do app de dentro pelo do Vcloud em qualquer método (corrige `Package com.android.vending does not belong to 10454` em `addOnSubscriptionsChangedListener`).
+- Não verificado no aparelho se isso muda perfil/atualização.
