@@ -39,7 +39,7 @@ public class IPhoneSubInfoProxy extends ClassInvocationStub {
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         MethodParameterUtils.replaceFirstAppPkg(args);
-        com.vcloud.motor.utils.Diagnostico.eventoLimitado("tel|psi|" + method.getName(), 120_000, "TELEFONE consulta phonesubinfo." + method.getName());
+        com.vcloud.motor.utils.Diagnostico.eventoLimitado("tel|psi|" + method.getName(), 3_000, "TELEFONE consulta phonesubinfo." + method.getName());
         try {
             return super.invoke(proxy, method, args);
         } catch (SecurityException e) {

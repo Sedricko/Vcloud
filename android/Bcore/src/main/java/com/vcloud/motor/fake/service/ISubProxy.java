@@ -15,7 +15,7 @@ public class ISubProxy extends PacoteDoVcloudProxy {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        Diagnostico.eventoLimitado("tel|isub|" + method.getName(), 120_000, "TELEFONE consulta isub." + method.getName());
+        Diagnostico.eventoLimitado("tel|isub|" + method.getName(), 3_000, "TELEFONE consulta isub." + method.getName());
         try {
             return super.invoke(proxy, method, args);
         } catch (SecurityException e) {

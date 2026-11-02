@@ -115,7 +115,7 @@ public class AppServiceDispatcher {
             public void run() {
                 try {
                     Thread.sleep(8000);
-                    StringBuilder sb = new StringBuilder("FOTO das threads do gms 8 s depois do checkin:");
+                    StringBuilder sb = new StringBuilder("FOTO das threads do gms 8 s depois do checkin (processo " + com.vcloud.motor.app.BActivityThread.getAppProcessName() + ", pid " + android.os.Process.myPid() + "):");
                     int n = 0;
                     for (java.util.Map.Entry<Thread, StackTraceElement[]> e : Thread.getAllStackTraces().entrySet()) {
                         StackTraceElement[] st = e.getValue();

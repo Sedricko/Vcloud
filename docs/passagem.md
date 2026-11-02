@@ -341,7 +341,7 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Não testado no aparelho. Incógnitas: checkin do GMS de dentro como app comum, login de conta, licenças (não se burla). Teste: ligar, abrir a Play Store de dentro, Central > Testar Google > Copiar.
 
 ## Regra: versão do app
-- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.31 (431).
+- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.32 (432).
 
 ## Play Store de dentro: erro de uid no provedor (4.0.2)
 - Relatório 19:33: `PROVEDOR erro engolido (query) em gms: Calling uid: 10014 doesn't match source uid: 10454` (modo Google completo ligado, caminho de dentro ativo).
@@ -508,3 +508,8 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Nas rodadas 4.0.27/28 o executor do checkin (`CheckinIntentOperation.onHandleIntent`) chegava ao telefone ~5 s depois do `START CHECKIN_START_ACTION` (e caía); nas 4.0.29/30 NÃO chega: nenhuma consulta de telefone no processo do checkin (gms.ui) em 10 s (as `TELEFONE consulta isub.*` do log são só da inicialização do gms/Play Store). `ISubProxy` está instalado em todos os processos.
 - Código do gms (só leitura): `afqe.onStartCommand` põe o Intent numa fila (`l`) e `notifyAll()`; as operações rodam num `ThreadPoolExecutor(core 1, max 25, keepAlive 5 s, SynchronousQueue, DiscardPolicy)` (`afpz`); `NO_OP/KEEPALIVE/RELEASE_WAKELOCK` só ajustam contadores. Suspeita: o NO_OP ~5 s depois era o fim da operação (finally), não o gatilho.
 - 4.0.31 (só diagnóstico): 8 s depois de `CHECKIN_START_ACTION`, `AppServiceDispatcher.fotoDasThreads()` grava no histórico `FOTO das threads do gms ...` (nome, estado e 9 linhas de pilha das threads de operação/checkin) para ver onde o checkin está parado.
+
+## 4.0.32 (relatório 03:10, app 4.0.31) — foto das threads
+- Foto (`FOTO das threads do gms 8 s depois do checkin`): `[GmsIntentOperationChimeraService] processing` está WAITING em `afqc.run:38` (`Object.wait`); `PersistentIntentOperationChimeraService` idem; o executor de operações (keepAlive 5 s) já não existe. Código (só leitura): `afqc.run` espera em `k.wait()` até a fila `l` ter intents; `afqe.onStartCommand` adiciona o intent e `notifyAll()`. Logo o checkin foi tratado ou descartado sem erro e sem nenhuma consulta de telefone (nenhum `phonesubinfo.getIccSerialNumber...`).
+- Hipótese (NÃO confirmada): estado salvo de tentativas anteriores no `gms` (as rodadas 4.0.27/28 caíram no meio do checkin) faz o checkin pular ("espera/backoff"); resetar os dados do Google de dentro (Serviços do Google: desinstalar e instalar) limparia isso.
+- 4.0.32: registros `TELEFONE consulta ...` agora com limite de 3 s (antes 120 s escondia repetições no mesmo processo); a foto passa a mostrar o processo e o pid.
