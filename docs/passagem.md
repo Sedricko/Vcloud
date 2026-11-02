@@ -341,7 +341,7 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Não testado no aparelho. Incógnitas: checkin do GMS de dentro como app comum, login de conta, licenças (não se burla). Teste: ligar, abrir a Play Store de dentro, Central > Testar Google > Copiar.
 
 ## Regra: versão do app
-- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.21 (421).
+- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.22 (422).
 
 ## Play Store de dentro: erro de uid no provedor (4.0.2)
 - Relatório 19:33: `PROVEDOR erro engolido (query) em gms: Calling uid: 10014 doesn't match source uid: 10454` (modo Google completo ligado, caminho de dentro ativo).
@@ -453,3 +453,8 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Nova queda: `BiometricPrompt.authenticate` → `IAuthService.authenticate` → `SecurityException: com.google.android.gms from uid 10454 not allowed to perform USE_BIOMETRIC` (o serviço confere se o pacote é do uid de quem chama).
 - 4.0.21: `PacoteDoVcloudProxy` (base) troca o nome do app de dentro pelo do Vcloud em todas as chamadas dos serviços `auth` (`IAuthServiceProxy`) e `biometric` (`IBiometricServiceProxy`), como já feito no PackageInstaller. A janela de confirmação (tela de bloqueio/biometria) é do Android e pede a identidade do próprio usuário. Não testado.
 - Abertos: `android-id = 0`, WebView ausente dentro, gms só com `base.apk`.
+
+## 4.0.22 (relatório 00:59, app 4.0.21)
+- O nome do pacote nos serviços de biometria resolveu `not allowed to perform USE_BIOMETRIC`; nova recusa, agora no SISTEMA: `Must have SET_BIOMETRIC_DIALOG_ADVANCED permission` (`AuthService.authenticate`, via `IAuthService$Stub$Proxy.authenticate`).
+- Lido no AOSP (`PromptInfo.requiresAdvancedPermission`, `AuthService.authenticate`): a permissão só é exigida se o pedido tem `mLogoRes != 0`, `mLogoBitmap`, `mLogoDescription` ou `mContentView` (com botão "mais opções"), ou autenticador IDENTITY_CHECK. Fonte: branch main do AOSP; o Android 17 do aparelho pode diferir.
+- 4.0.22: `IAuthServiceProxy` limpa `mLogoRes/mLogoBitmap/mLogoDescription/mContentView` do `PromptInfo` antes de `authenticate` (só decoração; a confirmação é a mesma). Histórico: `BIOMETRIA recursos avançados ... tirados`. Não testado. Se o Google pedir IDENTITY_CHECK, não resolve.
