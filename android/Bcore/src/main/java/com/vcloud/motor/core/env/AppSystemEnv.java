@@ -24,6 +24,7 @@ public class AppSystemEnv {
         sSystemPackages.add("com.google.android.webview.canary");
         sSystemPackages.add("com.android.webview");
         sSystemPackages.add("com.android.camera");
+        sSystemPackages.add("com.android.providers.downloads"); // a Play Store procura o gerenciador de downloads ("Cannot find com.android.providers.downloads")
         sSystemPackages.add("com.android.talkback");
         sSystemPackages.add("com.miui.gallery");
 

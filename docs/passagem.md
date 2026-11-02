@@ -557,3 +557,9 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Mudança: `permitido(method,args)` devolve pelo tipo de retorno (int, void, SyncNotedAppOp criado por reflexão).
 - Não corrigido: `DeviceOriginProvider` (setupwizard) recusou leitura pela Play Store 1x (permissão READ_DEVICE_ORIGIN); a Play Store seguiu funcionando. `Package com.android.vending does not belong to 10454` em `ITelephonyRegistry.addOnSubscriptionsChangedListener` (não fatal). `Cannot cast spl to avru` é antigo (11-01).
 - Não verificado no aparelho.
+
+## 4.0.40
+- Relatório 09:17 (4.0.39): o erro `SyncNotedAppOp` sumiu. Play Store logada abre e carrega. Sem crash novo do Vcloud.
+- Ainda no log: `Finsky: Cannot find com.android.providers.downloads` (a Play Store não acha o gerenciador de downloads), `Cannot cast spl to avru` em CachedPackageContentProvider (processo :background, antigo e repetido), `Package com.android.vending does not belong to 10454` (isub/telephony registry).
+- Mudança: `com.android.providers.downloads` entra nos pacotes abertos do sistema (AppSystemEnv), então o pacote do celular fica visível.
+- Não verificado: se o download pela Play Store funciona. Atenção: o instalador usa o PackageInstaller do celular (GetPackageInstaller troca pelo pacote do Vcloud), então instalar pela Play Store pode instalar fora do Vcloud, não dentro.
