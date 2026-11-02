@@ -600,3 +600,9 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Mudança 1: `ActivityManagerCommonProxy.StartActivity`: pedido de tela ACTION_DELETE / UNINSTALL_PACKAGE com `package:X` de um app instalado DENTRO do Vcloud (não Google) remove de dentro (`uninstallPackageAsUser`), sem abrir a tela do celular. Sem confirmação (a Play Store costuma pedir a dela antes: não verificado).
 - Mudança 2 (diagnóstico): `VENDING abre: ação=... dados=... componente=...` (cada tela que a Play Store abre) e `INSTALADOR chamada <método>` (cada método do instalador que ela usa).
 - Não verificado no aparelho. Download e perfil seguem sem causa conhecida; precisam do relatório com essas linhas.
+
+## 4.0.46
+- Usuário: sem entrar no perfil da Play Store não dá nem para chegar em "desinstalar". (Relatório 12:47 foi tirado depois de ele desativar e reativar os serviços do Google na tela do Vcloud: dados do gms apagados, android_id=null; nada de perfil nele.)
+- Achado no relatório: `FacsCacheGmsModule ... SecurityException: Calling uid: 10454 doesn't match source uid: 10032` em `IAppSearchManager.initialize` (gms de dentro, cache de conta). Candidato à causa do perfil; não confirmado.
+- Mudança: `IAppSearchProxy` (serviço "app_search"): corrige o AttributionSource (uid do celular) nos argumentos, como já é feito em provedores.
+- Não verificado no aparelho. Se o perfil continuar, falta o relatório logo após tocar no perfil (com a Play Store logada e o android_id preenchido).
