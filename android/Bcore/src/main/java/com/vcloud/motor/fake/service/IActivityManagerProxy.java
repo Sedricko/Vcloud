@@ -581,10 +581,18 @@ public class IActivityManagerProxy extends ClassInvocationStub {
                 switch (type) {
                     case ActivityManagerCompat.INTENT_SENDER_BROADCAST:
                         Intent broadcastShadow = new Intent();
-                        broadcastShadow.setComponent(new ComponentName(
-                                VcloudCore.getHostPkg(),
-                                ProxyBroadcastReceiver.class.getName()
-                        ));
+                        if (intent.getComponent() == null && intent.getAction() != null) {
+                            // Vcloud: broadcast IMPLÍCITO (ex.: resultado do instalador "...INTENT_PACKAGE_INSTALL_COMMIT.pacote"): quem escuta é um
+                            // receptor registrado em tempo de execução dentro do app. Com o componente do ProxyBroadcastReceiver ele nunca recebia;
+                            // com ação + pacote do Vcloud o Android entrega aos receptores registrados (dinâmicos e os de manifesto dos apps de dentro).
+                            broadcastShadow.setAction(intent.getAction());
+                            broadcastShadow.setPackage(VcloudCore.getHostPkg());
+                        } else {
+                            broadcastShadow.setComponent(new ComponentName(
+                                    VcloudCore.getHostPkg(),
+                                    ProxyBroadcastReceiver.class.getName()
+                            ));
+                        }
                         ProxyBroadcastRecord.saveStub(
                                 broadcastShadow,
                                 intent,
