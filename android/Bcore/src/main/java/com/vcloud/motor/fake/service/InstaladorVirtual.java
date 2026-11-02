@@ -362,30 +362,6 @@ public final class InstaladorVirtual {
                 try { cb.getClass().getMethod("onSessionFinished", int.class, boolean.class).invoke(cb, id, ok); } catch (Throwable ignored) { }
             }
         }
-        try {
-            Intent i = new Intent("android.content.pm.action.SESSION_UPDATED");
-            Object info = info(id);
-            if (info instanceof android.os.Parcelable) i.putExtra("android.content.pm.extra.SESSION", (android.os.Parcelable) info);
-            i.setPackage(meta(id).getProperty("guest"));
-            android.os.Parcel p = android.os.Parcel.obtain();
-            try {
-                p.writeInt(2); // TYPE_UNREGISTERED: finish() não fala com o Android
-                p.writeByte((byte) 0); p.writeByte((byte) 0);
-                p.writeStrongBinder(null);
-                p.writeInt(BActivityThread.getUserId()); p.writeInt(0); p.writeInt(0);
-                p.writeString(null); p.writeBundle(null);
-                p.writeByte((byte) 0); p.writeByte((byte) 0);
-                p.writeString(java.util.UUID.randomUUID().toString());
-                p.setDataPosition(0);
-                com.vcloud.motor.entity.am.PendingResultData pr = com.vcloud.motor.entity.am.PendingResultData.CREATOR.createFromParcel(p);
-                VcloudCore.getBActivityManager().scheduleBroadcastReceiver(i, pr, BActivityThread.getUserId());
-            } finally {
-                p.recycle();
-            }
-            Diagnostico.evento("INSTALADOR SESSION_UPDATED enviado para " + i.getPackage() + " (sessão " + id + ")");
-        } catch (Throwable t) {
-            Diagnostico.eventoLimitado("instalador|sessionupdated", 5000, "INSTALADOR SESSION_UPDATED falhou: " + t);
-        }
     }
 
     private static String nomes(File[] fs) {
@@ -403,6 +379,8 @@ public final class InstaladorVirtual {
             i.putExtra(PackageInstaller.EXTRA_PACKAGE_NAME, pacote);
             i.putExtra(PackageInstaller.EXTRA_SESSION_ID, id);
             destino.sendIntent(VcloudCore.getContext(), 0, i, null, null);
+            Diagnostico.eventoLimitado("instalador|enviado|" + id, 1000, "INSTALADOR aviso entregue ao IntentSender de " + destino.getCreatorPackage()
+                    + " (status " + status + ", sessão " + id + ")");
         } catch (Throwable t) {
             Diagnostico.eventoLimitado("instalador|aviso", 5000, "INSTALADOR não consegui avisar a Play Store: " + t);
         }

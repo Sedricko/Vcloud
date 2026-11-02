@@ -551,6 +551,11 @@ public class IActivityManagerProxy extends ClassInvocationStub {
             int type = (int) args[0];
             int intentsIndex = getIntentsIndex(args);
             Intent[] intents = (Intent[]) args[intentsIndex];
+            if ("com.android.vending".equals(BActivityThread.getAppPackageName()) && intents != null && intents.length > 0 && intents[0] != null) {
+                com.vcloud.motor.utils.Diagnostico.eventoLimitado("pi|" + type + "|" + intents[0].getAction() + intents[0].getComponent(), 30_000,
+                        "VENDING cria PendingIntent tipo=" + type + " ação=" + intents[0].getAction() + " componente=" + intents[0].getComponent()
+                                + " pacote=" + intents[0].getPackage());
+            }
             MethodParameterUtils.replaceFirstAppPkg(args);
 
             if (type == ActivityManagerCompat.INTENT_SENDER_ACTIVITY
