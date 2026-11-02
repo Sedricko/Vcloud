@@ -341,7 +341,7 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Não testado no aparelho. Incógnitas: checkin do GMS de dentro como app comum, login de conta, licenças (não se burla). Teste: ligar, abrir a Play Store de dentro, Central > Testar Google > Copiar.
 
 ## Regra: versão do app
-- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.16 (416).
+- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.17 (417).
 
 ## Play Store de dentro: erro de uid no provedor (4.0.2)
 - Relatório 19:33: `PROVEDOR erro engolido (query) em gms: Calling uid: 10014 doesn't match source uid: 10454` (modo Google completo ligado, caminho de dentro ativo).
@@ -420,3 +420,8 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
   3. `LOGIN chamador ... -> sistema (1000)` rodou, mas o `GetPackagesForUid` seguinte perguntou pelo uid do celular (10454→10015): a checagem `0p` usa outro caminho.
 - 4.0.16: (1) `QuemChama` (arquivos `pids/PID` = uid virtual, gravados pelo servidor ao iniciar/limpos ao morrer/ao ligar) + `NativeCore.getCallingUid` responde o dono do `Binder.getCallingPid()` (cache de 3 s); fica por último o comportamento antigo. (2) `getPackageInstaller` devolve um proxy que troca o nome do app pelo do Vcloud. (3) diagnóstico: `UID perguntou pacotes do uid do celular ... quem perguntou: <pilha>` (gms) para descobrir quem faz a checagem `0p`. (4) `AutoAnalise` ganhou as regras "does not belong to" e "Unknown calling package name".
 - Não testado no aparelho. Risco: o uid de quem chama agora muda em TODO app de dentro que recebe chamadas de outro app de dentro.
+
+## 4.0.17 — levantamento "o que o Google exige x o que existe dentro"
+- Pergunta do usuário: "Analisou se todos os serviços que o app exige estão disponíveis na instância?" → resposta honesta: até aqui só por falha isolada. Agora há a seção `REQUISITOS DO GOOGLE` no relatório (`AutoDiagnostico.requisitosGoogle`): pacotes (celular x dentro, com aviso "EXISTE NO CELULAR E FALTA DENTRO"), tipos de conta registrados dentro, provedores e serviços (ações) que a Play Store procura, telas/serviços de login do gms de dentro (nome, exportado, ligado/permissão).
+- Play Store 53.8.11-34 (APK enviado pelo usuário, analisada só por leitura): sem sharedUserId; `uses-library` todas `required=false`; `queries` só maps/CustomTabs/setupwizard; pede permissões de sistema (INSTALL_PACKAGES, MANAGE_USERS, GET_ACCOUNTS_PRIVILEGED...) que a cópia não recebe (não são do login). Strings do código: `com.google.android.gsf.action.GET_GLS` (login do gsf), `content://com.google.android.gsf.gservices` (+ `killswitch_to_allow_zero_android_id`), `com.google.android.gms.checkin.BIND_TO_SERVICE`, `"The com.google.android.gms.auth.accounts provider is not available."`, `getMySessions`, `READ_GSERVICES`.
+- A recusa `Only 0p apps` está no gms, não na Play Store: a resposta definitiva precisa do APK do gms 26.43.30 (peça ao usuário).
