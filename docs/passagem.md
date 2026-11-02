@@ -341,7 +341,7 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Não testado no aparelho. Incógnitas: checkin do GMS de dentro como app comum, login de conta, licenças (não se burla). Teste: ligar, abrir a Play Store de dentro, Central > Testar Google > Copiar.
 
 ## Regra: versão do app
-- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.11 (411).
+- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.12 (412).
 
 ## Play Store de dentro: erro de uid no provedor (4.0.2)
 - Relatório 19:33: `PROVEDOR erro engolido (query) em gms: Calling uid: 10014 doesn't match source uid: 10454` (modo Google completo ligado, caminho de dentro ativo).
@@ -385,3 +385,8 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Relatório 21:24 (4.0.10): `Access denied, requires ACCOUNT_MANAGER` continua e a linha `permissão concedida` não apareceu: os ganchos de `permission_checker`/`permissionmgr` não são o caminho do Android 17 → removidos.
 - Agora: `NativeCore.getCallingUid` devolve o uid do sistema só dentro de `android.accounts.*_enforcePermission` (o autenticador confere `checkPermission(perm, pid, getCallingUid())`; uid 1000 passa). Não testado.
 - Segue: `GservicesPersistence: Package com.vcloud.app is not approved to access the device ID` e `android_id=null` / `Unexpected android-id = 0` no vending:background.
+
+## 4.0.12 (causa real do ACCOUNT_MANAGER, lida no código-fonte do Android)
+- `PermissionEnforcer.enforcePermission(perm,pid,uid)` (sem app-op) → `Context.checkPermission` → `PermissionManager.checkPermission(perm,pid,uid,deviceId)` → cache → `IActivityManager.checkPermissionForDevice(...)` (uid root/sistema passa no cliente). Fontes: AOSP `PermissionEnforcer.java`, `ContextImpl.java`, `PermissionManager.java` (branch main; o Android 17 do aparelho pode diferir em detalhes).
+- O gancho do motor era só `checkPermission` → nunca pegava `checkPermissionForDevice`. 4.0.12 adiciona `checkPermissionForDevice` (mesma regra; uid está no índice 2) e REMOVE o remendo do uid de sistema da 4.0.11 e os ganchos inúteis da 4.0.10.
+- Lição: ler o código do Android antes de mexer (regra do usuário: "analise, não chute").

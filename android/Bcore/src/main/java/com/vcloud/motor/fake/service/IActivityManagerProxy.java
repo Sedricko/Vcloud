@@ -898,6 +898,21 @@ public class IActivityManagerProxy extends ClassInvocationStub {
     }
 
     
+    /**
+     * Android 15+: PermissionManager.checkPermission chama checkPermissionForDevice(permissão, pid, uid, deviceId) no AMS;
+     * o gancho "checkPermission" não pegava esse método (o autenticador do Google conferia ACCOUNT_MANAGER por ele).
+     */
+    @ProxyMethod("checkPermissionForDevice")
+    public static class checkPermissionForDevice extends checkPermission {
+        @Override
+        protected Object hook(Object who, Method method, Object[] args) throws Throwable {
+            if (args.length > 2 && args[2] instanceof Integer && (Integer) args[2] == VcloudCore.getBUid()) {
+                args[2] = VcloudCore.getHostUid();
+            }
+            return super.hook(who, method, args);
+        }
+    }
+
     private static boolean isAudioPermission(String permission) {
         if (permission == null) return false;
         return permission.equals(Manifest.permission.RECORD_AUDIO)
