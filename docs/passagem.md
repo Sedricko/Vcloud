@@ -622,3 +622,8 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Causa no Vcloud: `NativeCore.getCallingUid` devolvia o uid do celular para chamadas do mesmo app em outro processo, mas `Process.myUid()` devolve o uid virtual (OsStub.getuid) → nunca igual → rejeitado. Mesma raiz do "Binding only allowed within app" (4.0.36, caso do mesmo processo).
 - Mudança: mesmo app, outro processo → devolve `Process.myUid()`.
 - Isso explica download, atualização e desinstalar (usam o `InstallQueue` Schedule/Uninstall) falharem. Não verificado no aparelho.
+
+## 4.0.50 (diagnóstico)
+- Relatório 16:10 (4.0.49): `internal-only` continua. Lido no dex: a política é `Lcifj;->a(int uid)` = `uid == Lcifm;->a` e `Lcifm;.<clinit>` faz `a = Process.myUid()` UMA vez (capturado quando a classe carrega). Se carregar antes de `BActivityThread.isInit()` (mBoundApplication), `OsStub.getFakeUid` devolve o uid do celular; depois devolve o virtual → `a` e o uid devolvido por `getCallingUid` podem divergir.
+- Mudança só de diagnóstico: `PLAYSTORE (...) política internal-only: cifm.a=... myUid agora=... buid=... host=...` ao abrir a Play Store, e `UID chamada de outro processo: orig cpid quem eu(buid) myUid -> resultado` em `NativeCore.getCallingUid`.
+- Próximo: com esses números, igualar `getCallingUid` ao `cifm.a` ou fixar `Process.myUid()` cedo.

@@ -481,6 +481,17 @@ public class BActivityThread extends IBActivityThread.Stub {
             try { com.vcloud.motor.utils.GuardaSobreposicao.iniciar(); } catch (Throwable ignored) { /* sem a guarda o app abre igual */ }
             if (packageName.equals("com.android.vending") || packageName.equals("com.google.android.gms")) {
                 com.vcloud.motor.utils.ProbeGoogle.medirDentro(mInitialApplication, packageName + " (" + processName + ")");
+                if (packageName.equals("com.android.vending")) {
+                    // diagnóstico (Play Store 53.8.11): política "internal-only" do grpc-binder guarda Process.myUid() de quando a classe carregou
+                    try {
+                        java.lang.reflect.Field f = Class.forName("cifm", true, application.getClassLoader()).getDeclaredField("a");
+                        f.setAccessible(true);
+                        com.vcloud.motor.utils.Diagnostico.evento("PLAYSTORE (" + processName + ") política internal-only: cifm.a=" + f.get(null)
+                                + " myUid agora=" + android.os.Process.myUid() + " buid=" + getBUid() + " host=" + VcloudCore.getHostUid());
+                    } catch (Throwable t) {
+                        com.vcloud.motor.utils.Diagnostico.evento("PLAYSTORE (" + processName + ") não li cifm.a: " + t);
+                    }
+                }
             }
         } catch (Exception e) {
             Slog.e(TAG, "Critical error in handleBindApplication", e);

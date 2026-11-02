@@ -65,7 +65,18 @@ public class NativeCore {
                     int cpid = android.os.Binder.getCallingPid();
                     if (cpid == Process.myPid()) return Process.myUid(); // igual ao uid que o app vê de si (Play Store: "Binding only allowed within app")
                     int quem = com.vcloud.motor.utils.QuemChama.uidDoPid(cpid);
-                    if (quem > 0 && quem < Process.LAST_APPLICATION_UID) return quem == VcloudCore.getBUid() ? Process.myUid() : quem; // mesmo app, outro processo: igual ao uid que o app vê de si (grpc-binder "internal-only" da Play Store)
+                    if (quem > 0 && quem < Process.LAST_APPLICATION_UID) {
+                        int res = quem == VcloudCore.getBUid() ? Process.myUid() : quem;
+                        try {
+                            com.vcloud.motor.utils.Diagnostico.eventoLimitado("calluid|" + cpid, 20_000, "UID chamada de outro processo: orig=" + origCallingUid
+                                    + " cpid=" + cpid + " quem=" + quem + " eu(buid)=" + VcloudCore.getBUid() + " myUid=" + Process.myUid() + " -> " + res);
+                        } catch (Throwable ignored) { }
+                        return res;
+                    }
+                    try {
+                        com.vcloud.motor.utils.Diagnostico.eventoLimitado("calluid0|" + cpid, 20_000, "UID chamada de outro processo SEM dono: orig=" + origCallingUid
+                                + " cpid=" + cpid + " quem=" + quem + " myUid=" + Process.myUid());
+                    } catch (Throwable ignored) { }
                 }
                 
                 String appPackageName = VcloudCore.getAppPackageName();
