@@ -44,13 +44,24 @@ public class ITelephonyManagerProxy extends BinderInvocationStub {
         return false;
     }
 
+    /**
+     * IMEI/ID do aparelho/MEID/assinante: o motor herdado responde md5(pacote) para o app não travar com valor vazio. O Google rejeita
+     * isso no checkin ("not a valid IMEI (expect 15 decimal digits)") e entregar um IMEI inventado também seria enganar o Google:
+     * para os apps do Google a resposta é "sem valor" (como em aparelho sem chip); os demais apps seguem como antes.
+     */
+    private static Object idDoAparelho() {
+        String app = com.vcloud.motor.app.BActivityThread.getAppPackageName();
+        if (app != null && com.vcloud.motor.core.GmsCore.isGoogleAppOrService(app)) return null;
+        return Md5Utils.md5(VcloudCore.getHostPkg());
+    }
+
     @ProxyMethod("getDeviceId")
     public static class GetDeviceId extends MethodHook {
         @Override
         protected Object hook(Object who, Method method, Object[] args) throws Throwable {
 
 
-            return Md5Utils.md5(VcloudCore.getHostPkg());
+            return idDoAparelho();
         }
     }
 
@@ -60,7 +71,7 @@ public class ITelephonyManagerProxy extends BinderInvocationStub {
         protected Object hook(Object who, Method method, Object[] args) throws Throwable {
 
 
-            return Md5Utils.md5(VcloudCore.getHostPkg());
+            return idDoAparelho();
         }
     }
 
@@ -70,7 +81,7 @@ public class ITelephonyManagerProxy extends BinderInvocationStub {
         protected Object hook(Object who, Method method, Object[] args) throws Throwable {
 
 
-            return Md5Utils.md5(VcloudCore.getHostPkg());
+            return idDoAparelho();
         }
     }
 
@@ -95,7 +106,7 @@ public class ITelephonyManagerProxy extends BinderInvocationStub {
     public static class GetSubscriberId extends MethodHook {
         @Override
         protected Object hook(Object who, Method method, Object[] args) throws Throwable {
-            return Md5Utils.md5(VcloudCore.getHostPkg());
+            return idDoAparelho();
         }
     }
 
@@ -103,7 +114,7 @@ public class ITelephonyManagerProxy extends BinderInvocationStub {
     public static class GetDeviceIdWithFeature extends MethodHook {
         @Override
         protected Object hook(Object who, Method method, Object[] args) throws Throwable {
-            return Md5Utils.md5(VcloudCore.getHostPkg());
+            return idDoAparelho();
         }
     }
 

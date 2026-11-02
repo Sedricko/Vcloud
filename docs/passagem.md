@@ -341,7 +341,7 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Não testado no aparelho. Incógnitas: checkin do GMS de dentro como app comum, login de conta, licenças (não se burla). Teste: ligar, abrir a Play Store de dentro, Central > Testar Google > Copiar.
 
 ## Regra: versão do app
-- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.33 (433).
+- A cada APK entregue ao usuário, subir `versionCode`/`versionName` em `android/build.gradle` (o instalador mostra "já está instalada" se for igual). Atual: 4.0.34 (434).
 
 ## Play Store de dentro: erro de uid no provedor (4.0.2)
 - Relatório 19:33: `PROVEDOR erro engolido (query) em gms: Calling uid: 10014 doesn't match source uid: 10454` (modo Google completo ligado, caminho de dentro ativo).
@@ -519,3 +519,9 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Código do gms 26.43.30 (só leitura), `blan.a()` (CheckinTask): portões antes de iniciar: (1) com flag, `ActivityManager.getRunningServices` contendo `com.google.android.gsf/.checkin.CheckinService` → "GSF Checkin still active" e aborta; (2) `ConnectivityManager.getActiveNetworkInfo() == null` → "checkin scheduled: no active network"; (3) "GmsCore checkin is not enabled."; (4) mensagens "Checkin will retry later, network is not available" / "Unable to run checkin now.". O motor responde NetworkInfo não nulo e CONNECTED; o `getServices` virtual só lista serviços do processo do chamador (não deve incluir o do gsf). Essas mensagens usam o logger `La.V` (não vai ao logcat) → portão não observável.
 - O log não mostra reinício dos dados do Google (nenhum `onPackageUninstalled/installPackage`), então o passo manual provavelmente não foi feito.
 - 4.0.33: `GoogleModo.reiniciarDadosUmaVez("google_reset_4_0_33")` chamado em `App.onCreate` (processo principal, 8 s depois): com o modo Google completo ligado, `clearPackage` de gms/gsf/vending uma única vez (arquivo-marca em `blackbox/`); histórico `GOOGLE dados de dentro reiniciados uma vez ...`. Hipótese NÃO confirmada: o Chimera guarda registro de quedas (`GCore-Chimera-Crash`) e pula a operação que caiu 4x nas rodadas 4.0.27/28.
+
+## 4.0.34 (relatório 08:14, app 4.0.33) — o checkin CHEGA ao Google
+- `GOOGLE dados de dentro reiniciados uma vez (google_reset_4_0_33)`: hipótese confirmada — depois do reinício o `CheckinIntentOperation` voltou a executar (log do próprio checkin: `[CheckinOperation] Starting Checkin`, `[AndroidCheckinProtoModule] Checkin reason type: 5 attempt count: 1`).
+- O pedido foi ao servidor e VOLTOU recusado: `Checkin failed: https://android.googleapis.com/checkin ... invalid hardware identifier: "5628c3bc4e63dbcaa448a7627ff47ce6" is not a valid IMEI (expect 15 decimal digits)` → `Checkin Operation finished with result: FAILURE` → ErrorActivity em ~4 s.
+- Origem: `ITelephonyManagerProxy` (BlackBox) responde `md5(pacote do Vcloud)` para `getDeviceId`, `getImeiForSlot`, `getMeidForSlot`, `getSubscriberId`, `getDeviceIdWithFeature`.
+- 4.0.34: `idDoAparelho()`: para apps do Google (`GmsCore.isGoogleAppOrService`) responde `null` (sem valor, não inventa IMEI); os outros apps continuam com o md5. Regra `not a valid IMEI` no AutoAnalise. Não testado. Próximos riscos: outros identificadores no pedido (serial, MAC, ICCID) ou o Google recusar um aparelho sem IMEI/virtual.

@@ -51,6 +51,8 @@ public final class AutoAnalise {
                     "Só apps privilegiados leem esses identificadores; o checkin do Google os coleta.", "Resposta 'sem valor' no IPhoneSubInfoProxy (já feito)."},
             {"privilegiada", ALTA, "READ_PRIVILEGED_PHONE_STATE", "O Android recusou uma pergunta do chip (permissão privilegiada)",
                     "Só apps privilegiados leem assinaturas/chip; o checkin do Google pergunta.", "Resposta neutra no ISubProxy (já feito)."},
+            {"imeiInvalido", ALTA, "not a valid IMEI", "O Google recusou o checkin: IMEI inválido",
+                    "O motor entregou um IMEI inventado (md5) que não tem 15 dígitos.", "Responder 'sem valor' ao Google (ITelephonyManagerProxy.idDoAparelho, já feito)."},
             {"pkgUid", ALTA, "does not belong to", "Pacote não pertence ao uid de quem chamou",
                     "O app de dentro se apresentou com o nome dele e o Android conferiu com o uid do Vcloud.", "Trocar o nome do app pelo do Vcloud na chamada (como no PackageInstaller)."},
             {"pkgChamador", ALTA, "Unknown calling package name", "O Google não reconheceu o app que o chamou",
