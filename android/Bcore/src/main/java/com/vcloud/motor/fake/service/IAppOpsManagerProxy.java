@@ -66,7 +66,7 @@ public class IAppOpsManagerProxy extends BinderInvocationStub {
             methodName.startsWith("note") || 
             methodName.startsWith("start")) {
             Slog.d(TAG, "AppOps invoke: Bypassing system for " + methodName + ", allowing operation");
-            return AppOpsManager.MODE_ALLOWED;
+            return permitido(method, args);
         }
         
         
@@ -89,6 +89,36 @@ public class IAppOpsManagerProxy extends BinderInvocationStub {
             
             return AppOpsManager.MODE_ALLOWED;
         }
+    }
+
+
+    // Vcloud: note*/start* devolvem int (Android antigo) ou SyncNotedAppOp (Android 11+); devolver int onde se espera
+    // SyncNotedAppOp dava ClassCastException no gms (startOperation).
+    private static Object permitido(Method method, Object[] args) {
+        Class<?> tipo = method.getReturnType();
+        if (tipo == void.class) return null;
+        if (tipo == int.class || tipo == Integer.class) return AppOpsManager.MODE_ALLOWED;
+        if (tipo.getSimpleName().equals("SyncNotedAppOp")) {
+            Integer op = null;
+            String pkg = null;
+            if (args != null) {
+                for (Object a : args) {
+                    if (op == null && a instanceof Integer) op = (Integer) a;
+                    if (pkg == null && a instanceof String) pkg = (String) a;
+                }
+            }
+            int codigo = op == null ? 0 : op;
+            try {
+                return tipo.getConstructor(int.class, int.class, String.class, String.class)
+                        .newInstance(AppOpsManager.MODE_ALLOWED, codigo, null, pkg);
+            } catch (Throwable ignored) { }
+            try {
+                return tipo.getConstructor(int.class, String.class, String.class).newInstance(codigo, null, pkg);
+            } catch (Throwable e) {
+                Slog.w(TAG, "não consegui criar SyncNotedAppOp: " + e);
+            }
+        }
+        return null;
     }
 
     @Override

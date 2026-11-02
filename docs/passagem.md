@@ -550,3 +550,10 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Relatório 09:01 (4.0.37), log CONTAS: o servidor tem 1 conta (com.google). Quem pede por tipo `com.google` recebe 1. A Play Store pergunta com tipo `null` (getAccounts) e recebia 0 → "No current account found".
 - Mudança: `getAccountsAsUser` com tipo null devolve todas as contas (como no Android).
 - Não verificado no aparelho. Outras funções por pacote (`getAccountsForPackage`) não mexidas.
+
+## 4.0.39
+- Relatório 09:09 (4.0.38): **a Play Store entrou na conta** (Finsky: "Loaded library for account", "Sending payloads for account"). O `getAccountsAsUser(null)` da 4.0.38 resolveu.
+- Novo erro no gms: `ClassCastException: Integer → SyncNotedAppOp` em `AppOpsManager.startOpNoThrow` (IAppOpsManagerProxy devolvia sempre int nos note*/start*).
+- Mudança: `permitido(method,args)` devolve pelo tipo de retorno (int, void, SyncNotedAppOp criado por reflexão).
+- Não corrigido: `DeviceOriginProvider` (setupwizard) recusou leitura pela Play Store 1x (permissão READ_DEVICE_ORIGIN); a Play Store seguiu funcionando. `Package com.android.vending does not belong to 10454` em `ITelephonyRegistry.addOnSubscriptionsChangedListener` (não fatal). `Cannot cast spl to avru` é antigo (11-01).
+- Não verificado no aparelho.
