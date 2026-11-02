@@ -581,3 +581,9 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Relatório 09:50 (4.0.41): nenhum evento `INSTALADOR` → a atualização nem chegou ao instalador virtual (a Play Store desiste antes; causa não achada). Perfil não abre: sem erro fatal; o gms nega o serviço #468 (`ZERO_PARTY`, AppImportanceApiService) à Play Store: `dozn.a` (gms) só deixa se `brft.d(pkg).b` (verificador de assinatura do Google) ou pacote na lista extra (flag do servidor). Não resolvido.
 - Mudança pequena: `ITelephonyRegistryProxy.invoke` troca o nome do app de dentro pelo do Vcloud em qualquer método (corrige `Package com.android.vending does not belong to 10454` em `addOnSubscriptionsChangedListener`).
 - Não verificado no aparelho se isso muda perfil/atualização.
+
+## 4.0.43
+- Relatório 10:27 (4.0.42): o erro `Package ... does not belong` sumiu. Continua sem `INSTALADOR` (atualização nunca chega ao instalador). Achado: o processo `com.android.vending:background` (onde roda a fila de instalação/atualização) leva FATAL EXCEPTION toda vez que abre: `ClassCastException: Cannot cast spl to avru` em `CachedPackageContentProvider.a` e `SecurityHubContentProvider.a` → `arwl.f` → `soy.e` (`Class.cast` do componente de injeção). Acontece durante o `Application.onCreate` (antes de `afterApplicationOnCreate`).
+- Hipótese (do código, não testada): o onCreate desses dois provedores dispara uma tarefa em thread de fundo que pede ao componente da loja uma interface que só existe depois do onCreate do app terminar. No Android real o onCreate é rápido e a tarefa perde a corrida; no Vcloud é mais lento.
+- Mudança: em `BActivityThread.handleBindApplication`, esses dois provedores da Play Store são instalados DEPOIS do `Application.onCreate`.
+- Não verificado no aparelho.

@@ -463,10 +463,25 @@ public class BActivityThread extends IBActivityThread.Stub {
             BRActivityThread.get(VcloudCore.mainThread())._set_mInitialApplication(mInitialApplication);
             ContextCompat.fix((Context) BRActivityThread.get(VcloudCore.mainThread()).getSystemContext());
             ContextCompat.fix(mInitialApplication);
-            installProviders(mInitialApplication, bindData.processName, bindData.providers);
+            // Vcloud: dois provedores da Play Store disparam uma tarefa que usa o "componente" da loja; no Vcloud o onCreate do app
+            // é mais lento e a tarefa rodava antes dele terminar ("Cannot cast spl to avru" derrubava o :background, onde roda a atualização).
+            // Eles são instalados só depois do onCreate do app.
+            List<ProviderInfo> adiados = new java.util.ArrayList<>();
+            List<ProviderInfo> agora = new java.util.ArrayList<>();
+            for (ProviderInfo pi : bindData.providers) {
+                if ("com.android.vending".equals(packageName) && pi.name != null
+                        && (pi.name.equals("com.google.android.finsky.setup.p2p.CachedPackageContentProvider")
+                        || pi.name.equals("com.google.android.finsky.securityhub.SecurityHubContentProvider"))) {
+                    adiados.add(pi);
+                } else {
+                    agora.add(pi);
+                }
+            }
+            installProviders(mInitialApplication, bindData.processName, agora);
 
             onBeforeApplicationOnCreate(packageName, processName, application);
             AppInstrumentation.get().callApplicationOnCreate(application);
+            if (!adiados.isEmpty()) installProviders(mInitialApplication, bindData.processName, adiados);
             onAfterApplicationOnCreate(packageName, processName, application);
 
             // Vcloud: alguns jogos (ex.: DYSMANTLE) trocam o Instrumentation no Application.onCreate;
