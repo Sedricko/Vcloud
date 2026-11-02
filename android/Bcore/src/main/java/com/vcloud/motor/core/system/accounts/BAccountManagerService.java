@@ -253,7 +253,8 @@ public class BAccountManagerService extends IBAccountManagerService.Stub impleme
         List<Account> accounts = new ArrayList<>();
         synchronized (userAccounts.lock) {
             for (BAccount account : userAccounts.accounts) {
-                if (account.account.type.equals(accountType)) {
+                // tipo null = todas as contas (AccountManager.getAccounts(); a Play Store pergunta assim)
+                if (accountType == null || account.account.type.equals(accountType)) {
                     accounts.add(account.account);
                 }
             }

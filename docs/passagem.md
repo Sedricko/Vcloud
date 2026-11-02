@@ -545,3 +545,8 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Hipótese: a Play Store e o gms veem listas de contas diferentes (ou a lista do AccountManager de dentro está vazia e o gms guarda a conta no banco dele). Não confirmado.
 - Mudança: log `CONTAS` no servidor (getAccountsAsUser: tipo, quantas devolveu, total, pid; e quando adiciona conta).
 - Outros: `ITelephonyRegistry.addOnSubscriptionsChangedListener` ainda dá "Package com.android.vending does not belong to 10454" (não fatal).
+
+## 4.0.38
+- Relatório 09:01 (4.0.37), log CONTAS: o servidor tem 1 conta (com.google). Quem pede por tipo `com.google` recebe 1. A Play Store pergunta com tipo `null` (getAccounts) e recebia 0 → "No current account found".
+- Mudança: `getAccountsAsUser` com tipo null devolve todas as contas (como no Android).
+- Não verificado no aparelho. Outras funções por pacote (`getAccountsForPackage`) não mexidas.
