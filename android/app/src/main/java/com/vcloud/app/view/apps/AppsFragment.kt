@@ -44,6 +44,7 @@ class AppsFragment : Fragment() {
     private val viewBinding: FragmentAppsBinding by inflate()
 
     private var popupMenu: PopupMenu? = null
+    private var ajudanteDeArrastar: ItemTouchHelper? = null
 
     companion object {
         private const val TAG = "AppsFragment"
@@ -145,6 +146,7 @@ class AppsFragment : Fragment() {
             }
 
             val itemTouchHelper = ItemTouchHelper(touchCallBack)
+            ajudanteDeArrastar = itemTouchHelper
             itemTouchHelper.attachToRecyclerView(viewBinding.recyclerView)
 
             mAdapter.setItemClickListener { _, data, _ ->
@@ -247,7 +249,16 @@ class AppsFragment : Fragment() {
                             
                             if (isMove(point, e)) {
                                 isScrolling = true
-                                if (popupMenu != null) com.vcloud.motor.utils.Diagnostico.eventoLimitado("menu|moveu", 3000, "MENU dedo se moveu (rolagem): fecha o menu")
+                                if (popupMenu != null) {
+                                    com.vcloud.motor.utils.Diagnostico.eventoLimitado("menu|moveu", 3000, "MENU dedo se moveu depois do toque longo: começa o arrastar")
+                                    // toque longo + mover = reordenar os apps (o arrastar não começa mais sozinho no toque longo)
+                                    try {
+                                        val filho = viewBinding.recyclerView.findChildViewUnder(e.x, e.y)
+                                        if (filho != null) ajudanteDeArrastar?.startDrag(viewBinding.recyclerView.getChildViewHolder(filho))
+                                    } catch (ex: Exception) {
+                                        Log.e(TAG, "Error starting drag: ${ex.message}")
+                                    }
+                                }
                                 popupMenu?.dismiss()
                             }
                             

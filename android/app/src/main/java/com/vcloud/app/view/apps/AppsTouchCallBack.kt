@@ -55,6 +55,10 @@ class AppsTouchCallBack(private val onMoveBlock: (from: Int, to: Int) -> Unit) :
         }
     }
 
+    // Vcloud: o arrastar por toque longo "roubava" o toque longo do item (vibrava e o menu de Desinstalar/Limpar nunca abria).
+    // O arrastar agora começa só quando o dedo se mexe depois do toque longo (AppsFragment chama startDrag).
+    override fun isLongPressDragEnabled(): Boolean = false
+
     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
         
     }

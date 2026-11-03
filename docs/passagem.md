@@ -739,3 +739,9 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Pedido do usuário: logs mais sensíveis.
 - Mudanças só de registro: `ABRE tela (<app>)` para a Play Store e apps do Google (antes só a Play Store, a cada 5 s; agora a cada 1,5 s por tela) e `CICLO de telas` quando a mesma tela abre 4x em 4 s (ex.: Play Protect entre a loja e o gms); `TOQUE na lista de apps` (dedo desceu), `TOQUE curto abriu o app`, `MENU escolheu o item '<nome>'`, `DESINSTALAR confirmado/terminou/FALHOU` na tela do Vcloud; instalador e getInstalledPackages com limites menores (5 s e 10 s).
 - Não muda comportamento.
+
+## 4.0.71 — menu de segurar o app
+- Relatório 06:50 (4.0.69): ZERO linhas `MENU ...` ao segurar o ícone → o listener de toque longo do item (`setItemLongClickListener`) nunca é chamado (a primeira linha dele é o log). O usuário sente uma vibração.
+- Causa provável (código): `ItemTouchHelper` com `isLongPressDragEnabled()` padrão (true) começa o arrastar no toque longo (vibra) e intercepta o toque; o item recebe CANCEL e o toque longo dele não dispara → menu não abre; só às vezes (corrida entre os dois temporizadores).
+- Mudança: `AppsTouchCallBack.isLongPressDragEnabled() = false`; o arrastar para reordenar começa só quando o dedo se mexe depois do toque longo (`AppsFragment` → `startDrag`). Sem mudança visual.
+- Não verificado no aparelho.
