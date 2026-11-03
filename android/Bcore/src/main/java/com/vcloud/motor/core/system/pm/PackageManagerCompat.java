@@ -37,6 +37,15 @@ import com.vcloud.motor.utils.compat.BuildCompat;
 @SuppressLint({"SdCardPath", "NewApi"})
 public class PackageManagerCompat {
 
+    /**
+     * Vcloud: a Play Store pergunta com MATCH_ANY_USER (0x00400000). Repassar isso à consulta REAL do celular dá SecurityException
+     * (o Vcloud não tem INTERACT_ACROSS_USERS), o PackageInfo todo saía nulo e a loja dizia "Package ... not installed"
+     * (relatório 10:11, 4.0.72+: "PACOTE getPackageInfo falhou ... MATCH_ANY_USER flag requires INTERACT_ACROSS_USERS").
+     */
+    static int semParaTodosUsuarios(int flags) {
+        return flags & ~0x00400000;
+    }
+
     public static PackageInfo generatePackageInfo(BPackageSettings ps, int flags, BPackageUserState state, int userId) {
         if (ps == null) {
             return null;
@@ -194,8 +203,12 @@ public class PackageManagerCompat {
         }
         PackageInfo base = null;
         try {
-            base = VcloudCore.getContext().getPackageManager().getPackageInfo(p.packageName, flags);
+            base = VcloudCore.getContext().getPackageManager().getPackageInfo(p.packageName, semParaTodosUsuarios(flags));
         } catch (PackageManager.NameNotFoundException ignored) {
+        } catch (Throwable t) {
+            // o PackageInfo do Vcloud não pode depender de a consulta ao celular dar certo
+            com.vcloud.motor.utils.Diagnostico.eventoLimitado("pkginfobase|" + p.packageName, 30_000,
+                    "PACOTE consulta ao celular de " + p.packageName + " falhou (flags=" + flags + "): " + t);
         }
         try {
         if ((flags & PackageManager.GET_SIGNATURES) != 0) {
@@ -328,7 +341,7 @@ public class PackageManagerCompat {
         }
         ApplicationInfo baseApplication;
         try {
-            baseApplication = VcloudCore.getPackageManager().getApplicationInfo(VcloudCore.getHostPkg(), flags);
+            baseApplication = VcloudCore.getPackageManager().getApplicationInfo(VcloudCore.getHostPkg(), semParaTodosUsuarios(flags));
         } catch (Exception e) {
             return null;
         }
