@@ -116,14 +116,17 @@ public abstract class ClassInvocationStub implements InvocationHandler, IInjectH
         // Vcloud: monitor — toda chamada de um app de dentro a um serviço do Android passa por aqui (tempo, erro, resumo a cada 60 s)
         final long t0 = System.nanoTime();
         Throwable erro = null;
+        Object resultado = null;
         try {
-            return invocar(method, args);
+            resultado = invocar(method, args);
+            return resultado;
         } catch (Throwable e) {
             erro = e;
             throw e;
         } finally {
             try {
                 com.vcloud.motor.utils.Monitor.chamada(getClass().getSimpleName(), method.getName(), System.nanoTime() - t0, erro, args);
+                com.vcloud.motor.utils.Monitor.detalhe(getClass().getSimpleName(), method.getName(), args, resultado);
             } catch (Throwable ignored) { }
         }
     }

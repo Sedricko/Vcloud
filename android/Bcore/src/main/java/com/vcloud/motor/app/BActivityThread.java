@@ -921,6 +921,7 @@ public class BActivityThread extends IBActivityThread.Stub {
 
     @Override
     public void mudancaDePacote(Intent intent) throws RemoteException {
+        com.vcloud.motor.utils.Monitor.detalheAte = System.currentTimeMillis() + 15_000;
         com.vcloud.motor.fake.delegate.InnerReceiverDelegate.entregar(intent);
     }
 

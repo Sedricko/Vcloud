@@ -86,6 +86,33 @@ public final class Monitor {
         }
     }
 
+    /** Enquanto aberta (após um aviso de pacote do Vcloud), toda chamada ao PackageManager entra no monitor COM o resultado: mostra o que a loja vê. */
+    public static volatile long detalheAte;
+
+    public static void detalhe(String servico, String metodo, Object[] argsBrutos, Object res) {
+        if (System.currentTimeMillis() > detalheAte || !"IPackageManagerProxy".equals(servico) || DENTRO.get() != null) return;
+        DENTRO.set(Boolean.TRUE);
+        try {
+            String r;
+            if (res == null) r = "null";
+            else if (res instanceof android.content.pm.PackageInfo) {
+                android.content.pm.PackageInfo pi = (android.content.pm.PackageInfo) res;
+                android.content.pm.ApplicationInfo ai = pi.applicationInfo;
+                r = "PackageInfo{" + pi.packageName + " v=" + pi.versionCode + " ai=" + (ai == null ? "null" : "flags=0x" + Integer.toHexString(ai.flags) + " enabled=" + ai.enabled + " src=" + (ai.sourceDir != null && new File(ai.sourceDir).exists()))
+                        + " splits=" + (pi.splitNames == null ? 0 : pi.splitNames.length) + " sig=" + (pi.signatures != null || pi.signingInfo != null) + "}";
+            } else if (res instanceof java.util.List) r = "lista " + ((java.util.List<?>) res).size();
+            else {
+                r = res.getClass().getSimpleName();
+                try { Object l = res.getClass().getMethod("getList").invoke(res); if (l instanceof java.util.List) r += " lista " + ((java.util.List<?>) l).size(); } catch (Throwable ignored) { }
+                if (res instanceof Number || res instanceof Boolean || res instanceof String) r = String.valueOf(res);
+            }
+            ev("PM-DET", metodo + " " + args(metodo, argsBrutos) + " -> " + r);
+        } catch (Throwable ignored) {
+        } finally {
+            DENTRO.remove();
+        }
+    }
+
     private static void chamadaInterna(String servico, String metodo, long ns, Throwable erro, Object[] argsBrutos) {
         // OsStub = cada leitura/escrita/stat de arquivo do app (milhares por segundo, e "arquivo não existe" é normal): só entra na contagem
         if ("OsStub".equals(servico)) {
