@@ -268,6 +268,7 @@ public class IPackageManagerProxy extends BinderInvocationStub {
         protected Object hook(Object who, Method method, Object[] args) throws Throwable {
             int flags = MethodParameterUtils.toInt(args[0]);
             List<PackageInfo> installedPackages = VcloudCore.getBPackageManager().getInstalledPackages(flags, VcloudCore.getUserId());
+            if (installedPackages != null) for (PackageInfo pi : installedPackages) marcarPartesDaLoja(pi);
             if ("com.android.vending".equals(BActivityThread.getAppPackageName()) && installedPackages != null) {
                 // diagnóstico: a Play Store só conta como instalado o app com assinatura (ver PackageManagerCompat)
                 StringBuilder sb = new StringBuilder("flags=" + flags + " total=" + installedPackages.size() + " |");
@@ -281,6 +282,14 @@ public class IPackageManagerProxy extends BinderInvocationStub {
             }
             return embrulharLista(who, method, args, installedPackages);
         }
+    }
+
+    /** Vcloud: diz que as partes (splits) da Play Store estão instaladas; ver GetPackageInfo. */
+    static void marcarPartesDaLoja(PackageInfo pi) {
+        if (pi == null || !"com.android.vending".equals(pi.packageName) || !com.vcloud.motor.utils.GoogleModo.completoDentro()) return;
+        String idioma = java.util.Locale.getDefault().getLanguage();
+        pi.splitNames = new String[]{"config.arm64_v8a", "config." + idioma, "phonesky_data_loader",
+                "phonesky_data_loader.config.arm64_v8a", "phonesky_webrtc_native_lib", "phonesky_webrtc_native_lib.config.arm64_v8a"};
     }
 
     // Vcloud: no Android 17 getInstalledPackages devolve PackageInfoList (não mais ParceledListSlice);

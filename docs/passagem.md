@@ -723,3 +723,9 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Causa (código, `AppsFragment.initData`): o menu é criado no toque longo mas só é mostrado ao soltar o dedo (ACTION_UP), e apenas se o toque durou MENOS de 500 ms (`scrollDuration < 500`). Um toque longo normal dura mais que isso → o menu só aparecia se o dedo soltasse rápido.
 - Mudança: limite de 500 ms → 15 s. Sem mudança visual.
 - Também nesta versão: diagnóstico `VENDING getInstalledPackages` (4.0.66).
+
+## 4.0.68
+- Relatório 06:23 (4.0.67): a Play Store volta à tela "Reinicie o app para concluir a atualização" (novo idioma) em ciclo: `Language Split Installed = false` → `Enabling locale changed mode` a cada abertura. O truque de `splitNames` (4.0.48) só estava em `getPackageInfo`; a Play Store agora lê o PackageInfo dela na lista de `getInstalledPackages`, que não tinha `splitNames`.
+- Diagnóstico (4.0.66/67) mostrou `sig=null` para TODOS os apps na lista (flags 0x40200000 não pedem assinatura) — então a assinatura (4.0.62) não era o critério. O Soul Huntress (instalado) aparece como "Install Queue: ... Queue only: 1" e `PSR: Package ... not installed`: um pedido de instalação duplicado/preso na fila da loja (duas sessões foram criadas para ele), que a loja trata como "baixando" e não como instalado.
+- Mudança: `marcarPartesDaLoja` também na lista de `getInstalledPackages`.
+- Não verificado no aparelho.
