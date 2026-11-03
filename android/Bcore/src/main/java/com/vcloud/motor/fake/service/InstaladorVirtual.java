@@ -358,7 +358,11 @@ public final class InstaladorVirtual {
                     File[] fs = dir.listFiles();
                     Diagnostico.evento("INSTALADOR sessão " + id + " confirmada: pacote=" + pacote + " arquivos=" + (fs == null ? 0 : fs.length)
                             + (fs == null ? "" : " " + nomes(fs)));
-                    if (base == null) {
+                    if (base == null && pacote != null && !GmsCore.isGoogleAppOrService(pacote) && VcloudCore.get().isInstalled(pacote, userId)) {
+                        // sessão só com partes (como o Android real: herda o APK base já instalado) — a loja repete assim depois da instalação
+                        copiarBibliotecasDasPartes(dir, null, pacote);
+                        ok = true;
+                    } else if (base == null) {
                         msg = "nenhum APK foi gravado";
                     } else if (pacote != null && GmsCore.isGoogleAppOrService(pacote)) {
                         msg = "o Vcloud não atualiza o Google de dentro por aqui";

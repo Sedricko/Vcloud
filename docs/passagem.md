@@ -798,3 +798,9 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Causa provável: o observador da loja é `IPackageDeleteObserver2`, cujo método é `onPackageDeleted(String,int,String)`; o hook só tentava `packageDeleted(String,int)` e engolia o erro → a loja nunca recebia resposta.
 - Mudança: o hook chama `onPackageDeleted` (com fallback `packageDeleted`); pacote que não está no Vcloud e falha no celular também responde (-1) em vez de estourar.
 - Não verificado no aparelho (nome do método do observador é deduzido do AIDL do Android, não visto no log).
+
+## 4.0.81 — sessão só com partes não deve virar erro
+- Relatório 15:54 (4.0.80), Backpack Brawl: sessão 700002 instalou (`IV2: Finishing successful install`, loja em `INSTALLED`). Logo depois a loja confirmou as sessões 700001 e 700000 (restos de tentativas anteriores, só com partes: gpdeku, config.arm64_v8a, UnityDataAssetPack…, SEM APK base) e o Vcloud respondeu `nenhum APK foi gravado` → falha 6000 no mesmo PendingIntent (`INTENT_PACKAGE_INSTALL_COMMIT.<pkg>:<ver>`), que reverteu o estado da loja para erro.
+- No Android real uma sessão sem base herda o APK já instalado e é sucesso. Mudança: sessão sem base, de app já instalado no Vcloud (não Google) → guarda as partes e responde sucesso. App não instalado continua falhando.
+- `getApplicationEnabledSetting -> InvocationTargetException` no fim do log vem do app já desinstalado (celular real não conhece o pacote): normal.
+- Não verificado no aparelho. Ainda sem tratar: erro 6401 inicial da 1ª tentativa (15:52:02, `Task Failed tid:...12`) e 6000 do 2º/3º envio não foram investigados a fundo.
