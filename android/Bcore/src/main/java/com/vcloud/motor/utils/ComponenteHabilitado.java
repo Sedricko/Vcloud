@@ -44,6 +44,10 @@ public final class ComponenteHabilitado {
 
     public static boolean ativo(ActivityInfo ai) {
         if (ai == null) return false;
+        // Play Store 53.8.11: o gms (VerifyAppsSettingsActivity) e a loja (ExternalPlayProtectHomeEntryPoint) abrem um ao outro em ciclo
+        // (relatórios 22:39, 06:02, 08:28, 09:44: "CICLO de telas"). Com este alias fora da busca, o gms mostra o Play Protect dele.
+        // shortcut: nome fixo desta versão da loja; trocar por regra geral se aparecer outro ciclo parecido.
+        if ("com.android.vending".equals(ai.packageName) && "com.google.android.finsky.protect.ExternalPlayProtectHomeEntryPoint".equals(ai.name)) return false;
         int e = estado(ai.packageName, ai.name);
         if (e == 1) return true;
         if (e > 1) return false;

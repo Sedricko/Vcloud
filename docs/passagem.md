@@ -768,3 +768,9 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 ## 4.0.75
 - Relatório 09:31 (4.0.74): o Soul Huntress abre (Unity) mas `RemoteProviderException : TextDataProvider : unable to load from url jar:file:///.../base.apk!/assets/aa/settings.json (404)` → é a instalação ANTIGA (sem as partes; não há `INSTALADOR parte guardada` no relatório). Precisa desinstalar e instalar de novo pela Play Store com a 4.0.73+.
 - Monitor: o relatório mostrou ruído de `OsStub.*` (toda leitura/escrita de arquivo, e o próprio monitor se registrando). Mudança: trava contra o monitor registrar a si mesmo; `OsStub` só entra na contagem do RESUMO (e em "LENTO" se > 500 ms), não gera linha por chamada nem por erro.
+
+## 4.0.76
+- Relatório 09:44 (4.0.75): `CICLO de telas` do Play Protect continua (vending → gms `VERIFY_APPS_SETTINGS` 4x/4 s; gms → `com.google.android.finsky.PLAY_PROTECT`). A filtragem por `android:enabled` (4.0.64/65) não adiantou: a própria loja liga o alias em tempo de execução (estado 1 em `ComponenteHabilitado`) ou o estado não chega ao filtro.
+- Mudança: `ComponenteHabilitado.ativo` devolve falso sempre para `com.android.vending/.../ExternalPlayProtectHomeEntryPoint` (nome fixo da versão 53.8.11), para o gms não achar a loja e mostrar o Play Protect dele.
+- Soul Huntress: esta cópia ainda é a ANTIGA (sem `INSTALADOR parte guardada`; erro 404 de `assets/aa/settings.json`); precisa reinstalar pela loja com 4.0.73+.
+- Visto no monitor (erros de serviços, para depois): `IStorageManager.getCacheQuotaBytes` (STORAGE_INTERNAL), `IStorageStatsManager.queryStatsForPackage` (PACKAGE_USAGE_STATS), `IAppSearch.initialize` (uid do gms ≠ origem), `IPersistentDataBlock.getFlashLockState`, `IPackageManager.getPackageInfo("com.android.vending", 0x400000)` → InvocationTargetException.
