@@ -717,3 +717,9 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 ## 4.0.66 (diagnóstico)
 - Relatório 06:11 (4.0.65): Police Chief aparece como instalado na Play Store ("Jogar"); Soul Huntress continua "baixando" e `PSR: Package com.pantheraplay.soulhuntress not installed` (mesmo instalado dentro do Vcloud).
 - Mudança só de diagnóstico: `VENDING getInstalledPackages flags=... <pacote>:sig=,si=,ai=,v=` (só a Play Store, 1x/min) para ver o que falta no PackageInfo do Soul Huntress (assinatura? signingInfo? versionCode?).
+
+## 4.0.67
+- Usuário: o menu de segurar o app (Limpar dados / Parar / Desinstalar app / Criar atalho / Permissões / Root) "só aparece às vezes".
+- Causa (código, `AppsFragment.initData`): o menu é criado no toque longo mas só é mostrado ao soltar o dedo (ACTION_UP), e apenas se o toque durou MENOS de 500 ms (`scrollDuration < 500`). Um toque longo normal dura mais que isso → o menu só aparecia se o dedo soltasse rápido.
+- Mudança: limite de 500 ms → 15 s. Sem mudança visual.
+- Também nesta versão: diagnóstico `VENDING getInstalledPackages` (4.0.66).

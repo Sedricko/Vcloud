@@ -218,7 +218,7 @@ class AppsFragment : Fragment() {
                             val scrollDuration = System.currentTimeMillis() - scrollStartTime
                             
                             
-                            if (!isScrolling && !isMove(point, e) && scrollDuration < 500) {
+                            if (!isScrolling && !isMove(point, e) && scrollDuration < 15000) {
                                 try {
                                     popupMenu?.show()
                                 } catch (e: Exception) {
