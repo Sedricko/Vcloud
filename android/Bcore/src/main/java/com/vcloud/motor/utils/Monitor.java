@@ -45,6 +45,8 @@ public final class Monitor {
 
     /** Linha sempre gravada. */
     public static synchronized void ev(String categoria, String texto) {
+        boolean eraDentro = DENTRO.get() != null;
+        DENTRO.set(Boolean.TRUE);
         try {
             File f = arquivo();
             if (f.length() > MAX_BYTES) {
@@ -55,7 +57,10 @@ public final class Monitor {
             try (FileWriter w = new FileWriter(f, true)) {
                 w.write(HORA.format(new Date()) + " " + Process.myPid() + " " + processo + " [" + categoria + "] " + texto + "\n");
             }
-        } catch (Throwable ignored) { }
+        } catch (Throwable ignored) {
+        } finally {
+            if (!eraDentro) DENTRO.remove();
+        }
     }
 
     /** Linha gravada no máximo 1x por janela para a mesma chave (a repetição fica no RESUMO). */
@@ -68,7 +73,29 @@ public final class Monitor {
     }
 
     /** Uma chamada a um serviço do Android feita por um app de dentro. */
+    private static final ThreadLocal<Boolean> DENTRO = new ThreadLocal<>();
+
     public static void chamada(String servico, String metodo, long ns, Throwable erro, Object[] argsBrutos) {
+        // o próprio monitor grava arquivo (passa pelo OsStub): sem esta trava ele registraria a si mesmo
+        if (DENTRO.get() != null) return;
+        DENTRO.set(Boolean.TRUE);
+        try {
+            chamadaInterna(servico, metodo, ns, erro, argsBrutos);
+        } finally {
+            DENTRO.remove();
+        }
+    }
+
+    private static void chamadaInterna(String servico, String metodo, long ns, Throwable erro, Object[] argsBrutos) {
+        // OsStub = cada leitura/escrita/stat de arquivo do app (milhares por segundo, e "arquivo não existe" é normal): só entra na contagem
+        if ("OsStub".equals(servico)) {
+            Estat o = CHAMADAS.get("OsStub." + metodo);
+            if (o == null) { o = new Estat(); Estat v = ((ConcurrentHashMap<String, Estat>) CHAMADAS).putIfAbsent("OsStub." + metodo, o); if (v != null) o = v; }
+            o.n.incrementAndGet(); o.totalNs.addAndGet(ns); if (erro != null) o.erros.incrementAndGet();
+            iniciarResumo();
+            if (ns > 500_000_000L) amostra("LENTO", "OsStub." + metodo, 5_000, "OsStub." + metodo + " " + args(metodo, argsBrutos) + " demorou " + ns / 1_000_000 + " ms");
+            return;
+        }
         String chave = servico + "." + metodo;
         Estat e = CHAMADAS.get(chave);
         boolean primeira = false;
