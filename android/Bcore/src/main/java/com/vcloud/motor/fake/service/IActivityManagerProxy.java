@@ -136,6 +136,8 @@ public class IActivityManagerProxy extends ClassInvocationStub {
             int authIndex = getAuthIndex();
             Object auth = args[authIndex];
             Object content = null;
+            com.vcloud.motor.utils.Monitor.amostra("PROVEDOR", BActivityThread.getAppPackageName() + "|" + auth, 5_000,
+                    BActivityThread.getAppPackageName() + " pede provedor: " + auth);
 
             if (auth instanceof String) {
                 if (ProxyManifest.isProxy((String) auth)) {
@@ -246,6 +248,9 @@ public class IActivityManagerProxy extends ClassInvocationStub {
             String resolvedType = (String) args[2];
             ResolveInfo resolveInfo = VcloudCore.getBPackageManager().resolveService(intent, 0, resolvedType, BActivityThread.getUserId());
             String alvo = intent.getComponent() != null ? intent.getComponent().getPackageName() : intent.getPackage();
+            com.vcloud.motor.utils.Monitor.amostra("SERVICO-INICIA", BActivityThread.getAppPackageName() + "|" + intent.getComponent() + "|" + intent.getAction(), 2_000,
+                    BActivityThread.getAppPackageName() + " inicia serviço: ação=" + intent.getAction() + " componente=" + intent.getComponent()
+                            + " pacote=" + intent.getPackage() + " | existe dentro=" + (resolveInfo != null));
             if (alvo != null && alvo.startsWith("com.google.android.") && com.vcloud.motor.utils.GoogleModo.completoDentro()) {
                 com.vcloud.motor.utils.Diagnostico.eventoLimitado("start|" + intent.getComponent() + "|" + intent.getAction(), 30_000,
                         "START serviço: " + (intent.getComponent() == null ? alvo : intent.getComponent().flattenToShortString())
@@ -371,6 +376,8 @@ public class IActivityManagerProxy extends ClassInvocationStub {
             Intent intent = (Intent) args[2];
             String resolvedType = (String) args[3];
             IServiceConnection connection = (IServiceConnection) args[4];
+            com.vcloud.motor.utils.Monitor.amostra("BIND", BActivityThread.getAppPackageName() + "|" + (intent == null ? null : intent.getComponent()) + (intent == null ? "" : intent.getAction()), 2_000,
+                    BActivityThread.getAppPackageName() + " liga serviço: " + (intent == null ? "null" : "ação=" + intent.getAction() + " componente=" + intent.getComponent() + " pacote=" + intent.getPackage()));
 
             
             if (intent == null) {
@@ -685,6 +692,9 @@ public class IActivityManagerProxy extends ClassInvocationStub {
             int intentIndex = getIntentIndex(args);
             Intent intent = (Intent) args[intentIndex];
             String resolvedType = (String) args[intentIndex + 1];
+            com.vcloud.motor.utils.Monitor.amostra("AVISO", BActivityThread.getAppPackageName() + "|" + intent.getAction(), 2_000,
+                    BActivityThread.getAppPackageName() + " envia aviso (broadcast): ação=" + intent.getAction() + " pacote=" + intent.getPackage()
+                            + " componente=" + intent.getComponent() + " extras=" + (intent.getExtras() == null ? 0 : intent.getExtras().size()));
             Intent proxyIntent = VcloudCore.getBActivityManager().sendBroadcast(intent, resolvedType, BActivityThread.getUserId());
             if (proxyIntent != null) {
                 proxyIntent.setExtrasClassLoader(BActivityThread.getApplication().getClassLoader());
@@ -898,6 +908,8 @@ public class IActivityManagerProxy extends ClassInvocationStub {
         protected Object hook(Object who, Method method, Object[] args) throws Throwable {
             MethodParameterUtils.replaceLastUid(args);
             String permission = (String) args[0];
+            com.vcloud.motor.utils.Monitor.amostra("PERMISSAO", BActivityThread.getAppPackageName() + "|" + permission, 10_000,
+                    BActivityThread.getAppPackageName() + " pergunta a permissão " + permission);
             if (permission.equals(Manifest.permission.ACCOUNT_MANAGER)
                     || permission.equals(Manifest.permission.SEND_SMS)) {
                 return PackageManager.PERMISSION_GRANTED;

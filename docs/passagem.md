@@ -758,3 +758,9 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Mudança: `InstaladorVirtual.copiarParte` guarda cada parte (APK) em `data/app/<pacote>/splits/<nome>.apk`; `PackageManagerCompat.adicionarPartes` põe `splitSourceDirs/splitPublicSourceDirs/splitNames` no `ApplicationInfo` (reflexão). O Android monta classes/recursos/assets com elas.
 - Só vale para instalações NOVAS (as partes antigas já foram apagadas); reinstalar o app pela Play Store.
 - Risco: apps com partes que dependem de `splitDependencies`/`isolatedSplits` não são tratados. Não verificado no aparelho.
+
+## 4.0.74 — monitor detalhado
+- Pedido do usuário: monitorar dentro do Vcloud tudo que acontece e como, e tudo que acontece internamente com os apps.
+- Novo `utils/Monitor` (arquivo próprio `blackbox/monitor.log`, gira em 4 MB; o relatório traz o final, 1,5 MB, na seção "MONITOR DETALHADO"). Categorias: CICLO-DE-VIDA (processo iniciado, `Application.onCreate` em N ms), TELA (toda tela aberta por qualquer app de dentro), SERVICO-INICIA / BIND (serviços), AVISO (broadcasts enviados), PROVEDOR, PERMISSAO, SERVICO / ERRO-SERVICO / LENTO (toda chamada de um app de dentro aos serviços do Android passa por `ClassInvocationStub.invoke`: 1ª chamada, todo erro, chamadas > 500 ms), RESUMO-60s (contagem, erros e tempo médio por chamada, a cada 60 s por processo), SAUDE (memória, threads, arquivos abertos a cada 60 s).
+- Chamadas muito frequentes não geram uma linha cada: viram contagem no RESUMO. Métodos com token/senha/credencial só têm o nome gravado.
+- Não muda comportamento. Sem mudança de tela (a Central não mostra o monitor ainda; vai no relatório). Não verificado no aparelho.

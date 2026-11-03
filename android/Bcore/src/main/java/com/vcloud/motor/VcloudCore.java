@@ -1803,6 +1803,7 @@ public class VcloudCore extends ClientConfiguration {
             String header = "Relatório Vcloud\nMotivo: " + caption + "\nProcesso: " + getProcessName(getContext())
                     + "\n\n" + com.vcloud.motor.utils.AutoDiagnostico.gerar(getContext(), logcat)
                     + "\n--- DIAGNÓSTICO (resumo dos apps de dentro) ---\n" + com.vcloud.motor.utils.Diagnostico.ler()
+                    + "\n--- MONITOR DETALHADO (últimos eventos de todos os processos) ---\n" + com.vcloud.motor.utils.Monitor.ler(1_500_000)
                     + "\n" + getDeviceInfoString() + "\n\n--- LOGCAT ---\n";
             fos.write(header.getBytes("UTF-8"));
             log.writeTo(fos);

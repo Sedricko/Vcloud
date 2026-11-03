@@ -465,9 +465,16 @@ public class BActivityThread extends IBActivityThread.Stub {
             ContextCompat.fix(mInitialApplication);
             installProviders(mInitialApplication, bindData.processName, bindData.providers);
 
+            com.vcloud.motor.utils.Monitor.processo(processName);
+            com.vcloud.motor.utils.Monitor.ev("CICLO-DE-VIDA", "processo do app iniciado: pacote=" + packageName + " processo=" + processName + " pid=" + android.os.Process.myPid()
+                    + " uid(virtual)=" + android.os.Process.myUid());
+            com.vcloud.motor.utils.Monitor.iniciar();
+            com.vcloud.motor.utils.Monitor.saude();
+            long antesOnCreate = System.currentTimeMillis();
             onBeforeApplicationOnCreate(packageName, processName, application);
             AppInstrumentation.get().callApplicationOnCreate(application);
             onAfterApplicationOnCreate(packageName, processName, application);
+            com.vcloud.motor.utils.Monitor.ev("CICLO-DE-VIDA", packageName + " Application.onCreate terminou em " + (System.currentTimeMillis() - antesOnCreate) + " ms");
 
             // Vcloud: alguns jogos (ex.: DYSMANTLE) trocam o Instrumentation no Application.onCreate;
             // sem isto as telas deles não passam pelo AppInstrumentation (orientação deitada nunca era aplicada).

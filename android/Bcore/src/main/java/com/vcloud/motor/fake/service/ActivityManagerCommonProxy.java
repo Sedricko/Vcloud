@@ -86,6 +86,9 @@ public class ActivityManagerCommonProxy {
                 return method.invoke(who, args);
             }
             String quemAbre = BActivityThread.getAppPackageName();
+            com.vcloud.motor.utils.Monitor.amostra("TELA", quemAbre + "|" + intent.getAction() + "|" + intent.getComponent(), 1_000,
+                    quemAbre + " abre tela: ação=" + intent.getAction() + " dados=" + intent.getDataString() + " componente=" + intent.getComponent()
+                            + " pacote=" + intent.getPackage() + " flags=0x" + Integer.toHexString(intent.getFlags()));
             if (quemAbre != null && (quemAbre.equals("com.android.vending") || quemAbre.startsWith("com.google.android."))) {
                 String alvoAbre = intent.getAction() + "|" + intent.getDataString() + "|" + intent.getComponent();
                 com.vcloud.motor.utils.Diagnostico.eventoLimitado("abre|" + quemAbre + "|" + alvoAbre, 1_500,
