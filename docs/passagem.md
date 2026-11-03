@@ -690,3 +690,9 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Usuário: falta a opção de desinstalar apps na Play Store; a loja não sincroniza com os apps já instalados. Relatórios anteriores: `Unable to check installer for <pacote>: NameNotFoundException (ApplicationPackageManager.getInstallSourceInfo)` e `PSR: Package <pacote> not installed`, mesmo com o app instalado dentro.
 - Mudança: `IPackageManagerProxy.GetInstallSourceInfo`: para app instalado dentro do Vcloud devolve `InstallSourceInfo` (reflexão) com instalador "com.android.vending" (igual ao `getInstallerPackageName`).
 - Não verificado no aparelho; pode faltar também o `PACKAGE_ADDED` aos receptores dinâmicos.
+
+## 4.0.62
+- Relatório 22:14 (4.0.61): a opção de desinstalar só aparece para um app. Log: `PSR: Package <pacote> not installed` para TODOS os apps de jogos instalados dentro (e "Package cache is empty, setup cache").
+- Lido no dex: `PackageStateRepository` (`anuk.D` → `getInstalledPackages`) converte cada `PackageInfo` em registro (`anuk.s`) só se `PackageInfo.signatures` não for nulo/vazio. No Vcloud, `PackageManagerCompat.generatePackageInfo` usava `p.mSignatures` para apps que não existem no celular; jogos assinados só com v2/v3 ficam com `mSignatures` vazio (as assinaturas estão em `mSigningDetails.signatures`) → a loja não os vê como instalados.
+- Mudança: se `mSignatures` vier vazio, usa `mSigningDetails.signatures`.
+- Não verificado no aparelho. (Hipótese: o app que já funcionava seria assinado com v1.)

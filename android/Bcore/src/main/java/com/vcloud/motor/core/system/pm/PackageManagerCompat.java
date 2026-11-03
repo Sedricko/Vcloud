@@ -197,6 +197,11 @@ public class PackageManagerCompat {
         if ((flags & PackageManager.GET_SIGNATURES) != 0) {
             if (base == null) {
                 pi.signatures = p.mSignatures;
+                // Vcloud: apps assinados só com v2/v3 (a maioria dos jogos) ficam sem `mSignatures`; as assinaturas estão em mSigningDetails.
+                // A Play Store só conta como "instalado" (e mostra Desinstalar/Abrir) o app que tem assinatura em PackageInfo.signatures.
+                if ((pi.signatures == null || pi.signatures.length == 0) && p.mSigningDetails != null) {
+                    pi.signatures = p.mSigningDetails.signatures;
+                }
             } else {
                 pi.signatures = base.signatures;
             }
