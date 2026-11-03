@@ -796,6 +796,7 @@ public class IActivityManagerProxy extends ClassInvocationStub {
                     BRLoadedApkReceiverDispatcher.get(weakReference.get())._set_mIIntentReceiver(proxy);
                 }
 
+                InnerReceiverDelegate.lembrarFiltro(proxy, args);
                 args[receiverIndex] = proxy;
             }
             
@@ -847,6 +848,7 @@ public class IActivityManagerProxy extends ClassInvocationStub {
                     BRLoadedApkReceiverDispatcher.get(weakReference.get())._set_mIIntentReceiver(proxy);
                 }
 
+                InnerReceiverDelegate.lembrarFiltro(proxy, args);
                 args[receiverIndex] = proxy;
             }
             int permissionIndex = 4;

@@ -25,6 +25,9 @@ interface IBActivityThread {
 
     void scheduleReceiver(in ReceiverData data);
 
+    // Vcloud: avisa os receptores dinâmicos deste app que um app foi instalado/atualizado/removido dentro do Vcloud (PACKAGE_ADDED/REPLACED/REMOVED)
+    void mudancaDePacote(in Intent intent);
+
     // Vcloud: comando do painel lateral para a tela que está na frente deste app (ver ComandoDoPainel)
     void executarComando(int comando);
 }

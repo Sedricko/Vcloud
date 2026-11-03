@@ -724,6 +724,7 @@ public class BPackageManagerService extends IBPackageManagerService.Stub impleme
             if (option.isFlag(InstallOption.FLAG_SYSTEM)) {
                 aPackage.applicationInfo = VcloudCore.getPackageManager().getPackageInfo(aPackage.packageName, 0).applicationInfo;
             }
+            final boolean jaInstalado = mPackages.containsKey(aPackage.packageName);
             BPackageSettings bPackageSettings = mSettings.getPackageLPw(aPackage.packageName, aPackage, option);
 
             
@@ -741,6 +742,7 @@ public class BPackageManagerService extends IBPackageManagerService.Stub impleme
             mComponentResolver.addAllComponents(bPackageSettings.pkg);
             mSettings.scanPackage(aPackage.packageName);
             onPackageInstalled(bPackageSettings.pkg.packageName, userId);
+            avisarProcessos(bPackageSettings.pkg.packageName, bPackageSettings.appId, true, jaInstalado);
             return result;
         } catch (Throwable t) {
             t.printStackTrace();
@@ -805,7 +807,38 @@ public class BPackageManagerService extends IBPackageManagerService.Stub impleme
         mPackageMonitors.remove(monitor);
     }
 
+    /**
+     * Vcloud: no Android real o sistema manda PACKAGE_ADDED/REPLACED/REMOVED; a Play Store depende disso (receptor em memória) para atualizar
+     * a lista de apps instalados — sem isso a verificação final da instalação dizia "was not installed" (erro 6252).
+     */
+    private void avisarProcessos(final String pacote, final int appId, final boolean adicionado, final boolean substituindo) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                int uid = appId < 10000 ? 10000 + appId : appId;
+                java.util.List<Intent> avisos = new ArrayList<>();
+                Intent a = new Intent(adicionado ? Intent.ACTION_PACKAGE_ADDED : Intent.ACTION_PACKAGE_REMOVED, android.net.Uri.fromParts("package", pacote, null));
+                a.putExtra(Intent.EXTRA_UID, uid);
+                a.putExtra(Intent.EXTRA_REPLACING, substituindo);
+                a.putExtra(Intent.EXTRA_DATA_REMOVED, !adicionado);
+                avisos.add(a);
+                if (adicionado && substituindo) {
+                    Intent r = new Intent(Intent.ACTION_PACKAGE_REPLACED, android.net.Uri.fromParts("package", pacote, null));
+                    r.putExtra(Intent.EXTRA_UID, uid);
+                    avisos.add(r);
+                }
+                for (com.vcloud.motor.core.system.ProcessRecord p : BProcessManagerService.get().todosOsProcessos()) {
+                    for (Intent i : avisos) {
+                        try { if (p.bActivityThread != null) p.bActivityThread.mudancaDePacote(i); } catch (Throwable ignored) { }
+                    }
+                }
+                com.vcloud.motor.utils.Diagnostico.evento("PACOTE aviso " + (adicionado ? (substituindo ? "atualizado" : "instalado") : "removido") + " enviado aos apps de dentro: " + pacote);
+            }
+        }, "aviso-pacote").start();
+    }
+
     void onPackageUninstalled(String packageName, boolean isRemove, int userId) {
+        if (isRemove) avisarProcessos(packageName, 0, false, false);
         for (PackageMonitor packageMonitor : mPackageMonitors) {
             packageMonitor.onPackageUninstalled(packageName, isRemove, userId);
         }

@@ -21,9 +21,32 @@ public class InnerReceiverDelegate extends IIntentReceiver.Stub {
 
     private static final Map<IBinder, InnerReceiverDelegate> sInnerReceiverDelegate = new HashMap<>();
     private final WeakReference<IIntentReceiver> mIntentReceiver;
+    private final java.util.List<android.content.IntentFilter> mFiltros = new java.util.concurrent.CopyOnWriteArrayList<>();
 
     private InnerReceiverDelegate(IIntentReceiver iIntentReceiver) {
         this.mIntentReceiver = new WeakReference<>(iIntentReceiver);
+    }
+
+    /** Guarda o filtro com que o app registrou o receptor, para poder avisá-lo de mudanças de pacote do Vcloud. */
+    public static void lembrarFiltro(IIntentReceiver proxy, Object[] args) {
+        if (!(proxy instanceof InnerReceiverDelegate)) return;
+        for (Object a : args) {
+            if (a instanceof android.content.IntentFilter) ((InnerReceiverDelegate) proxy).mFiltros.add((android.content.IntentFilter) a);
+        }
+    }
+
+    /** Entrega (só neste processo) um aviso de pacote aos receptores registrados cujo filtro combina. O sistema real não manda PACKAGE_ADDED de app de dentro. */
+    public static void entregar(Intent intent) {
+        java.util.List<InnerReceiverDelegate> todos;
+        synchronized (sInnerReceiverDelegate) { todos = new java.util.ArrayList<>(sInnerReceiverDelegate.values()); }
+        for (InnerReceiverDelegate d : todos) {
+            boolean combina = false;
+            for (android.content.IntentFilter f : d.mFiltros) {
+                try { if (f.match(null, intent, false, TAG) >= 0) { combina = true; break; } } catch (Throwable ignored) { }
+            }
+            if (!combina) continue;
+            try { d.performReceive(new Intent(intent), 0, null, null, false, false, 0); } catch (Throwable t) { t.printStackTrace(); }
+        }
     }
 
     public static InnerReceiverDelegate getDelegate(IBinder iBinder) {
@@ -49,7 +72,7 @@ public class InnerReceiverDelegate extends IIntentReceiver.Stub {
                 e.printStackTrace();
             }
             delegate = new InnerReceiverDelegate(base);
-            sInnerReceiverDelegate.put(iBinder, delegate);
+            synchronized (sInnerReceiverDelegate) { sInnerReceiverDelegate.put(iBinder, delegate); }
         }
         return delegate;
     }

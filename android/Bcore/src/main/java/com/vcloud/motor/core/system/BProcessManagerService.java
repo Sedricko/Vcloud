@@ -221,6 +221,10 @@ public class BProcessManagerService implements ISystemService {
         }
     }
 
+    public List<ProcessRecord> todosOsProcessos() {
+        synchronized (mPidsSelfLocked) { return new ArrayList<>(mPidsSelfLocked); }
+    }
+
     public ProcessRecord findProcessRecord(String packageName, String processName, int userId) {
         synchronized (mProcessMap) {
             int appId = BPackageManagerService.get().getAppId(packageName);

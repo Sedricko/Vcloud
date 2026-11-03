@@ -920,6 +920,11 @@ public class BActivityThread extends IBActivityThread.Stub {
     }
 
     @Override
+    public void mudancaDePacote(Intent intent) throws RemoteException {
+        com.vcloud.motor.fake.delegate.InnerReceiverDelegate.entregar(intent);
+    }
+
+    @Override
     public void scheduleReceiver(ReceiverData data) throws RemoteException {
         if (!isInit()) {
             bindApplication();
