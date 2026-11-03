@@ -149,6 +149,7 @@ class AppsFragment : Fragment() {
 
             mAdapter.setItemClickListener { _, data, _ ->
                 try {
+                    com.vcloud.motor.utils.Diagnostico.evento("TOQUE curto abriu o app ${data.packageName}")
                     showLoading()
                     viewModel.launchApk(data.packageName, userID)
                 } catch (e: Exception) {
@@ -208,6 +209,7 @@ class AppsFragment : Fragment() {
                 try {
                     when (e.action) {
                         MotionEvent.ACTION_DOWN -> {
+                            com.vcloud.motor.utils.Diagnostico.eventoLimitado("menu|down", 800, "TOQUE na lista de apps: dedo desceu em x=${e.rawX.toInt()} y=${e.rawY.toInt()}")
                             
                             isScrolling = false
                             scrollStartTime = System.currentTimeMillis()
@@ -402,6 +404,7 @@ class AppsFragment : Fragment() {
                         it.inflate(R.menu.app_menu)
                         it.setOnMenuItemClickListener { item ->
                             try {
+                                com.vcloud.motor.utils.Diagnostico.evento("MENU escolheu o item '${item.title}' para ${data.packageName}")
                                 when (item.itemId) {
                                     R.id.app_remove -> {
                                         com.vcloud.motor.utils.Diagnostico.evento("MENU escolheu Desinstalar app: ${data.packageName}")
@@ -525,6 +528,7 @@ class AppsFragment : Fragment() {
                 message(text = getString(R.string.uninstall_app_hint, info.name))
                 positiveButton(R.string.done) {
                     try {
+                        com.vcloud.motor.utils.Diagnostico.evento("DESINSTALAR confirmado na tela do Vcloud: ${info.packageName}")
                         showLoading()
                         viewModel.unInstall(info.packageName, userID)
                     } catch (e: Exception) {

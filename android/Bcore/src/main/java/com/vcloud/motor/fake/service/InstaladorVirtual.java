@@ -73,7 +73,7 @@ public final class InstaladorVirtual {
     /** Responde as chamadas do IPackageInstaller; devolve NAO se não for com ela. */
     public static Object tratar(Method m, Object[] a) throws Throwable {
         String nome = m.getName();
-        Diagnostico.eventoLimitado("instalador|chamada|" + nome, 60_000, "INSTALADOR chamada " + nome);
+        Diagnostico.eventoLimitado("instalador|chamada|" + nome, 5_000, "INSTALADOR chamada " + nome);
         switch (nome) {
             case "createSession":
                 return criar(a[0]);
@@ -193,7 +193,7 @@ public final class InstaladorVirtual {
 
     private static Object sessaoChamada(Method m, Object[] a, int id) throws Throwable {
         File dir = pasta(id);
-        Diagnostico.eventoLimitado("instalador|sessmeth|" + m.getName(), 60_000, "INSTALADOR sessão método " + m.getName());
+        Diagnostico.eventoLimitado("instalador|sessmeth|" + m.getName(), 5_000, "INSTALADOR sessão método " + m.getName());
         switch (m.getName()) {
             case "openWrite":
                 return abrirEscrita(new File(dir, nomeSeguro((String) a[0])), ((Number) a[1]).longValue());

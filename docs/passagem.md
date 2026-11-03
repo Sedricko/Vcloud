@@ -734,3 +734,8 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Usuário: a Central de diagnóstico não acompanha o que acontece ao segurar o ícone do app, e não aparece log disso.
 - Causa: nada era registrado no toque longo/menu (`AppsFragment`), e a Central só lia o histórico ao abrir ou em "Atualizar".
 - Mudança: eventos `MENU toque longo no app <pacote>`, `MENU soltou o dedo: durou=..ms rolando=.. moveu=.. -> mostra/DESCARTA o menu`, `MENU dedo se moveu (rolagem)`, `MENU escolheu Desinstalar app` (`AppsFragment`); e a Central atualiza sozinha a cada 1,5 s enquanto aberta quando o histórico muda (`DiagnosticoActivity`, sem mudança visual).
+
+## 4.0.70 — logs mais sensíveis
+- Pedido do usuário: logs mais sensíveis.
+- Mudanças só de registro: `ABRE tela (<app>)` para a Play Store e apps do Google (antes só a Play Store, a cada 5 s; agora a cada 1,5 s por tela) e `CICLO de telas` quando a mesma tela abre 4x em 4 s (ex.: Play Protect entre a loja e o gms); `TOQUE na lista de apps` (dedo desceu), `TOQUE curto abriu o app`, `MENU escolheu o item '<nome>'`, `DESINSTALAR confirmado/terminou/FALHOU` na tela do Vcloud; instalador e getInstalledPackages com limites menores (5 s e 10 s).
+- Não muda comportamento.

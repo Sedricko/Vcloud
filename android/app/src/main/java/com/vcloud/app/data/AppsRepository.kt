@@ -439,8 +439,10 @@ class AppsRepository {
             VcloudCore.get().uninstallPackageAsUser(packageName, userID)
             updateAppSortList(userID, packageName, false)
             scanUser()
+            com.vcloud.motor.utils.Diagnostico.evento("DESINSTALAR terminou: $packageName removido do Vcloud (usuário $userID)")
             resultLiveData.postValue(getString(R.string.uninstall_success))
         } catch (e: Exception) {
+            com.vcloud.motor.utils.Diagnostico.evento("DESINSTALAR FALHOU: $packageName: ${e.message}")
             Log.e(TAG, "Error uninstalling APK: ${e.message}")
             resultLiveData.postValue("Uninstallation failed: ${e.message}")
         }

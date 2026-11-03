@@ -31,6 +31,7 @@ public class ActivityManagerCommonProxy {
 
     @ProxyMethod("startActivity")
     public static class StartActivity extends MethodHook {
+        private static final java.util.concurrent.ConcurrentHashMap<String, long[]> sCiclo = new java.util.concurrent.ConcurrentHashMap<>();
         /**
          * Vcloud: no Android 16+ (proteção "Intent Redirect", obrigatória no 17) um intent que veio de dentro de outro
          * (desempacotado) só pode ser aberto se quem repassa disser que é intencional. Sem isso o app de dentro cai
@@ -84,9 +85,18 @@ public class ActivityManagerCommonProxy {
                 allowRedirect(intent);
                 return method.invoke(who, args);
             }
-            if ("com.android.vending".equals(BActivityThread.getAppPackageName())) {
-                com.vcloud.motor.utils.Diagnostico.eventoLimitado("vendingabre|" + intent.getAction() + intent.getDataString(), 5_000,
-                        "VENDING abre: ação=" + intent.getAction() + " dados=" + intent.getDataString() + " componente=" + intent.getComponent());
+            String quemAbre = BActivityThread.getAppPackageName();
+            if (quemAbre != null && (quemAbre.equals("com.android.vending") || quemAbre.startsWith("com.google.android."))) {
+                String alvoAbre = intent.getAction() + "|" + intent.getDataString() + "|" + intent.getComponent();
+                com.vcloud.motor.utils.Diagnostico.eventoLimitado("abre|" + quemAbre + "|" + alvoAbre, 1_500,
+                        "ABRE tela (" + quemAbre + "): ação=" + intent.getAction() + " dados=" + intent.getDataString() + " componente=" + intent.getComponent());
+                // ciclo: a mesma tela aberta 4 vezes em 4 s (ex.: Play Protect entre a Play Store e o gms)
+                long agora = System.currentTimeMillis();
+                long[] c = sCiclo.get(alvoAbre);
+                if (c == null || agora - c[0] > 4_000) { c = new long[]{agora, 0}; sCiclo.put(alvoAbre, c); }
+                if (++c[1] == 4) {
+                    com.vcloud.motor.utils.Diagnostico.evento("CICLO de telas: " + quemAbre + " abriu 4x em 4 s -> " + alvoAbre);
+                }
             }
             // Vcloud: "Desinstalar" da Play Store abre a tela de desinstalação do celular; se o app está DENTRO do Vcloud, remove de dentro.
             if (intent.getData() != null && "package".equals(intent.getScheme())

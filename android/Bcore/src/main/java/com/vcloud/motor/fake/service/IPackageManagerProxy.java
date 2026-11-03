@@ -278,7 +278,7 @@ public class IPackageManagerProxy extends BinderInvocationStub {
                             .append(",si=").append(pi.signingInfo != null).append(",ai=").append(pi.applicationInfo != null)
                             .append(",v=").append(pi.versionCode);
                 }
-                com.vcloud.motor.utils.Diagnostico.eventoLimitado("vendinginst", 60_000, "VENDING getInstalledPackages " + sb);
+                com.vcloud.motor.utils.Diagnostico.eventoLimitado("vendinginst", 10_000, "VENDING getInstalledPackages " + sb);
             }
             return embrulharLista(who, method, args, installedPackages);
         }
