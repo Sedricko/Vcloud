@@ -461,6 +461,12 @@ public class BPackageManagerService extends IBPackageManagerService.Stub impleme
                         result = new ArrayList<>();
                     }
                 }
+                // Vcloud: telas desligadas no manifesto (android:enabled="false") não entram na busca por intent implícito
+                java.util.Iterator<ResolveInfo> it = result.iterator();
+                while (it.hasNext()) {
+                    ResolveInfo ri = it.next();
+                    if (ri.activityInfo != null && !com.vcloud.motor.utils.ComponenteHabilitado.ativo(ri.activityInfo)) it.remove();
+                }
                 return result;
             }
         }

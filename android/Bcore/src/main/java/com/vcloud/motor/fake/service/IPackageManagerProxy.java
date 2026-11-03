@@ -122,6 +122,12 @@ public class IPackageManagerProxy extends BinderInvocationStub {
     public static class SetComponentEnabledSetting extends MethodHook {
         @Override
         protected Object hook(Object who, Method method, Object[] args) throws Throwable {
+            try {
+                if (args != null && args.length > 1 && args[0] instanceof ComponentName && args[1] instanceof Integer
+                        && VcloudCore.get().isInstalled(((ComponentName) args[0]).getPackageName(), VcloudCore.getUserId())) {
+                    com.vcloud.motor.utils.ComponenteHabilitado.definir((ComponentName) args[0], (Integer) args[1]);
+                }
+            } catch (Throwable ignored) { }
             return 0;
         }
     }
