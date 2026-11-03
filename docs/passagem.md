@@ -713,3 +713,7 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Causa: o filtro de "desligado" da 4.0.64 ficou só em `queryIntentActivities(intent, flags, resolvedType, userId)` (método público); `resolveActivity/resolveIntent` usam o PRIVADO `queryIntentActivities(intent, resolvedType, flags, userId)`.
 - Mudança: o mesmo filtro (`ComponenteHabilitado.ativo`) no método privado.
 - Não verificado no aparelho.
+
+## 4.0.66 (diagnóstico)
+- Relatório 06:11 (4.0.65): Police Chief aparece como instalado na Play Store ("Jogar"); Soul Huntress continua "baixando" e `PSR: Package com.pantheraplay.soulhuntress not installed` (mesmo instalado dentro do Vcloud).
+- Mudança só de diagnóstico: `VENDING getInstalledPackages flags=... <pacote>:sig=,si=,ai=,v=` (só a Play Store, 1x/min) para ver o que falta no PackageInfo do Soul Huntress (assinatura? signingInfo? versionCode?).

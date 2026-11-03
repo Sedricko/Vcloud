@@ -268,6 +268,17 @@ public class IPackageManagerProxy extends BinderInvocationStub {
         protected Object hook(Object who, Method method, Object[] args) throws Throwable {
             int flags = MethodParameterUtils.toInt(args[0]);
             List<PackageInfo> installedPackages = VcloudCore.getBPackageManager().getInstalledPackages(flags, VcloudCore.getUserId());
+            if ("com.android.vending".equals(BActivityThread.getAppPackageName()) && installedPackages != null) {
+                // diagnóstico: a Play Store só conta como instalado o app com assinatura (ver PackageManagerCompat)
+                StringBuilder sb = new StringBuilder("flags=" + flags + " total=" + installedPackages.size() + " |");
+                for (PackageInfo pi : installedPackages) {
+                    if (pi == null || pi.packageName == null || pi.packageName.startsWith("com.google.android.")) continue;
+                    sb.append(' ').append(pi.packageName).append(":sig=").append(pi.signatures == null ? "null" : pi.signatures.length)
+                            .append(",si=").append(pi.signingInfo != null).append(",ai=").append(pi.applicationInfo != null)
+                            .append(",v=").append(pi.versionCode);
+                }
+                com.vcloud.motor.utils.Diagnostico.eventoLimitado("vendinginst", 60_000, "VENDING getInstalledPackages " + sb);
+            }
             return embrulharLista(who, method, args, installedPackages);
         }
     }
