@@ -296,6 +296,23 @@ public final class InstaladorVirtual {
         return true;
     }
 
+    /** Guarda a parte (um APK) em data/app/<pacote>/splits/<nome>.apk para o ApplicationInfo do app usá-la (ver PackageManagerCompat). */
+    private static void copiarParte(File parte, String pacote) throws java.io.IOException {
+        try (FileInputStream teste = new FileInputStream(parte)) {
+            if (teste.read() != 'P' || teste.read() != 'K') return; // não é um zip/apk
+        }
+        File dir = new File(BEnvironment.getAppDir(pacote), "splits");
+        dir.mkdirs();
+        File alvo = new File(dir, parte.getName().replace('/', '_') + ".apk");
+        try (FileInputStream in = new FileInputStream(parte); FileOutputStream out = new FileOutputStream(alvo)) {
+            byte[] b = new byte[64 * 1024];
+            int n;
+            while ((n = in.read(b)) > 0) out.write(b, 0, n);
+        }
+        alvo.setReadOnly();
+        Diagnostico.evento("INSTALADOR parte guardada: " + pacote + "/" + alvo.getName() + " (" + alvo.length() + " bytes)");
+    }
+
     private static File escolherBase(File dir, String pacote) {
         File base = pacote == null ? null : new File(dir, pacote + ".apk");
         if (base != null && base.exists()) return base;
@@ -313,6 +330,11 @@ public final class InstaladorVirtual {
         if (fs == null) return;
         for (File f : fs) {
             if (f.equals(base) || f.getName().equals("meta.properties") || f.getName().startsWith("_") || f.getName().endsWith(".dm")) continue;
+            try {
+                copiarParte(f, pacote);
+            } catch (Throwable t) {
+                Diagnostico.eventoLimitado("instalador|parte|" + f.getName(), 5000, "INSTALADOR parte " + f.getName() + " não guardada (" + t + ")");
+            }
             try {
                 com.vcloud.motor.utils.NativeUtils.copyNativeLib(f, BEnvironment.getAppLibDir(pacote));
                 Diagnostico.evento("INSTALADOR bibliotecas da parte " + f.getName() + " copiadas para " + pacote);

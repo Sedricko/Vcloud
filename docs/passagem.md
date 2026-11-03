@@ -752,3 +752,9 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Mudança: (1) exceção ao montar o PackageInfo agora é registrada (`PACOTE getPackageInfo falhou ...`); (2) falha só da assinatura não apaga mais o PackageInfo (try/catch isolado); (3) `VENDING getPackageInfo SEM resultado para <pacote>` quando a loja pergunta de um app instalado dentro e não recebe nada.
 - Também visto: `SigningDetails.UNKNOWN` (singleton) é alterado por pacote em `generatePackageInfo` — risco de misturar assinaturas; não mexido.
 - Não verificado no aparelho.
+
+## 4.0.73 — partes (splits) de verdade
+- Relatório 09:13 (4.0.72): Soul Huntress (instalado pela Play Store) abre e roda (Unity), mas `Unity: RemoteProviderException : TextDataProvider : unable to load from url jar:file:///.../base.apk!/ass...` → faltam arquivos que estão nas partes (UnityDataAssetPack, config.*), que o instalador só usava para copiar `.so`.
+- Mudança: `InstaladorVirtual.copiarParte` guarda cada parte (APK) em `data/app/<pacote>/splits/<nome>.apk`; `PackageManagerCompat.adicionarPartes` põe `splitSourceDirs/splitPublicSourceDirs/splitNames` no `ApplicationInfo` (reflexão). O Android monta classes/recursos/assets com elas.
+- Só vale para instalações NOVAS (as partes antigas já foram apagadas); reinstalar o app pela Play Store.
+- Risco: apps com partes que dependem de `splitDependencies`/`isolatedSplits` não são tratados. Não verificado no aparelho.

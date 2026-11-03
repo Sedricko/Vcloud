@@ -298,6 +298,30 @@ public class PackageManagerCompat {
         return ii;
     }
 
+    /**
+     * Vcloud: partes (splits) do app instaladas pela Play Store (recursos, assets, pacotes de dados como UnityDataAssetPack) ficam em
+     * data/app/<pacote>/splits/<nome>.apk. Entram no ApplicationInfo como splitSourceDirs/splitNames, e o Android monta os recursos e os
+     * assets do app com elas (sem isso o jogo abria mas faltavam arquivos: "RemoteProviderException ... unable to load").
+     */
+    private static void adicionarPartes(ApplicationInfo ai, String pacote) {
+        try {
+            java.io.File[] fs = new java.io.File(BEnvironment.getAppDir(pacote), "splits").listFiles();
+            if (fs == null || fs.length == 0) return;
+            java.util.Arrays.sort(fs);
+            java.util.List<String> caminhos = new java.util.ArrayList<>(), nomes = new java.util.ArrayList<>();
+            for (java.io.File f : fs) {
+                if (!f.getName().endsWith(".apk")) continue;
+                caminhos.add(f.getAbsolutePath());
+                nomes.add(f.getName().substring(0, f.getName().length() - 4));
+            }
+            if (caminhos.isEmpty()) return;
+            String[] c = caminhos.toArray(new String[0]);
+            com.vcloud.motor.utils.Reflector.with(ai).field("splitSourceDirs").set(c);
+            com.vcloud.motor.utils.Reflector.with(ai).field("splitPublicSourceDirs").set(c);
+            com.vcloud.motor.utils.Reflector.with(ai).field("splitNames").set(nomes.toArray(new String[0]));
+        } catch (Throwable ignored) { }
+    }
+
     public static ApplicationInfo generateApplicationInfo(BPackage p, int flags, BPackageUserState state, int userId) {
         if (!checkUseInstalledOrHidden(flags, state, p.applicationInfo)) {
             return null;
@@ -325,6 +349,7 @@ public class PackageManagerCompat {
         ai.publicSourceDir = sourceDir;
         ai.sourceDir = sourceDir;
         ai.uid = p.mExtras.appId;
+        adicionarPartes(ai, p.packageName);
 
 
         if (BuildCompat.isL()) {
