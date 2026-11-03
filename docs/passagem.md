@@ -745,3 +745,10 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Causa provável (código): `ItemTouchHelper` com `isLongPressDragEnabled()` padrão (true) começa o arrastar no toque longo (vibra) e intercepta o toque; o item recebe CANCEL e o toque longo dele não dispara → menu não abre; só às vezes (corrida entre os dois temporizadores).
 - Mudança: `AppsTouchCallBack.isLongPressDragEnabled() = false`; o arrastar para reordenar começa só quando o dedo se mexe depois do toque longo (`AppsFragment` → `startDrag`). Sem mudança visual.
 - Não verificado no aparelho.
+
+## 4.0.72
+- Relatório 08:28 (4.0.71): **o ciclo do Play Protect está confirmado pelo novo log**: `CICLO de telas: com.android.vending abriu 4x em 4 s -> VERIFY_APPS_SETTINGS` e `com.google.android.gms abriu 4x em 4 s -> com.google.android.finsky.PLAY_PROTECT` (loja e gms se chamando).
+- Loja: `Installed: 0 + Install Queue: 2, Queue only: 2 [policewar, soulhuntress]` e `PSR: Package ... not installed`. Lido no dex: a mensagem "PSR: Package %s not installed" sai de `anuk.s(PackageInfo)` quando o PackageInfo da CONSULTA INDIVIDUAL vem nulo. No Vcloud, `PackageManagerCompat.generatePackageInfo(ps,...)` engolia qualquer exceção e devolvia null (ex.: ao montar `signingInfo`, `p.mSigningDetails`), o que a loja lê como "não instalado".
+- Mudança: (1) exceção ao montar o PackageInfo agora é registrada (`PACOTE getPackageInfo falhou ...`); (2) falha só da assinatura não apaga mais o PackageInfo (try/catch isolado); (3) `VENDING getPackageInfo SEM resultado para <pacote>` quando a loja pergunta de um app instalado dentro e não recebe nada.
+- Também visto: `SigningDetails.UNKNOWN` (singleton) é alterado por pacote em `generatePackageInfo` — risco de misturar assinaturas; não mexido.
+- Não verificado no aparelho.

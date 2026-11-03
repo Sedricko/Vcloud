@@ -46,7 +46,10 @@ public class PackageManagerCompat {
             PackageInfo packageInfo = null;
             try {
                 packageInfo = generatePackageInfo(p, flags, 0, 0, state, userId);
-            } catch (Throwable ignored) {
+            } catch (Throwable t) {
+                // Vcloud: antes o erro sumia e o app parecia "não instalado" (a Play Store: "PSR: Package ... not installed")
+                com.vcloud.motor.utils.Diagnostico.eventoLimitado("pkginfo|" + p.packageName, 30_000,
+                        "PACOTE getPackageInfo falhou para " + p.packageName + " (flags=" + flags + "): " + t);
             }
             return packageInfo;
         }
@@ -194,6 +197,7 @@ public class PackageManagerCompat {
             base = VcloudCore.getContext().getPackageManager().getPackageInfo(p.packageName, flags);
         } catch (PackageManager.NameNotFoundException ignored) {
         }
+        try {
         if ((flags & PackageManager.GET_SIGNATURES) != 0) {
             if (base == null) {
                 pi.signatures = p.mSignatures;
@@ -216,6 +220,11 @@ public class PackageManagerCompat {
                     pi.signingInfo = base.signingInfo;
                 }
             }
+        }
+        } catch (Throwable t) {
+            // Vcloud: falha ao montar a assinatura não pode apagar o PackageInfo inteiro
+            com.vcloud.motor.utils.Diagnostico.eventoLimitado("pkginfosig|" + p.packageName, 30_000,
+                    "PACOTE assinatura de " + p.packageName + " não montada (flags=" + flags + "): " + t);
         }
         if ("com.android.vending".equals(p.packageName) || "com.google.android.gms".equals(p.packageName)) {
             // Vcloud: registra a assinatura entregue (jogos pagos conferem se a Play Store é original)

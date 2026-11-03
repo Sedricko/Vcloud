@@ -141,6 +141,11 @@ public class IPackageManagerProxy extends BinderInvocationStub {
             
             
             PackageInfo packageInfo = VcloudCore.getBPackageManager().getPackageInfo(packageName, flags, VcloudCore.getUserId());
+            if (packageInfo == null && "com.android.vending".equals(BActivityThread.getAppPackageName())
+                    && VcloudCore.get().isInstalled(packageName, VcloudCore.getUserId())) {
+                com.vcloud.motor.utils.Diagnostico.eventoLimitado("vendingpi|" + packageName, 15_000,
+                        "VENDING getPackageInfo SEM resultado para " + packageName + " (instalado dentro) flags=" + args[1]);
+            }
             if (packageInfo == null && "com.android.vending".equals(packageName)) {
                 // Vcloud: antes o motor devolvia uma "Play Store falsa" sem assinatura, e jogos pagos (DYSMANTLE)
                 // diziam "assinatura inválida". Agora vai a Play Store verdadeira do celular, com a assinatura real.
