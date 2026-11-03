@@ -475,6 +475,49 @@ public class IPackageManagerProxy extends BinderInvocationStub {
         }
     }
 
+    /**
+     * Vcloud: "Desinstalar" da Play Store chama deletePackageAsUser (sistema antigo, não o PackageInstaller). O Android real recusava
+     * (DELETE_PACKAGES) e a loja ficava em "Desinstalando..." (relatório 13:07). Para app instalado dentro do Vcloud, remove de dentro
+     * e avisa o observador (packageDeleted, 1 = sucesso). Nunca mexe em app do celular.
+     */
+    @ProxyMethod("deletePackageAsUser")
+    public static class DeletePackageAsUser extends MethodHook {
+        @Override
+        protected Object hook(Object who, Method method, Object[] args) throws Throwable {
+            String pacote = args != null && args.length > 0 && args[0] instanceof String ? (String) args[0] : null;
+            if (pacote == null || !VcloudCore.get().isInstalled(pacote, VcloudCore.getUserId())) return method.invoke(who, args);
+            int codigo = 1;
+            try {
+                if (com.vcloud.motor.core.GmsCore.isGoogleAppOrService(pacote)) {
+                    codigo = -1; // DELETE_FAILED_INTERNAL_ERROR: o Google de dentro não se remove por aqui
+                } else {
+                    com.vcloud.motor.utils.Diagnostico.evento("DESINSTALAR pedido da loja (deletePackageAsUser): " + pacote);
+                    VcloudCore.getBPackageManager().uninstallPackageAsUser(pacote, VcloudCore.getUserId());
+                }
+            } catch (Throwable t) {
+                codigo = -1;
+                com.vcloud.motor.utils.Diagnostico.evento("DESINSTALAR da loja falhou: " + pacote + ": " + t);
+            }
+            for (Object a : args) {
+                if (a != null && !(a instanceof String) && !(a instanceof Number)) {
+                    try { a.getClass().getMethod("packageDeleted", String.class, int.class).invoke(a, pacote, codigo); } catch (Throwable ignored) { }
+                }
+            }
+            return null;
+        }
+    }
+
+    /** Vcloud: após instalar, a loja chama setApplicationCategoryHint; o Android recusava ("Package com.android.vending does not belong to ...") e a instalação virava erro 6200. */
+    @ProxyMethod("setApplicationCategoryHint")
+    public static class SetApplicationCategoryHint extends MethodHook {
+        @Override
+        protected Object hook(Object who, Method method, Object[] args) throws Throwable {
+            String pacote = args != null && args.length > 0 && args[0] instanceof String ? (String) args[0] : null;
+            if (pacote != null && VcloudCore.get().isInstalled(pacote, VcloudCore.getUserId())) return null;
+            return method.invoke(who, args);
+        }
+    }
+
     @ProxyMethod("getInstallSourceInfo")
     public static class GetInstallSourceInfo extends MethodHook {
         @Override

@@ -786,3 +786,9 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Relatório 11:59 (4.0.77): `PACOTE ...` sem erros (4.0.77 resolveu o MATCH_ANY_USER). Novo erro no monitor: `IPackageManagerProxy.getApplicationEnabledSetting("com.pantheraplay.soulhuntress", 0) -> IllegalArgumentException: Unknown package` (chamada ao PackageManager REAL, que só conhece apps do celular) logo antes de `PSR: ... not installed` / `IV2::PSV: ... was not installed` (status 6252).
 - Mudança: hook `getApplicationEnabledSetting` devolve `COMPONENT_ENABLED_STATE_DEFAULT` para app instalado dentro do Vcloud.
 - Não verificado no aparelho. Se persistir, outras perguntas ao PackageManager real (ver ERRO-SERVICO IPackageManagerProxy.* no monitor).
+
+## 4.0.79 — desinstalar e fim da instalação pela loja
+- Relatório 13:07 (4.0.78) + prints: Soul Huntress "Desinstalando..." sem fim na loja (já saiu do Vcloud pelo menu) e Police Chief aparece como "Instalar" mesmo instalado.
+- Monitor: (1) `IPackageManagerProxy.deletePackageAsUser("com.pantheraplay.soulhuntress", -1, <observer>, 0, 0) -> SecurityException: ... DELETE_PACKAGES` — o botão "Desinstalar" da loja usa a API antiga; (2) `IPackageManagerProxy.setApplicationCategoryHint("com.slg.policewar", 0, "com.android.vending") -> SecurityException: Package com.android.vending does not belong to 10454` logo antes de `state:INSTALL_ERROR status_code=6200` (policewar instalou em 13:06:36 e a loja marcou erro 13:06:37).
+- Mudança: hook `deletePackageAsUser` (app de dentro → `uninstallPackageAsUser` + `packageDeleted(pkg, 1)` no observador; Google de dentro → falha 1; nunca mexe em app do celular) e hook `setApplicationCategoryHint` (resposta vazia para app de dentro).
+- Não verificado no aparelho.
