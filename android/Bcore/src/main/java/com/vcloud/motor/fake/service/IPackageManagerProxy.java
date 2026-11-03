@@ -459,6 +459,22 @@ public class IPackageManagerProxy extends BinderInvocationStub {
      * instalado/dela, e não há opção de desinstalar. O Android real só conhece os apps do celular; aqui vai o mesmo "com.android.vending"
      * que getInstallerPackageName já devolve.
      */
+    /**
+     * Vcloud: a Play Store pergunta se o app está habilitado (getApplicationEnabledSetting). O Android real só conhece os apps do celular e
+     * respondia "IllegalArgumentException: Unknown package" (relatório 11:59), o que a loja lê como "não instalado".
+     */
+    @ProxyMethod("getApplicationEnabledSetting")
+    public static class GetApplicationEnabledSetting extends MethodHook {
+        @Override
+        protected Object hook(Object who, Method method, Object[] args) throws Throwable {
+            String pacote = args != null && args.length > 0 && args[0] instanceof String ? (String) args[0] : null;
+            if (pacote != null && VcloudCore.get().isInstalled(pacote, VcloudCore.getUserId())) {
+                return PackageManager.COMPONENT_ENABLED_STATE_DEFAULT;
+            }
+            return method.invoke(who, args);
+        }
+    }
+
     @ProxyMethod("getInstallSourceInfo")
     public static class GetInstallSourceInfo extends MethodHook {
         @Override

@@ -780,3 +780,9 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Causa: a loja consulta com MATCH_ANY_USER (0x00400000); `PackageManagerCompat.generatePackageInfo` repassa as flags à consulta REAL do celular (`getPackageInfo` do pacote, para pegar assinaturas) e `generateApplicationInfo` também (`getApplicationInfo` do Vcloud) → SecurityException → PackageInfo nulo → "não instalado". Explica a loja nunca reconhecer apps (e o `Queue only`).
 - Mudança: `semParaTodosUsuarios(flags)` tira MATCH_ANY_USER nas duas consultas reais; qualquer outra falha da consulta real ao celular agora só é registrada (`PACOTE consulta ao celular de ... falhou`), sem apagar o PackageInfo.
 - Não verificado no aparelho.
+
+## 4.0.78
+- Usuário (12:00): app instala e abre normalmente; a loja continua mostrando o Soul Huntress em "Pausar/X" (instalando) e o Police Chief como "Não foi possível instalar".
+- Relatório 11:59 (4.0.77): `PACOTE ...` sem erros (4.0.77 resolveu o MATCH_ANY_USER). Novo erro no monitor: `IPackageManagerProxy.getApplicationEnabledSetting("com.pantheraplay.soulhuntress", 0) -> IllegalArgumentException: Unknown package` (chamada ao PackageManager REAL, que só conhece apps do celular) logo antes de `PSR: ... not installed` / `IV2::PSV: ... was not installed` (status 6252).
+- Mudança: hook `getApplicationEnabledSetting` devolve `COMPONENT_ENABLED_STATE_DEFAULT` para app instalado dentro do Vcloud.
+- Não verificado no aparelho. Se persistir, outras perguntas ao PackageManager real (ver ERRO-SERVICO IPackageManagerProxy.* no monitor).
