@@ -44,6 +44,13 @@ import com.vcloud.motor.utils.ValorPadrao;
 public final class InstaladorVirtual {
     private static final String TAG = "InstaladorVirtual";
     public static final Object NAO = new Object();
+    // Vcloud: PendingIntents de broadcast que a Play Store criou neste processo (alvo -> intent original). O resultado do commit vai direto
+    // pelo broadcast normal (que já alcança os receptores registrados dentro do app), sem passar pela fachada do PendingIntent.
+    private static final java.util.Map<android.os.IBinder, Intent> PENDENTES = new java.util.concurrent.ConcurrentHashMap<>();
+
+    public static void lembrar(android.os.IBinder alvo, Intent original) {
+        if (alvo != null && original != null) PENDENTES.put(alvo, new Intent(original));
+    }
     private static final int PRIMEIRO_ID = 700000;
     private static final List<Object> CALLBACKS = new ArrayList<>();
 
@@ -378,6 +385,19 @@ public final class InstaladorVirtual {
             i.putExtra(PackageInstaller.EXTRA_STATUS_MESSAGE, msg);
             i.putExtra(PackageInstaller.EXTRA_PACKAGE_NAME, pacote);
             i.putExtra(PackageInstaller.EXTRA_SESSION_ID, id);
+            Intent original = null;
+            try {
+                Object alvo = IntentSender.class.getMethod("getTarget").invoke(destino);
+                if (alvo instanceof android.os.IInterface) original = PENDENTES.get(((android.os.IInterface) alvo).asBinder());
+            } catch (Throwable ignored) { }
+            if (original != null) {
+                Intent o = new Intent(original);
+                o.putExtras(i);
+                VcloudCore.getContext().sendBroadcast(o);
+                Diagnostico.eventoLimitado("instalador|direto|" + id, 1000, "INSTALADOR resultado enviado por broadcast direto: " + o.getAction());
+                return;
+            }
+            Diagnostico.eventoLimitado("instalador|semmapa|" + id, 1000, "INSTALADOR sem o intent original do PendingIntent; usando sendIntent");
             destino.sendIntent(VcloudCore.getContext(), 0, i, null, null);
             Diagnostico.eventoLimitado("instalador|enviado|" + id, 1000, "INSTALADOR aviso entregue ao IntentSender de " + destino.getCreatorPackage()
                     + " (status " + status + ", sessão " + id + ")");

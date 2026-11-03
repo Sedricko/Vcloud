@@ -696,3 +696,8 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Lido no dex: `PackageStateRepository` (`anuk.D` → `getInstalledPackages`) converte cada `PackageInfo` em registro (`anuk.s`) só se `PackageInfo.signatures` não for nulo/vazio. No Vcloud, `PackageManagerCompat.generatePackageInfo` usava `p.mSignatures` para apps que não existem no celular; jogos assinados só com v2/v3 ficam com `mSignatures` vazio (as assinaturas estão em `mSigningDetails.signatures`) → a loja não os vê como instalados.
 - Mudança: se `mSignatures` vier vazio, usa `mSigningDetails.signatures`.
 - Não verificado no aparelho. (Hipótese: o app que já funcionava seria assinado com v1.)
+
+## 4.0.63
+- Relatório 22:23 (4.0.61, chegou atrasado): a Play Store diz `Submitter: commit timeout (TimeoutFuture ...)` 10 min depois do commit de policewar: o resultado do commit (PendingIntent broadcast implícito `...INTENT_PACKAGE_INSTALL_COMMIT.<pacote>:<versão>`) NUNCA chega, mesmo com `aviso entregue (status 0)`. O timeout depois cancela e a sessão é apagada; o Vcloud tenta instalar de novo e falha (`parser apk error` por arquivo já apagado) — efeito, não causa.
+- Mudança: o intent original de cada PendingIntent de broadcast da Play Store é guardado (`InstaladorVirtual.lembrar`, no `GetIntentSender`); no fim do commit o resultado vai por `Context.sendBroadcast(original + EXTRA_STATUS...)` (caminho de broadcast normal do Vcloud, que alcança receptores registrados no app); se não achar o original, volta ao `sendIntent`. Logs `INSTALADOR resultado enviado por broadcast direto` / `sem o intent original`.
+- Não verificado no aparelho.

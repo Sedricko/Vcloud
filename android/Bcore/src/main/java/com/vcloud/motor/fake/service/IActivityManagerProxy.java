@@ -556,6 +556,7 @@ public class IActivityManagerProxy extends ClassInvocationStub {
                         "VENDING cria PendingIntent tipo=" + type + " ação=" + intents[0].getAction() + " componente=" + intents[0].getComponent()
                                 + " pacote=" + intents[0].getPackage());
             }
+            Intent intentOriginal = intents != null && intents.length == 1 && intents[0] != null ? new Intent(intents[0]) : null;
             MethodParameterUtils.replaceFirstAppPkg(args);
 
             if (type == ActivityManagerCompat.INTENT_SENDER_ACTIVITY
@@ -609,6 +610,10 @@ public class IActivityManagerProxy extends ClassInvocationStub {
                 }
             }
             IInterface invoke = (IInterface) method.invoke(who, args);
+            if (invoke != null && type == ActivityManagerCompat.INTENT_SENDER_BROADCAST && intentOriginal != null
+                    && "com.android.vending".equals(BActivityThread.getAppPackageName())) {
+                InstaladorVirtual.lembrar(invoke.asBinder(), intentOriginal);
+            }
             if (invoke != null) {
                 String[] packagesForUid = BPackageManager.get().getPackagesForUid(BActivityThread.getCallingBUid());
                 if (packagesForUid.length < 1) {
