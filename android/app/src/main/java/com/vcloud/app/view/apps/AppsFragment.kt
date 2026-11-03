@@ -216,9 +216,14 @@ class AppsFragment : Fragment() {
                         
                         MotionEvent.ACTION_UP -> {
                             val scrollDuration = System.currentTimeMillis() - scrollStartTime
+                            val moveu = isMove(point, e)
+                            if (popupMenu != null) {
+                                // diagnóstico: o que decidiu mostrar ou descartar o menu ao soltar o dedo
+                                com.vcloud.motor.utils.Diagnostico.evento("MENU soltou o dedo: durou=${scrollDuration}ms rolando=$isScrolling moveu=$moveu -> " +
+                                    if (!isScrolling && !moveu && scrollDuration < 15000) "mostra o menu" else "DESCARTA o menu")
+                            }
                             
-                            
-                            if (!isScrolling && !isMove(point, e) && scrollDuration < 15000) {
+                            if (!isScrolling && !moveu && scrollDuration < 15000) {
                                 try {
                                     popupMenu?.show()
                                 } catch (e: Exception) {
@@ -240,6 +245,7 @@ class AppsFragment : Fragment() {
                             
                             if (isMove(point, e)) {
                                 isScrolling = true
+                                if (popupMenu != null) com.vcloud.motor.utils.Diagnostico.eventoLimitado("menu|moveu", 3000, "MENU dedo se moveu (rolagem): fecha o menu")
                                 popupMenu?.dismiss()
                             }
                             
@@ -391,12 +397,14 @@ class AppsFragment : Fragment() {
         try {
             mAdapter.setItemLongClickListener { view, data, _ ->
                 try {
+                    com.vcloud.motor.utils.Diagnostico.evento("MENU toque longo no app ${data.packageName}")
                     popupMenu = PopupMenu(requireContext(),view).also {
                         it.inflate(R.menu.app_menu)
                         it.setOnMenuItemClickListener { item ->
                             try {
                                 when (item.itemId) {
                                     R.id.app_remove -> {
+                                        com.vcloud.motor.utils.Diagnostico.evento("MENU escolheu Desinstalar app: ${data.packageName}")
                                         if (data.isXpModule) {
                                             toast(R.string.uninstall_module_toast)
                                         } else {

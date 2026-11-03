@@ -57,9 +57,28 @@ class DiagnosticoActivity : BaseActivity() {
         })
     }
 
+    // Vcloud: acompanha o que acontece em tempo real (antes só atualizava ao abrir ou ao tocar em "Atualizar")
+    private val handler = android.os.Handler(android.os.Looper.getMainLooper())
+    private var ultimoTamanho = -1
+    private val acompanhar = object : Runnable {
+        override fun run() {
+            try {
+                val tam = Diagnostico.ler().length
+                if (tam != ultimoTamanho) { ultimoTamanho = tam; mostrar() }
+            } catch (_: Throwable) { }
+            handler.postDelayed(this, 1500)
+        }
+    }
+
     override fun onResume() {
         super.onResume()
         mostrar()
+        handler.postDelayed(acompanhar, 1500)
+    }
+
+    override fun onPause() {
+        handler.removeCallbacks(acompanhar)
+        super.onPause()
     }
 
     private fun testarGoogle() {

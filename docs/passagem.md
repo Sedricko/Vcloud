@@ -729,3 +729,8 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Diagnóstico (4.0.66/67) mostrou `sig=null` para TODOS os apps na lista (flags 0x40200000 não pedem assinatura) — então a assinatura (4.0.62) não era o critério. O Soul Huntress (instalado) aparece como "Install Queue: ... Queue only: 1" e `PSR: Package ... not installed`: um pedido de instalação duplicado/preso na fila da loja (duas sessões foram criadas para ele), que a loja trata como "baixando" e não como instalado.
 - Mudança: `marcarPartesDaLoja` também na lista de `getInstalledPackages`.
 - Não verificado no aparelho.
+
+## 4.0.69
+- Usuário: a Central de diagnóstico não acompanha o que acontece ao segurar o ícone do app, e não aparece log disso.
+- Causa: nada era registrado no toque longo/menu (`AppsFragment`), e a Central só lia o histórico ao abrir ou em "Atualizar".
+- Mudança: eventos `MENU toque longo no app <pacote>`, `MENU soltou o dedo: durou=..ms rolando=.. moveu=.. -> mostra/DESCARTA o menu`, `MENU dedo se moveu (rolagem)`, `MENU escolheu Desinstalar app` (`AppsFragment`); e a Central atualiza sozinha a cada 1,5 s enquanto aberta quando o histórico muda (`DiagnosticoActivity`, sem mudança visual).
