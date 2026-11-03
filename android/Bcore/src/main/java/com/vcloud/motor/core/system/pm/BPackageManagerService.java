@@ -242,7 +242,16 @@ public class BPackageManagerService extends IBPackageManagerService.Stub impleme
 
         
         synchronized (mPackages) {
-            return mComponentResolver.queryActivities(intent, resolvedType, flags, userId);
+            List<ResolveInfo> achados = mComponentResolver.queryActivities(intent, resolvedType, flags, userId);
+            // Vcloud: telas desligadas no manifesto (android:enabled="false") não são achadas por intent implícito (ver ComponenteHabilitado)
+            if (achados != null) {
+                java.util.Iterator<ResolveInfo> it = achados.iterator();
+                while (it.hasNext()) {
+                    ResolveInfo ri = it.next();
+                    if (ri.activityInfo != null && !com.vcloud.motor.utils.ComponenteHabilitado.ativo(ri.activityInfo)) it.remove();
+                }
+            }
+            return achados;
         }
     }
 

@@ -707,3 +707,9 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Manifesto da Play Store: `ExternalPlayProtectHomeEntryPoint` é um `activity-alias` com `android:enabled="false"` (ação `com.google.android.finsky.PLAY_PROTECT`). No Android real, desligado, a intenção do gms não acha nada e o gms mostra o Play Protect dele. O motor do Vcloud ignorava `enabled` e `setComponentEnabledSetting` → achava o alias e voltava ao gms (ciclo).
 - Mudança: `utils/ComponenteHabilitado` (estado por arquivo); `setComponentEnabledSetting` grava o estado de componentes de apps de dentro; `BPackageManagerService.queryIntentActivities` (por pacote, intent implícito) tira telas desligadas (estado 1 = ligado vence).
 - Não verificado no aparelho. Risco: apps que dependem de telas desligadas no manifesto serem achadas por intent implícito (antes achadas por engano).
+
+## 4.0.65
+- Relatório 06:02 (4.0.64): **o resultado do commit chega** (`INSTALADOR resultado enviado por broadcast direto: ...INTENT_PACKAGE_INSTALL_COMMIT...`) e policewar e soulhuntress instalam (aparecem na lista). Play Protect ainda em ciclo: `ExternalPlayProtectHomeEntryPoint` continua sendo criada.
+- Causa: o filtro de "desligado" da 4.0.64 ficou só em `queryIntentActivities(intent, flags, resolvedType, userId)` (método público); `resolveActivity/resolveIntent` usam o PRIVADO `queryIntentActivities(intent, resolvedType, flags, userId)`.
+- Mudança: o mesmo filtro (`ComponenteHabilitado.ativo`) no método privado.
+- Não verificado no aparelho.
