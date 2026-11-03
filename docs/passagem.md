@@ -792,3 +792,9 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Monitor: (1) `IPackageManagerProxy.deletePackageAsUser("com.pantheraplay.soulhuntress", -1, <observer>, 0, 0) -> SecurityException: ... DELETE_PACKAGES` — o botão "Desinstalar" da loja usa a API antiga; (2) `IPackageManagerProxy.setApplicationCategoryHint("com.slg.policewar", 0, "com.android.vending") -> SecurityException: Package com.android.vending does not belong to 10454` logo antes de `state:INSTALL_ERROR status_code=6200` (policewar instalou em 13:06:36 e a loja marcou erro 13:06:37).
 - Mudança: hook `deletePackageAsUser` (app de dentro → `uninstallPackageAsUser` + `packageDeleted(pkg, 1)` no observador; Google de dentro → falha 1; nunca mexe em app do celular) e hook `setApplicationCategoryHint` (resposta vazia para app de dentro).
 - Não verificado no aparelho.
+
+## 4.0.80 — "Desinstalando..." sem fim
+- Relatório 13:31 (4.0.79): `DESINSTALAR pedido da loja (deletePackageAsUser): com.slg.policewar`, depois (3 s) `deletePackageAsUser -> InvocationTargetException` (loja repetiu o pedido; o pacote já saíra do Vcloud, então a chamada foi ao PackageManager REAL e falhou).
+- Causa provável: o observador da loja é `IPackageDeleteObserver2`, cujo método é `onPackageDeleted(String,int,String)`; o hook só tentava `packageDeleted(String,int)` e engolia o erro → a loja nunca recebia resposta.
+- Mudança: o hook chama `onPackageDeleted` (com fallback `packageDeleted`); pacote que não está no Vcloud e falha no celular também responde (-1) em vez de estourar.
+- Não verificado no aparelho (nome do método do observador é deduzido do AIDL do Android, não visto no log).

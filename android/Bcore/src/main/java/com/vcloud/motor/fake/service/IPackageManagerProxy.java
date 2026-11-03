@@ -485,23 +485,34 @@ public class IPackageManagerProxy extends BinderInvocationStub {
         @Override
         protected Object hook(Object who, Method method, Object[] args) throws Throwable {
             String pacote = args != null && args.length > 0 && args[0] instanceof String ? (String) args[0] : null;
-            if (pacote == null || !VcloudCore.get().isInstalled(pacote, VcloudCore.getUserId())) return method.invoke(who, args);
             int codigo = 1;
-            try {
-                if (com.vcloud.motor.core.GmsCore.isGoogleAppOrService(pacote)) {
-                    codigo = -1; // DELETE_FAILED_INTERNAL_ERROR: o Google de dentro não se remove por aqui
-                } else {
-                    com.vcloud.motor.utils.Diagnostico.evento("DESINSTALAR pedido da loja (deletePackageAsUser): " + pacote);
-                    VcloudCore.getBPackageManager().uninstallPackageAsUser(pacote, VcloudCore.getUserId());
+            String msg = null;
+            if (pacote == null || !VcloudCore.get().isInstalled(pacote, VcloudCore.getUserId())) {
+                try {
+                    return method.invoke(who, args);
+                } catch (Throwable t) {
+                    // o pacote não existe nem dentro nem fora: avisa a loja (senão fica "Desinstalando..." para sempre)
+                    codigo = -1; msg = "not installed";
+                    com.vcloud.motor.utils.Diagnostico.evento("DESINSTALAR da loja: " + pacote + " não está no Vcloud: " + t);
                 }
-            } catch (Throwable t) {
-                codigo = -1;
-                com.vcloud.motor.utils.Diagnostico.evento("DESINSTALAR da loja falhou: " + pacote + ": " + t);
+            } else {
+                try {
+                    if (com.vcloud.motor.core.GmsCore.isGoogleAppOrService(pacote)) {
+                        codigo = -1; msg = "google";
+                    } else {
+                        com.vcloud.motor.utils.Diagnostico.evento("DESINSTALAR pedido da loja (deletePackageAsUser): " + pacote);
+                        VcloudCore.getBPackageManager().uninstallPackageAsUser(pacote, VcloudCore.getUserId());
+                    }
+                } catch (Throwable t) {
+                    codigo = -1; msg = String.valueOf(t);
+                    com.vcloud.motor.utils.Diagnostico.evento("DESINSTALAR da loja falhou: " + pacote + ": " + t);
+                }
             }
+            // IPackageDeleteObserver2.onPackageDeleted(String,int,String) ou IPackageDeleteObserver.packageDeleted(String,int)
             for (Object a : args) {
-                if (a != null && !(a instanceof String) && !(a instanceof Number)) {
-                    try { a.getClass().getMethod("packageDeleted", String.class, int.class).invoke(a, pacote, codigo); } catch (Throwable ignored) { }
-                }
+                if (a == null || a instanceof String || a instanceof Number) continue;
+                try { a.getClass().getMethod("onPackageDeleted", String.class, int.class, String.class).invoke(a, pacote, codigo, msg); continue; } catch (Throwable ignored) { }
+                try { a.getClass().getMethod("packageDeleted", String.class, int.class).invoke(a, pacote, codigo); } catch (Throwable ignored) { }
             }
             return null;
         }
