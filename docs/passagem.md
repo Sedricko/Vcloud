@@ -829,3 +829,10 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Mudança 2: detector `PM-VAZA`: toda resposta COM DADOS do PackageManager à loja sobre pacote que não está dentro do Vcloud é registrada (1x/10 s por método+pacote). Procurar `PM-VAZA` no relatório para achar as perguntas que ainda caem no celular real.
 - Dúvida aberta: "Instalado" também pode vir do servidor (lista de aparelhos da conta/biblioteca); o detector mostra se é local.
 - Não verificado no aparelho.
+
+## Relatório 21:41 (4.0.85) — achados, sem versão nova
+- `PM-VAZA`: só ruído (hasSystemFeature, resolveContentProvider do gms). Nenhuma consulta de pacote ausente (Chrome/Chrome Beta) recebeu dado do celular real → o vazamento de pacote foi fechado na 4.0.84/85.
+- Chrome Beta: a página da loja mostrou "Desinstalar" e "Instalado" em Pixel 6 Pro / sdk_gphone / SM-S938B às 21:22, mas `getPackageInfo(com.chrome.beta)` local deu `null` até 21:23:25 (instalação). Logo o "Instalado" desse momento NÃO vem do PackageManager local (lista de aparelhos/biblioteca da conta no servidor ou cache da loja). Não resolvido.
+- Chrome/Canary/Beta instalaram dentro do Vcloud (lista do relatório), mas a tela inicial só mostra a Play Store (apps do Google ficam escondidos da lista — conferir regra).
+- 6252 continua: falharam miner.camp, canary, seven, bard (instalações simultâneas na mesma janela de segundos); deram certo soul huntress, googlequicksearchbox, chrome (21:41). Padrão ainda sem explicação.
+- `queryIntentActivities(MAIN, pkg)` para app de dentro volta lista 0 mesmo com o hook da 4.0.84 (Soul e Chrome Beta) → o resolvedor do Vcloud devolve vazio para MAIN sem categoria; investigar `ComponentResolver.queryIntentForPackage` (pode afetar o botão Abrir/Jogar).
