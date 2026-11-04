@@ -463,6 +463,38 @@ public class IPackageManagerProxy extends BinderInvocationStub {
      * Vcloud: a Play Store pergunta se o app está habilitado (getApplicationEnabledSetting). O Android real só conhece os apps do celular e
      * respondia "IllegalArgumentException: Unknown package" (relatório 11:59), o que a loja lê como "não instalado".
      */
+    /**
+     * Vcloud: a loja só pode enxergar o que está instalado DENTRO do Vcloud. Consultas dela ao PackageManager sobre um pacote que não está
+     * dentro caíam no celular real (Chrome do S25 aparecia "Instalado" na loja). Verdadeiro = a loja pergunta de um pacote que não existe aqui.
+     */
+    static boolean foraDoVcloudParaALoja(String pacote) {
+        if (pacote == null || !"com.android.vending".equals(BActivityThread.getAppPackageName())) return false;
+        return !VcloudCore.get().isInstalled(pacote, VcloudCore.getUserId())
+                && !AppSystemEnv.isOpenPackage(pacote) && !pacote.equals(VcloudCore.getHostPkg());
+    }
+
+    @ProxyMethod("queryIntentActivities")
+    public static class QueryIntentActivities extends MethodHook {
+        @Override
+        protected Object hook(Object who, Method method, Object[] args) throws Throwable {
+            Intent intent = MethodParameterUtils.getFirstParam(args, Intent.class);
+            if (intent != null && "com.android.vending".equals(BActivityThread.getAppPackageName())) {
+                String pacote = intent.getComponent() != null ? intent.getComponent().getPackageName() : intent.getPackage();
+                if (pacote != null) {
+                    if (foraDoVcloudParaALoja(pacote)) return embrulharLista(who, method, args, new java.util.ArrayList<ResolveInfo>());
+                    if (VcloudCore.get().isInstalled(pacote, VcloudCore.getUserId())) {
+                        String tipo = MethodParameterUtils.getFirstParam(args, String.class);
+                        Number flags = null; // Long no Android 13+
+                        for (Object a : args) if (a instanceof Number) { flags = (Number) a; break; }
+                        List<ResolveInfo> r = VcloudCore.getBPackageManager().queryIntentActivities(intent, flags == null ? 0 : flags.intValue(), tipo, VcloudCore.getUserId());
+                        return embrulharLista(who, method, args, r == null ? new java.util.ArrayList<ResolveInfo>() : r);
+                    }
+                }
+            }
+            return method.invoke(who, args);
+        }
+    }
+
     @ProxyMethod("getApplicationEnabledSetting")
     public static class GetApplicationEnabledSetting extends MethodHook {
         @Override
@@ -471,6 +503,7 @@ public class IPackageManagerProxy extends BinderInvocationStub {
             if (pacote != null && VcloudCore.get().isInstalled(pacote, VcloudCore.getUserId())) {
                 return PackageManager.COMPONENT_ENABLED_STATE_DEFAULT;
             }
+            if (foraDoVcloudParaALoja(pacote)) throw new IllegalArgumentException("Unknown package: " + pacote);
             return method.invoke(who, args);
         }
     }
@@ -554,6 +587,7 @@ public class IPackageManagerProxy extends BinderInvocationStub {
                     } catch (Throwable ignored) { }
                 }
             }
+            if (foraDoVcloudParaALoja(pacote)) return null;
             return method.invoke(who, args);
         }
     }
