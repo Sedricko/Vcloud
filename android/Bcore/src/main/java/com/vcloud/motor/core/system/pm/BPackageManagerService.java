@@ -227,7 +227,7 @@ public class BPackageManagerService extends IBPackageManagerService.Stub impleme
 
         if (comp != null) {
             final List<ResolveInfo> list = new ArrayList<>(1);
-            final ActivityInfo ai = getActivity(comp, flags, userId);
+            final ActivityInfo ai = activityInfoComAlias(comp, getActivity(comp, flags, userId), flags, userId);
             if (ai != null) {
                 
                 
@@ -424,6 +424,21 @@ public class BPackageManagerService extends IBPackageManagerService.Stub impleme
         }
     }
 
+    /** Vcloud: getActivityInfo que também entende activity-alias (o Chrome abre por "...apps.chrome.Main", que é alias): sem isso o app de dentro "não existia" e abria o do celular real. */
+    private ActivityInfo activityInfoComAlias(ComponentName comp, ActivityInfo ai, int flags, int userId) {
+        if (ai != null || comp == null) return ai;
+        try {
+            BPackageSettings ps;
+            synchronized (mPackages) { ps = mPackages.get(comp.getPackageName()); }
+            if (ps == null || ps.pkg == null || ps.pkg.activities.isEmpty()) return null;
+            String alvo = com.vcloud.motor.utils.ManifestFiltros.alvoDoAlias(ps.pkg.activities.get(0).info.applicationInfo, comp.getClassName());
+            if (alvo == null) return null;
+            return getActivityInfo(new ComponentName(comp.getPackageName(), alvo), flags, userId);
+        } catch (Throwable t) {
+            return null;
+        }
+    }
+
     @Override
     public List<ResolveInfo> queryIntentActivities(Intent intent, int flags, String resolvedType, int userId) throws RemoteException {
         if (!sUserManager.exists(userId)) return Collections.emptyList();
@@ -438,7 +453,7 @@ public class BPackageManagerService extends IBPackageManagerService.Stub impleme
 
         if (comp != null) {
             final List<ResolveInfo> list = new ArrayList<>(1);
-            final ActivityInfo ai = getActivityInfo(comp, flags, userId);
+            final ActivityInfo ai = activityInfoComAlias(comp, getActivityInfo(comp, flags, userId), flags, userId);
             if (ai != null) {
                 
                 

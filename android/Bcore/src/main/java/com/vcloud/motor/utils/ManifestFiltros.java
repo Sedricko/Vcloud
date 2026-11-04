@@ -18,6 +18,15 @@ import java.util.Map;
  */
 public class ManifestFiltros {
     private static final Map<String, Map<String, List<IntentFilter>>> CACHE = new HashMap<>();
+    private static final Map<String, Map<String, String>> ALIAS = new HashMap<>();
+
+    /** Tela de verdade por trás de um activity-alias (o ícone do Chrome é o alias "...apps.chrome.Main"); null se não for alias. */
+    public static synchronized String alvoDoAlias(ApplicationInfo ai, String nome) {
+        if (ai == null || ai.sourceDir == null) return null;
+        telas(ai);
+        Map<String, String> m = ALIAS.get(ai.sourceDir);
+        return m == null ? null : m.get(nome);
+    }
 
     /** nome da classe da tela -> filtros. Nomes relativos (".Main") já vêm completos com o pacote. */
     public static synchronized Map<String, List<IntentFilter>> telas(ApplicationInfo ai) {
@@ -25,6 +34,8 @@ public class ManifestFiltros {
         Map<String, List<IntentFilter>> c = CACHE.get(ai.sourceDir);
         if (c != null) return c;
         c = new HashMap<>();
+        Map<String, String> alias = new HashMap<>();
+        ALIAS.put(ai.sourceDir, alias);
         try {
             Resources r = VcloudCore.getPackageManager().getResourcesForApplication(ai);
             XmlResourceParser p = r.getAssets().openXmlResourceParser("AndroidManifest.xml");
@@ -39,6 +50,12 @@ public class ManifestFiltros {
                         if (n != null && n.startsWith(".")) n = ai.packageName + n;
                         else if (n != null && !n.contains(".")) n = ai.packageName + "." + n;
                         tela = n;
+                        if (t.equals("activity-alias") && n != null) {
+                            String alvo = p.getAttributeValue("http://schemas.android.com/apk/res/android", "targetActivity");
+                            if (alvo != null && alvo.startsWith(".")) alvo = ai.packageName + alvo;
+                            else if (alvo != null && !alvo.contains(".")) alvo = ai.packageName + "." + alvo;
+                            if (alvo != null) alias.put(n, alvo);
+                        }
                     } else if (t.equals("intent-filter") && tela != null) {
                         f = new IntentFilter();
                     } else if (f != null && t.equals("action")) {
