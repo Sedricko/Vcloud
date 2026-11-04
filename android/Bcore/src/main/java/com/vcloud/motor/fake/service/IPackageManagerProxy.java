@@ -185,6 +185,7 @@ public class IPackageManagerProxy extends BinderInvocationStub {
     public static class GetPackageUid extends MethodHook {
         @Override
         protected Object hook(Object who, Method method, Object[] args) throws Throwable {
+            if (args != null && args.length > 0 && args[0] instanceof String && foraDoVcloudParaALoja((String) args[0])) return -1;
             MethodParameterUtils.replaceFirstAppPkg(args);
             return method.invoke(who, args);
         }

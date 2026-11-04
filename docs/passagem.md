@@ -822,3 +822,10 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Mudança (só para a Play Store): pacote que não está dentro do Vcloud (nem é do sistema liberado/host) → `queryIntentActivities` vazio, `getApplicationEnabledSetting` "Unknown package", `getInstallSourceInfo` nulo; pacote de dentro → `queryIntentActivities` responde pelo Vcloud (antes: celular real). Outros apps seguem como antes (precisam do celular para abrir navegador, compartilhar etc.).
 - AINDA ABERTO — Seven/Evrika/Zombie Survival dão `PSV was not installed` (6252) mesmo com o aviso: PM-DET mostra que nos casos que dão certo (Soul Huntress, Backpack Brawl) a loja, ao receber PACKAGE_ADDED, faz em ambos os processos `getPackageInfo(pkg, flags 5570035904)` (assinatura=true) + `queryIntentActivities(MAIN,pkg)`; nos que falham ela só faz a consulta `getPackageInfo(pkg, MATCH_ANY_USER)` e NÃO faz a seguinte. Causa na loja ainda não encontrada (`antk.h` → `anuk.kR → z`).
 - Não verificado no aparelho.
+
+## 4.0.85 — detector de vazamento do celular real para a loja
+- Usuário: não conseguiu instalar o Chrome pela loja; ela diz que já está instalado e "Abrir" abre o Chrome do S25, fora do Vcloud. Sem relatório novo (não sei se estava na 4.0.84).
+- Mudança 1: `getPackageUid` da loja para pacote que não está dentro → -1 (antes o celular real respondia o uid do Chrome do S25).
+- Mudança 2: detector `PM-VAZA`: toda resposta COM DADOS do PackageManager à loja sobre pacote que não está dentro do Vcloud é registrada (1x/10 s por método+pacote). Procurar `PM-VAZA` no relatório para achar as perguntas que ainda caem no celular real.
+- Dúvida aberta: "Instalado" também pode vir do servidor (lista de aparelhos da conta/biblioteca); o detector mostra se é local.
+- Não verificado no aparelho.

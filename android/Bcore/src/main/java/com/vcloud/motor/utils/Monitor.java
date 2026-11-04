@@ -86,10 +86,26 @@ public final class Monitor {
         }
     }
 
+    /** Detector: a Play Store recebeu resposta COM DADOS sobre um pacote que não está dentro do Vcloud (= resposta do celular real). */
+    private static void vazamento(String servico, String metodo, Object[] a, Object res) {
+        try {
+            if (res == null || !"IPackageManagerProxy".equals(servico) || a == null || a.length == 0 || !(a[0] instanceof String)) return;
+            if (!"com.android.vending".equals(com.vcloud.motor.app.BActivityThread.getAppPackageName()) || DENTRO.get() != null) return;
+            String pkg = (String) a[0];
+            if (!pkg.contains(".") || pkg.startsWith("android.") || pkg.equals(com.vcloud.motor.VcloudCore.getHostPkg())) return;
+            if (com.vcloud.motor.VcloudCore.get().isInstalled(pkg, com.vcloud.motor.VcloudCore.getUserId()) || com.vcloud.motor.core.env.AppSystemEnv.isOpenPackage(pkg)) return;
+            if (metodo.startsWith("is") || metodo.startsWith("check") || metodo.startsWith("get") && !(metodo.contains("Package") || metodo.contains("Application") || metodo.contains("Install") || metodo.contains("Uid"))) return;
+            DENTRO.set(Boolean.TRUE);
+            try { amostra("PM-VAZA", metodo + "|" + pkg, 10_000, "PM-VAZA a loja recebeu dado do celular real: " + metodo + " " + args(metodo, a) + " -> " + (res instanceof Number || res instanceof Boolean ? String.valueOf(res) : res.getClass().getSimpleName())); }
+            finally { DENTRO.remove(); }
+        } catch (Throwable ignored) { }
+    }
+
     /** Enquanto aberta (após um aviso de pacote do Vcloud), toda chamada ao PackageManager entra no monitor COM o resultado: mostra o que a loja vê. */
     public static volatile long detalheAte;
 
     public static void detalhe(String servico, String metodo, Object[] argsBrutos, Object res) {
+        vazamento(servico, metodo, argsBrutos, res);
         if (System.currentTimeMillis() > detalheAte || !"IPackageManagerProxy".equals(servico) || DENTRO.get() != null) return;
         DENTRO.set(Boolean.TRUE);
         try {
