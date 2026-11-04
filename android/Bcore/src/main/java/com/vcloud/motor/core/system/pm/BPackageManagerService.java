@@ -469,6 +469,27 @@ public class BPackageManagerService extends IBPackageManagerService.Stub impleme
                     if (result == null) {
                         result = new ArrayList<>();
                     }
+                    // Vcloud: o resolvedor devolvia vazio para MAIN de app de dentro (a loja via "sem tela de abrir"); busca direto nos filtros do manifesto
+                    if (result.isEmpty() && bPackageSettings != null && intent.getAction() != null) {
+                        for (BPackage.Activity a : bPackageSettings.pkg.activities) {
+                            if (a.intents == null) continue;
+                            for (BPackage.ActivityIntentInfo f : a.intents) {
+                                if (f.intentFilter == null || !f.intentFilter.hasAction(intent.getAction())) continue;
+                                boolean cats = true;
+                                if (intent.getCategories() != null) for (String c : intent.getCategories()) if (!f.intentFilter.hasCategory(c)) { cats = false; break; }
+                                if (!cats) continue;
+                                ActivityInfo ai = PackageManagerCompat.generateActivityInfo(a, flags, bPackageSettings.readUserState(userId), userId);
+                                if (ai == null) continue;
+                                ResolveInfo ri = new ResolveInfo();
+                                ri.activityInfo = ai;
+                                ri.filter = f.intentFilter;
+                                ri.priority = f.intentFilter.getPriority();
+                                result.add(ri);
+                                break;
+                            }
+                        }
+                        com.vcloud.motor.utils.Diagnostico.eventoLimitado("resolvedor|" + pkgName, 15_000, "RESOLVEDOR vazio para " + intent.getAction() + " de " + pkgName + "; achei pelos filtros: " + result.size() + " (telas do app: " + bPackageSettings.pkg.activities.size() + ")");
+                    }
                 }
                 // Vcloud: telas desligadas no manifesto (android:enabled="false") não entram na busca por intent implícito
                 java.util.Iterator<ResolveInfo> it = result.iterator();

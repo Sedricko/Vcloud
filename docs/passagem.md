@@ -836,3 +836,9 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Chrome/Canary/Beta instalaram dentro do Vcloud (lista do relatório), mas a tela inicial só mostra a Play Store (apps do Google ficam escondidos da lista — conferir regra).
 - 6252 continua: falharam miner.camp, canary, seven, bard (instalações simultâneas na mesma janela de segundos); deram certo soul huntress, googlequicksearchbox, chrome (21:41). Padrão ainda sem explicação.
 - `queryIntentActivities(MAIN, pkg)` para app de dentro volta lista 0 mesmo com o hook da 4.0.84 (Soul e Chrome Beta) → o resolvedor do Vcloud devolve vazio para MAIN sem categoria; investigar `ComponentResolver.queryIntentForPackage` (pode afetar o botão Abrir/Jogar).
+
+## 4.0.86 — `queryIntentActivities` vazio para app de dentro
+- Relatório 21:41: `queryIntentActivities(MAIN, pkg)` da loja voltava lista 0 para apps de dentro (Soul Huntress, Chrome Beta), mesmo com o hook da 4.0.84 → o resolvedor do Vcloud (`ComponentResolver`) devolve vazio.
+- Mudança: se o resolvedor devolver vazio para um intent com pacote, `BPackageManagerService.queryIntentActivities` procura direto nos filtros do manifesto (ação + categorias) e monta o `ResolveInfo`. Log: `RESOLVEDOR vazio para <ação> de <pacote>; achei pelos filtros: N (telas do app: M)`.
+- Efeito esperado: botão Abrir/Jogar da loja e qualquer app que consulte "tem tela principal?" passam a achar a tela. Não resolve o 6252 (PSV).
+- Não verificado no aparelho.
