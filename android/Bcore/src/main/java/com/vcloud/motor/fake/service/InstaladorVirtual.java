@@ -304,6 +304,12 @@ public final class InstaladorVirtual {
         File dir = new File(BEnvironment.getAppDir(pacote), "splits");
         dir.mkdirs();
         File alvo = new File(dir, parte.getName().replace('/', '_') + ".apk");
+        alvo.delete(); // a cópia anterior é somente leitura: sem apagar, atualizar o app falhava em silêncio e ficava com as partes velhas
+        if (parte.renameTo(alvo)) { // mesma partição: evita copiar centenas de MB (a sessão é apagada depois de qualquer jeito)
+            alvo.setReadOnly();
+            Diagnostico.evento("INSTALADOR parte guardada: " + pacote + "/" + alvo.getName() + " (" + alvo.length() + " bytes)");
+            return;
+        }
         try (FileInputStream in = new FileInputStream(parte); FileOutputStream out = new FileOutputStream(alvo)) {
             byte[] b = new byte[64 * 1024];
             int n;
@@ -331,16 +337,17 @@ public final class InstaladorVirtual {
         for (File f : fs) {
             if (f.equals(base) || f.getName().equals("meta.properties") || f.getName().startsWith("_") || f.getName().endsWith(".dm")) continue;
             try {
-                copiarParte(f, pacote);
-            } catch (Throwable t) {
-                Diagnostico.eventoLimitado("instalador|parte|" + f.getName(), 5000, "INSTALADOR parte " + f.getName() + " não guardada (" + t + ")");
-            }
-            try {
                 com.vcloud.motor.utils.NativeUtils.copyNativeLib(f, BEnvironment.getAppLibDir(pacote));
                 Diagnostico.evento("INSTALADOR bibliotecas da parte " + f.getName() + " copiadas para " + pacote);
             } catch (Throwable t) {
                 Diagnostico.eventoLimitado("instalador|lib|" + f.getName(), 5000, "INSTALADOR parte " + f.getName() + " sem bibliotecas (" + t + ")");
             }
+            try {
+                copiarParte(f, pacote);
+            } catch (Throwable t) {
+                Diagnostico.eventoLimitado("instalador|parte|" + f.getName(), 5000, "INSTALADOR parte " + f.getName() + " não guardada (" + t + ")");
+            }
+
         }
     }
 
@@ -414,7 +421,7 @@ public final class InstaladorVirtual {
             Intent original = null;
             try {
                 Object alvo = IntentSender.class.getMethod("getTarget").invoke(destino);
-                if (alvo instanceof android.os.IInterface) original = PENDENTES.get(((android.os.IInterface) alvo).asBinder());
+                if (alvo instanceof android.os.IInterface) original = PENDENTES.remove(((android.os.IInterface) alvo).asBinder()); // remove: senão o mapa cresce a cada instalação
             } catch (Throwable ignored) { }
             if (original != null) {
                 Intent o = new Intent(original);

@@ -93,8 +93,9 @@ public final class Monitor {
             if (!"com.android.vending".equals(com.vcloud.motor.app.BActivityThread.getAppPackageName()) || DENTRO.get() != null) return;
             String pkg = (String) a[0];
             if (!pkg.contains(".") || pkg.startsWith("android.") || pkg.equals(com.vcloud.motor.VcloudCore.getHostPkg())) return;
-            if (com.vcloud.motor.VcloudCore.get().isInstalled(pkg, com.vcloud.motor.VcloudCore.getUserId()) || com.vcloud.motor.core.env.AppSystemEnv.isOpenPackage(pkg)) return;
             if (metodo.startsWith("is") || metodo.startsWith("check") || metodo.startsWith("get") && !(metodo.contains("Package") || metodo.contains("Application") || metodo.contains("Install") || metodo.contains("Uid"))) return;
+            // por último (é a parte cara: pergunta ao servidor): evita dobrar o custo de cada consulta da loja
+            if (com.vcloud.motor.VcloudCore.get().isInstalled(pkg, com.vcloud.motor.VcloudCore.getUserId()) || com.vcloud.motor.core.env.AppSystemEnv.isOpenPackage(pkg)) return;
             DENTRO.set(Boolean.TRUE);
             try { amostra("PM-VAZA", metodo + "|" + pkg, 10_000, "PM-VAZA a loja recebeu dado do celular real: " + metodo + " " + args(metodo, a) + " -> " + (res instanceof Number || res instanceof Boolean ? String.valueOf(res) : res.getClass().getSimpleName())); }
             finally { DENTRO.remove(); }

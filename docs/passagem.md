@@ -854,3 +854,7 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Causa: `...apps.chrome.Main` é um `<activity-alias>` (aponta para ChromeTabbedActivity). O analisador de pacote do motor só registra `<activity>`; `getActivityInfo(alias)` voltava nulo, `resolveActivity` nulo, e `StartActivity` cai no sistema real (`method.invoke`).
 - Mudança: `ManifestFiltros.alvoDoAlias` lê `activity-alias`/`targetActivity` do manifesto; `BPackageManagerService.activityInfoComAlias` troca o alias pela tela real nas duas buscas por componente de `queryIntentActivities` (usadas por `resolveActivity`/`startActivity`).
 - Afeta qualquer app de dentro cujo ícone/atalho seja alias. Não verificado no aparelho. Fica de fora: `getActivityInfo(alias)` direto (hook `GetActivityInfo`).
+
+## 4.0.89 — auditoria (sem recurso novo)
+- Ver `docs/auditoria-4.0.89.md`: 8 defeitos corrigidos (atualização de app com partes, cópia de centenas de MB, vazamento de PENDENTES, corrida no InnerReceiverDelegate, cache de manifesto velho, aviso de pacote síncrono, try/catch do fallback, custo do detector PM-VAZA).
+- Não verificado no aparelho.

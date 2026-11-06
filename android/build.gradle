@@ -11,8 +11,8 @@ ext {
     ndkVersion = '28.2.13676358'
 
     minSdk = 21
-    versionCode = 488
-    versionName = "4.0.88"
+    versionCode = 489
+    versionName = "4.0.89"
     xVersion = '1.1.0'
     hiddenApiBypass = '4.3'
 }

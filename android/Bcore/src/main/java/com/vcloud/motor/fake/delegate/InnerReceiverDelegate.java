@@ -50,7 +50,7 @@ public class InnerReceiverDelegate extends IIntentReceiver.Stub {
     }
 
     public static InnerReceiverDelegate getDelegate(IBinder iBinder) {
-        return sInnerReceiverDelegate.get(iBinder);
+        synchronized (sInnerReceiverDelegate) { return sInnerReceiverDelegate.get(iBinder); }
     }
 
     public static IIntentReceiver createProxy(IIntentReceiver base) {
@@ -58,13 +58,14 @@ public class InnerReceiverDelegate extends IIntentReceiver.Stub {
             return base;
         }
         final IBinder iBinder = base.asBinder();
-        InnerReceiverDelegate delegate = sInnerReceiverDelegate.get(iBinder);
+        InnerReceiverDelegate delegate;
+        synchronized (sInnerReceiverDelegate) { delegate = sInnerReceiverDelegate.get(iBinder); }
         if (delegate == null) {
             try {
                 iBinder.linkToDeath(new DeathRecipient() {
                     @Override
                     public void binderDied() {
-                        sInnerReceiverDelegate.remove(iBinder);
+                        synchronized (sInnerReceiverDelegate) { sInnerReceiverDelegate.remove(iBinder); }
                         iBinder.unlinkToDeath(this, 0);
                     }
                 }, 0);

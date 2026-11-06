@@ -24,18 +24,19 @@ public class ManifestFiltros {
     public static synchronized String alvoDoAlias(ApplicationInfo ai, String nome) {
         if (ai == null || ai.sourceDir == null) return null;
         telas(ai);
-        Map<String, String> m = ALIAS.get(ai.sourceDir);
+        Map<String, String> m = ALIAS.get(ai.sourceDir + "|" + new java.io.File(ai.sourceDir).lastModified());
         return m == null ? null : m.get(nome);
     }
 
     /** nome da classe da tela -> filtros. Nomes relativos (".Main") já vêm completos com o pacote. */
     public static synchronized Map<String, List<IntentFilter>> telas(ApplicationInfo ai) {
         if (ai == null || ai.sourceDir == null) return new HashMap<>();
-        Map<String, List<IntentFilter>> c = CACHE.get(ai.sourceDir);
+        String chave = ai.sourceDir + "|" + new java.io.File(ai.sourceDir).lastModified(); // APK trocado (atualização) = cache novo
+        Map<String, List<IntentFilter>> c = CACHE.get(chave);
         if (c != null) return c;
         c = new HashMap<>();
         Map<String, String> alias = new HashMap<>();
-        ALIAS.put(ai.sourceDir, alias);
+        ALIAS.put(chave, alias);
         try {
             Resources r = VcloudCore.getPackageManager().getResourcesForApplication(ai);
             XmlResourceParser p = r.getAssets().openXmlResourceParser("AndroidManifest.xml");
@@ -81,7 +82,7 @@ public class ManifestFiltros {
         } catch (Throwable t) {
             Diagnostico.eventoLimitado("manifestfiltros|" + ai.packageName, 30_000, "RESOLVEDOR não consegui ler os filtros de " + ai.packageName + ": " + t);
         }
-        CACHE.put(ai.sourceDir, c);
+        CACHE.put(chave, c);
         return c;
     }
 }
