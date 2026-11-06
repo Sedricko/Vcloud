@@ -28,6 +28,14 @@ public class ManifestFiltros {
         return m == null ? null : m.get(nome);
     }
 
+    /** Lê pelo ID do atributo (android:name = 0x01010003): apps com nomes de atributo removidos pelo aapt2 não respondem pela busca por nome (lia 0 telas). */
+    private static String attr(XmlResourceParser p, int id, String nome) {
+        for (int i = 0; i < p.getAttributeCount(); i++) {
+            if (p.getAttributeNameResource(i) == id) return p.getAttributeValue(i);
+        }
+        return p.getAttributeValue("http://schemas.android.com/apk/res/android", nome);
+    }
+
     /** nome da classe da tela -> filtros. Nomes relativos (".Main") já vêm completos com o pacote. */
     public static synchronized Map<String, List<IntentFilter>> telas(ApplicationInfo ai) {
         if (ai == null || ai.sourceDir == null) return new HashMap<>();
@@ -47,12 +55,12 @@ public class ManifestFiltros {
                 if (ev == XmlResourceParser.START_TAG) {
                     String t = p.getName();
                     if (t.equals("activity") || t.equals("activity-alias")) {
-                        String n = p.getAttributeValue("http://schemas.android.com/apk/res/android", "name");
+                        String n = attr(p, android.R.attr.name, "name");
                         if (n != null && n.startsWith(".")) n = ai.packageName + n;
                         else if (n != null && !n.contains(".")) n = ai.packageName + "." + n;
                         tela = n;
                         if (t.equals("activity-alias") && n != null) {
-                            String alvo = p.getAttributeValue("http://schemas.android.com/apk/res/android", "targetActivity");
+                            String alvo = attr(p, android.R.attr.targetActivity, "targetActivity");
                             if (alvo != null && alvo.startsWith(".")) alvo = ai.packageName + alvo;
                             else if (alvo != null && !alvo.contains(".")) alvo = ai.packageName + "." + alvo;
                             if (alvo != null) alias.put(n, alvo);
@@ -60,10 +68,10 @@ public class ManifestFiltros {
                     } else if (t.equals("intent-filter") && tela != null) {
                         f = new IntentFilter();
                     } else if (f != null && t.equals("action")) {
-                        String a = p.getAttributeValue("http://schemas.android.com/apk/res/android", "name");
+                        String a = attr(p, android.R.attr.name, "name");
                         if (a != null) f.addAction(a);
                     } else if (f != null && t.equals("category")) {
-                        String a = p.getAttributeValue("http://schemas.android.com/apk/res/android", "name");
+                        String a = attr(p, android.R.attr.name, "name");
                         if (a != null) f.addCategory(a);
                     }
                 } else if (ev == XmlResourceParser.END_TAG) {

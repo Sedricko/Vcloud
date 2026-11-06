@@ -864,3 +864,8 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 - Ainda: `RESOLVEDOR ... achei pelo manifesto: 0 (telas do app: 93)` sem erro de leitura → provável `sourceDir` nulo no `ApplicationInfo` cru do parser.
 - Mudança: o fallback e o alias usam `getApplicationInfo(pkg)` (o gerado, com sourceDir). O log agora mostra `telas lidas do manifesto: N, sourceDir=...`.
 - Não verificado no aparelho.
+
+## 4.0.91 — manifesto lido pelo ID do atributo
+- Relatório 06/11 09:47 (4.0.90): Seven instalou 2× e a loja fechou as duas (`Finishing successful install` ×2, sem 6252); Backpack Brawl 3× antes. A 4.0.89 resolveu o 6252 nos 2 apps testados.
+- `RESOLVEDOR ... telas lidas do manifesto: 0` para apps de dentro (Seven, ML Manager, Play Store) com `sourceDir` correto; mas SetupWizard (sistema) leu 133. Leitura por NOME de atributo falha nos APKs compilados com aapt2.
+- Mudança: `ManifestFiltros.attr` lê `android:name`/`targetActivity` pelo ID (`getAttributeNameResource`), com a busca por nome como reserva. Não verificado no aparelho.
