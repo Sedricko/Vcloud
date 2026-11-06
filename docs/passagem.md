@@ -858,3 +858,9 @@ prévia antes de mudar tela; ideia fora de ordem vai para um ramo de laboratóri
 ## 4.0.89 — auditoria (sem recurso novo)
 - Ver `docs/auditoria-4.0.89.md`: 8 defeitos corrigidos (atualização de app com partes, cópia de centenas de MB, vazamento de PENDENTES, corrida no InnerReceiverDelegate, cache de manifesto velho, aviso de pacote síncrono, try/catch do fallback, custo do detector PM-VAZA).
 - Não verificado no aparelho.
+
+## 4.0.90 — manifesto lido com o ApplicationInfo certo
+- Relatório 06/11 09:35 (4.0.89): BOA NOTÍCIA — Backpack Brawl instalou 3 vezes seguidas e a loja fechou todas (`Finishing successful install` ×3, nenhum `PSV was not installed`; só o 6401 inicial da 1ª tentativa). A 4.0.89 (partes movidas em vez de copiadas, avisos assíncronos) parece ter resolvido o 6252 — pode ter sido a demora da cópia de centenas de MB. Não confirmado com outros apps.
+- Ainda: `RESOLVEDOR ... achei pelo manifesto: 0 (telas do app: 93)` sem erro de leitura → provável `sourceDir` nulo no `ApplicationInfo` cru do parser.
+- Mudança: o fallback e o alias usam `getApplicationInfo(pkg)` (o gerado, com sourceDir). O log agora mostra `telas lidas do manifesto: N, sourceDir=...`.
+- Não verificado no aparelho.

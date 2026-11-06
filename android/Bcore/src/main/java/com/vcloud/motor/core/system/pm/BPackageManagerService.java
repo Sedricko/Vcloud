@@ -431,7 +431,7 @@ public class BPackageManagerService extends IBPackageManagerService.Stub impleme
             BPackageSettings ps;
             synchronized (mPackages) { ps = mPackages.get(comp.getPackageName()); }
             if (ps == null || ps.pkg == null || ps.pkg.activities.isEmpty()) return null;
-            String alvo = com.vcloud.motor.utils.ManifestFiltros.alvoDoAlias(ps.pkg.activities.get(0).info.applicationInfo, comp.getClassName());
+            String alvo = com.vcloud.motor.utils.ManifestFiltros.alvoDoAlias(getApplicationInfo(comp.getPackageName(), 0, userId), comp.getClassName());
             if (alvo == null) return null;
             return getActivityInfo(new ComponentName(comp.getPackageName(), alvo), flags, userId);
         } catch (Throwable t) {
@@ -486,9 +486,12 @@ public class BPackageManagerService extends IBPackageManagerService.Stub impleme
                     }
                     // Vcloud: o resolvedor devolvia vazio para MAIN de app de dentro (a loja via "sem tela de abrir"); busca direto nos filtros do manifesto
                     if (result.isEmpty() && bPackageSettings != null && intent.getAction() != null) try {
+                        // o ApplicationInfo cru do parser vem sem sourceDir; o gerado (o que os apps recebem) tem o caminho do APK
+                        final android.content.pm.ApplicationInfo appInfo = getApplicationInfo(pkgName, 0, userId);
+                        final java.util.Map<String, java.util.List<android.content.IntentFilter>> mapa = com.vcloud.motor.utils.ManifestFiltros.telas(appInfo);
                         for (BPackage.Activity a : bPackageSettings.pkg.activities) {
                             if (a.info == null) continue;
-                            java.util.List<android.content.IntentFilter> fs = com.vcloud.motor.utils.ManifestFiltros.telas(a.info.applicationInfo).get(a.info.name);
+                            java.util.List<android.content.IntentFilter> fs = mapa.get(a.info.name);
                             if (fs == null) continue;
                             for (android.content.IntentFilter f : fs) {
                                 if (!f.hasAction(intent.getAction())) continue;
@@ -505,7 +508,7 @@ public class BPackageManagerService extends IBPackageManagerService.Stub impleme
                                 break;
                             }
                         }
-                        com.vcloud.motor.utils.Diagnostico.eventoLimitado("resolvedor|" + pkgName, 15_000, "RESOLVEDOR vazio para " + intent.getAction() + " de " + pkgName + "; achei pelo manifesto: " + result.size() + " (telas do app: " + bPackageSettings.pkg.activities.size() + ")");
+                        com.vcloud.motor.utils.Diagnostico.eventoLimitado("resolvedor|" + pkgName, 15_000, "RESOLVEDOR vazio para " + intent.getAction() + " de " + pkgName + "; achei pelo manifesto: " + result.size() + " (telas lidas do manifesto: " + mapa.size() + ", sourceDir=" + (appInfo == null ? "sem app" : appInfo.sourceDir) + ", telas do app: " + bPackageSettings.pkg.activities.size() + ")");
                     } catch (Throwable t) {
                         com.vcloud.motor.utils.Diagnostico.eventoLimitado("resolvedor|erro|" + pkgName, 15_000, "RESOLVEDOR falhou ao ler o manifesto de " + pkgName + ": " + t);
                     }
